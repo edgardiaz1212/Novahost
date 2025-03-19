@@ -1,21 +1,21 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import HomePage from './HomePage';
-import ServiceDetails from './ServiceDetails';
-import ServiceForm from './ServiceForm';
-import ContactPage from './ContactPage';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'; // Use Routes instead of Switch
+import HomePage from './front/js/pages/Home.jsx';
+import ServiceDetails from './ServiceDetails'; // Import ServiceDetails
+import ServiceForm from './ServiceForm'; // Import ServiceForm
+import injectContext from './front/js/store/appContext'; // Import injectContext
 
 const App = () => {
     return (
         <Router>
-            <Switch>
-                <Route path="/" exact component={HomePage} />
-                <Route path="/services/:id" component={ServiceDetails} />
-                <Route path="/services/new" component={ServiceForm} />
-                <Route path="/contact" component={ContactPage} />
-            </Switch>
+            <Routes> {/* Use Routes instead of Switch */}
+                <Route path="/" element={<HomePage />} /> {/* Use element prop */}
+                <Route path="/services/:id" element={<ServiceDetails />} /> {/* Route for service details */}
+                <Route path="/services/create" element={<ServiceForm />} /> {/* Route for creating a service */}
+                <Route path="/services/edit/:id" element={<ServiceForm />} /> {/* Route for editing a service */}
+            </Routes>
         </Router>
     );
 };
 
-export default App;
+export default injectContext(App); // Wrap App with injectContext
