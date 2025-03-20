@@ -8,7 +8,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       message: null,
       isAuthenticated: isAuthenticated, // Initialize with session storage value
       user: storedUser || null, // Initialize user state with stored user data
-      
+
     },
 
     actions: {
@@ -36,12 +36,14 @@ const getState = ({ getStore, getActions, setStore }) => {
           } else {
             setStore({ isAuthenticated: false }); // Set to false on login failure
             console.error("Login failed");
+            return false;
           }
         } catch (error) {
           console.log("Error during login", error);
+          return false;
         }
       },
-      
+
     },
   };
 };

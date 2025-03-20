@@ -1,8 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'; // Use Routes instead of Switch
 import HomePage from './front/js/pages/Home.jsx';
-import ServiceDetails from './ServiceDetails'; // Import ServiceDetails
-import ServiceForm from './ServiceForm'; // Import ServiceForm
+import ServiceDetails from './front/js/pages/ServiceDetails.js'; // Import ServiceDetails
+import ServiceForm from './front/js/pages/ServiceForm.js'; // Import ServiceForm
 import injectContext from './front/js/store/appContext'; // Import injectContext
 
 const App = () => {

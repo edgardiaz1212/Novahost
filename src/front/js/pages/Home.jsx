@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
-import '../../styles/Home.css'; // Import the CSS file
+import React, { useState, useContext, useEffect, useRef } from 'react';
+import '../../styles/Home.css';
+import { Context } from '../store/appContext'; // Import Context
+import { Link } from 'react-router-dom'; // Import Link
 
 function Home() {
+  const { store, actions } = useContext(Context); // Use useContext to access store and actions
   const [showLogin, setShowLogin] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const modalRef = useRef(null);
 
   const handleLoginClick = () => {
     setShowLogin(!showLogin);
@@ -18,19 +22,39 @@ function Home() {
     setPassword(event.target.value);
   };
 
-  const handleLoginSubmit = (event) => {
+  const handleLoginSubmit = async (event) => {
     event.preventDefault();
-    // Here you would typically handle the login logic, e.g., sending data to an API
-    console.log('Login submitted:', { username, password });
-    // Reset form fields after submission (optional)
-    setUsername('');
-    setPassword('');
-    setShowLogin(false);
-    alert(`Login submitted with username: ${username}`);
+    const data = await actions.login(username, password);
+    if (data) {
+      setUsername('');
+      setPassword('');
+      setShowLogin(false);
+      alert(`Login submitted with username: ${username}`);
+    } else {
+      alert("Login failed");
+    }
   };
+
+  const handleClickOutside = (event) => {
+    if (modalRef.current && !modalRef.current.contains(event.target)) {
+      setShowLogin(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showLogin) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showLogin]);
 
   return (
     <div className="home-container">
+      {/* ... (rest of your Home component code) */}
       <header className="header">
         <div className="logo">Novahost</div>
         <nav>
@@ -43,32 +67,39 @@ function Home() {
       <main className="main-content">
         <section className="hero">
           <h1>Bienvenido a Novahost</h1>
-          <p>Your minimalist hosting solution.</p>
-          <button className="cta-button">Get Started</button>
+        
+
+          <h1 className="text-5xl font-bold mb-6 text-white">
+              Soluciones de Centro de Datos de Nivel Empresarial
+            </h1>
+            <p className="mx-auto">
+              Despliega y gestiona tu infraestructura con nuestros servicios de centro de datos seguros y escalables.
+              Elige entre nuestras soluciones preconfiguradas o crea tu entorno personalizado.
+            </p>
+         
         </section>
 
         <section className="features">
-          <h2>Our Features</h2>
+          
           <div className="feature-list">
             <div className="feature-item">
-              <h3>Fast Performance</h3>
-              <p>Experience lightning-fast loading times.</p>
+              <h3>Planes Hosting </h3>
+              <p>Soluciones preconfiguradas para implementación inmediata.
+              </p>
             </div>
             <div className="feature-item">
-              <h3>Reliable Uptime</h3>
-              <p>We guarantee 99.9% uptime.</p>
+              <h3>Soluciones Personalizadas</h3>
+              <p>Infraestructura tailor-made para necesidades específicas</p>
             </div>
-            <div className="feature-item">
-              <h3>Easy to Use</h3>
-              <p>Simple and intuitive control panel.</p>
-            </div>
+            
           </div>
         </section>
       </main>
 
       {showLogin && (
         <div className="login-modal">
-          <div className="login-form-container">
+          <div className="login-form-container" ref={modalRef}>
+            
             <form className="login-form" onSubmit={handleLoginSubmit}>
               <h2>Login</h2>
               <div className="form-group">
