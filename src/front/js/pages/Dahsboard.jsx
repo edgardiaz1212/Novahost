@@ -7,13 +7,9 @@ import {
   Search,
   Filter,
   Server,
-  Database,
-  Cpu,
-  HardDrive,
-  MemoryStick
 } from 'lucide-react';
 import '../../styles/Dashboard.css';
-import StatCard from '../component/StatCard'; // Import StatCard
+import StatCard from '../component/StatCard';
 import ServerCapacity from '../component/ServerCapacity';
 
 // Sample data - replace with your actual data
@@ -31,23 +27,14 @@ const stats = {
   total: 80
 };
 
-// Sample data for server resources - replace with your actual data fetching logic
-const initialServerResources = {
-  platform: "VMware", // or "Proxmox"
-  cpuTotal: 16,
-  cpuUsed: 8,
-  ramTotal: 64, // in GB
-  ramUsed: 32, // in GB
-  diskTotal: 1000, // in GB
-  diskUsed: 500, // in GB
-};
-
 function Dahsboard() {
-  const [serverResources, setServerResources] = useState(initialServerResources);
+  const [serverResources, setServerResources] = useState([]); // Initialize as an empty array
+  const [isLoading, setIsLoading] = useState(true); // Add a loading state
 
   // Simulate fetching data for multiple servers
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true); // Start loading
       // Simulate a delay
       await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -83,24 +70,34 @@ function Dahsboard() {
       ];
 
       setServerResources(serverData);
+      setIsLoading(false); // Finish loading
     };
 
     fetchData();
   }, []);
 
-  
-
   return (
     <div className="container-fluid bg-light min-vh-100">
       <div className="container py-4">
         <h1 className="h3 mb-4 p-3">Panel de Control de Solicitudes</h1>
-{/* Display multiple ServerCapacity components */}
-<div className="row row-cols-1 row-cols-md-2 g-4 mb-4">
-          {serverResources.map((server, index) => (
-            <div className="col" key={index}>
-              <ServerCapacity serverData={server} />
+
+        {/* Display multiple ServerCapacity components */}
+        <div className="row row-cols-1 row-cols-md-2 g-4 mb-4">
+          {isLoading ? (
+            <div className="col">
+              <div className="card shadow-sm p-4">
+                <div className="text-center">
+                  <p className="text-muted">Cargando datos del servidor...</p>
+                </div>
+              </div>
             </div>
-          ))}
+          ) : (
+            serverResources.map((server, index) => (
+              <div className="col" key={index}>
+                <ServerCapacity serverData={server} />
+              </div>
+            ))
+          )}
         </div>
 
         {/* Stats Grid */}
@@ -138,8 +135,6 @@ function Dahsboard() {
             />
           </div>
         </div>
-
-      
 
         {/* Table Section */}
         <div className="card shadow-sm">
