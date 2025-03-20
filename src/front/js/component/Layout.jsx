@@ -22,7 +22,7 @@ const Layout = () => {
         <div className={`hamburger-icon ${isOpen ? 'open' : ''}`}>
           <span></span>
           <span></span>
-          <span></span>
+          
         </div>
       </button>
       <Navbar isOpen={isOpen} toggleMenu={toggleMenu} />

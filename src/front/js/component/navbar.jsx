@@ -15,6 +15,9 @@ function Navbar({ isOpen, toggleMenu }) {
           <li className="nav-item">
             <Link to="/dashboard" className="nav-link" onClick={toggleMenu}>Dashboard</Link>
           </li>
+          <li className="nav-item">
+            <Link to="/service-selector" className="nav-link" onClick={toggleMenu}>Seleccion Servicio</Link>
+          </li>
           {/* Add more navigation links here */}
         </ul>
       </div>
