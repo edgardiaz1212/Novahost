@@ -6,5 +6,5 @@ body {
     font-family: sans-serif;
     background-color: #e5f7fd;
     color: #232121;
-    margin: 10; /* Remove default body margin */
+    margin: 0; /* Remove default body margin */
 }
