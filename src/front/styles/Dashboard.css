@@ -1,0 +1,13 @@
+/* Dashboard.css */
+.icon {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .text-purple {
+    color: purple;
+  }
+  
+  .border-purple {
+    border-color: purple !important;
+  }
