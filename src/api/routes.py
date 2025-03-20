@@ -14,9 +14,9 @@ CORS(api)
 @api.route('/login', methods=['POST'])
 def login_user():
     data = request.get_json()
-    username = data.get('username')
+    email = data.get('email')
     password = data.get('password')
-    user = User.query.filter_by(username=username, password=password).first()
+    user = User.query.filter_by(email=email, password=password).first()
     if user:
         return jsonify({"message": "Login successful", "user": user.serialize()}), 200
     else:
