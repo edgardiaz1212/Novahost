@@ -1,14 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   CheckCircle,
   Clock,
   AlertCircle,
   BarChart3,
   Search,
-  Filter
+  Filter,
+  Server,
+  Database,
+  Cpu,
+  HardDrive,
+  MemoryStick
 } from 'lucide-react';
-import '../../styles/Dashboard.css'
+import '../../styles/Dashboard.css';
 import StatCard from '../component/StatCard'; // Import StatCard
+import ServerCapacity from '../component/ServerCapacity';
 
 // Sample data - replace with your actual data
 const requestsData = [
@@ -25,12 +31,77 @@ const stats = {
   total: 80
 };
 
+// Sample data for server resources - replace with your actual data fetching logic
+const initialServerResources = {
+  platform: "VMware", // or "Proxmox"
+  cpuTotal: 16,
+  cpuUsed: 8,
+  ramTotal: 64, // in GB
+  ramUsed: 32, // in GB
+  diskTotal: 1000, // in GB
+  diskUsed: 500, // in GB
+};
 
 function Dahsboard() {
+  const [serverResources, setServerResources] = useState(initialServerResources);
+
+  // Simulate fetching data for multiple servers
+  useEffect(() => {
+    const fetchData = async () => {
+      // Simulate a delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Simulate data for multiple servers
+      const serverData = [
+        {
+          platform: "VMware",
+          cpuTotal: 16,
+          cpuUsed: 8,
+          ramTotal: 64,
+          ramUsed: 32,
+          diskTotal: 1000,
+          diskUsed: 500,
+        },
+        {
+          platform: "Proxmox",
+          cpuTotal: 24,
+          cpuUsed: 12,
+          ramTotal: 128,
+          ramUsed: 64,
+          diskTotal: 2000,
+          diskUsed: 1000,
+        },
+        {
+          platform: "Proxmox",
+          cpuTotal: 12,
+          cpuUsed: 6,
+          ramTotal: 64,
+          ramUsed: 32,
+          diskTotal: 1000,
+          diskUsed: 500,
+        },
+      ];
+
+      setServerResources(serverData);
+    };
+
+    fetchData();
+  }, []);
+
+  
+
   return (
     <div className="container-fluid bg-light min-vh-100">
       <div className="container py-4">
         <h1 className="h3 mb-4 p-3">Panel de Control de Solicitudes</h1>
+{/* Display multiple ServerCapacity components */}
+<div className="row row-cols-1 row-cols-md-2 g-4 mb-4">
+          {serverResources.map((server, index) => (
+            <div className="col" key={index}>
+              <ServerCapacity serverData={server} />
+            </div>
+          ))}
+        </div>
 
         {/* Stats Grid */}
         <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-4">
@@ -67,6 +138,8 @@ function Dahsboard() {
             />
           </div>
         </div>
+
+      
 
         {/* Table Section */}
         <div className="card shadow-sm">
