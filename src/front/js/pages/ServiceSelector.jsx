@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Server, Monitor, Database, Cpu, MemoryStick, Package, XCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Server, Monitor, Database, Cpu, MemoryStick, Package, XCircle, User } from 'lucide-react';
 
 function ServiceSelector() {
   const [selectedType, setSelectedType] = useState(null); // 'catalogado' or 'no-catalogado'
@@ -10,6 +10,8 @@ function ServiceSelector() {
   const [disk, setDisk] = useState('');
   const [processors, setProcessors] = useState('');
   const [showSelection, setShowSelection] = useState(true);
+  const [selectedClient, setSelectedClient] = useState(''); // New state for selected client
+  const [clients, setClients] = useState([]); // New state for list of clients
 
   const tiers = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
   const operatingSystems = ['Linux', 'Windows', 'Otro'];
@@ -43,13 +45,37 @@ function ServiceSelector() {
         '#ffffff', // XXXL - White text for dark background
       ]
     };
-    
+
     return {
       bg: colors.background[tierIndex],
       border: colors.border[tierIndex],
       text: colors.text[tierIndex]
     };
   };
+
+  // Fetch clients from backend (replace with your actual API call)
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        // Replace this with your actual API endpoint
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/clients`);
+        if (response.ok) {
+          const data = await response.json();
+          setClients(data); // Assuming the API returns an array of clients
+        } else {
+          console.error('Failed to fetch clients');
+          // Handle error (e.g., show a message to the user)
+          setClients([{ id: 1, name: "Cliente 1" }, { id: 2, name: "Cliente 2" }, { id: 3, name: "Cliente 3" }]);
+        }
+      } catch (error) {
+        console.error('Error fetching clients:', error);
+        // Handle error (e.g., show a message to the user)
+        setClients([{ id: 1, name: "Cliente 1" }, { id: 2, name: "Cliente 2" }, { id: 3, name: "Cliente 3" }]);
+      }
+    };
+
+    fetchClients();
+  }, []);
 
   const handleConfirm = () => {
     // Here you would handle the confirmation logic
@@ -61,6 +87,7 @@ function ServiceSelector() {
       ram,
       disk,
       processors,
+      selectedClient, // Include selected client in the data
     });
     alert('Service Confirmed!');
   };
@@ -82,6 +109,7 @@ function ServiceSelector() {
     setRam('');
     setDisk('');
     setProcessors('');
+    setSelectedClient(''); // Reset selected client
     setShowSelection(true);
   };
 
@@ -97,21 +125,26 @@ function ServiceSelector() {
     }
   };
 
+  const handleClientSelect = (e) => {
+    setSelectedClient(e.target.value);
+  };
+
   const isConfirmDisabled = () => {
     if (!selectedType) return true;
-    
+
     if (selectedType === 'catalogado') {
       if (!selectedTier) return true;
     }
-    
+
     if (!selectedOS) return true;
-    
+
     if (selectedOS === 'Otro' && !customOS.trim()) return true;
-    
+
     if (selectedType === 'no-catalogado') {
       if (!ram || !disk || !processors) return true;
     }
-    
+    if (!selectedClient) return true; // Check if a client is selected
+
     return false;
   };
 
@@ -129,11 +162,10 @@ function ServiceSelector() {
               <div className="row row-cols-1 row-cols-md-2 g-4">
                 <div className="col">
                   <div
-                    className={`card border-2 cursor-pointer ${
-                      selectedType === 'catalogado'
-                        ? 'border-indigo-600 bg-indigo-50 text-indigo-600'
-                        : 'border-gray-200 hover:border-indigo-300'
-                    }`}
+                    className={`card border-2 cursor-pointer ${selectedType === 'catalogado'
+                      ? 'border-indigo-600 bg-indigo-50 text-indigo-600'
+                      : 'border-gray-200 hover:border-indigo-300'
+                      }`}
                     onClick={() => handleTypeSelect('catalogado')}
                   >
                     <div className="card-body d-flex align-items-center gap-2">
@@ -144,11 +176,10 @@ function ServiceSelector() {
                 </div>
                 <div className="col">
                   <div
-                    className={`card border-2 cursor-pointer ${
-                      selectedType === 'no-catalogado'
-                        ? 'border-indigo-600 bg-indigo-50 text-indigo-600'
-                        : 'border-gray-200 hover:border-indigo-300'
-                    }`}
+                    className={`card border-2 cursor-pointer ${selectedType === 'no-catalogado'
+                      ? 'border-indigo-600 bg-indigo-50 text-indigo-600'
+                      : 'border-gray-200 hover:border-indigo-300'
+                      }`}
                     onClick={() => handleTypeSelect('no-catalogado')}
                   >
                     <div className="card-body d-flex align-items-center gap-2">
@@ -170,7 +201,7 @@ function ServiceSelector() {
               >
                 Volver
               </button>
-              
+
               {/* Catalogado Options */}
               {selectedType === 'catalogado' && (
                 <>
@@ -184,7 +215,7 @@ function ServiceSelector() {
                       {tiers.map((tier) => {
                         const tierColor = getTierColor(tier);
                         const isActive = selectedTier === tier;
-                        
+
                         return (
                           <div className="col" key={tier}>
                             <button
@@ -282,7 +313,7 @@ function ServiceSelector() {
                     ))}
                   </select>
                 </div>
-                
+
                 {/* Custom OS input field */}
                 {selectedOS === 'Otro' && (
                   <div className="mb-3 mt-3">
@@ -301,6 +332,30 @@ function ServiceSelector() {
                     />
                   </div>
                 )}
+              </div>
+              {/* Client Selection */}
+              <div className="mb-6">
+                <h2 className="h4 fw-bold text-gray-800 mt-4 mb-4 d-flex align-items-center gap-2">
+                  <User className="w-6 h-6 text-indigo-600" />
+                  Selecciona Cliente
+                </h2>
+                <div className="mb-3">
+                  <select
+                    className="form-select"
+                    value={selectedClient}
+                    onChange={handleClientSelect}
+                    required
+                  >
+                    <option value="" disabled>
+                      Selecciona Cliente
+                    </option>
+                    {clients.map((client) => (
+                      <option key={client.id} value={client.name}>
+                        {client.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* Confirm Button */}
