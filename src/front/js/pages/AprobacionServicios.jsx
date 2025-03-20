@@ -97,7 +97,7 @@ function AprobacionServicios() {
   };
 
   return (
-    <div className="p-5 max-w-7xl mx-auto">
+    <div className="p-5  mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800 mb-2 flex items-center gap-2">
           <Server className="text-blue-600" />

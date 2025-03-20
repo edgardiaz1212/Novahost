@@ -3,91 +3,92 @@ import { CheckCircle, XCircle, Server, HardDrive, Cpu, Monitor, Eye } from 'luci
 
 function TablaServicios({ servicios, setServicioDetalle, aprobarServicio, rechazarServicio }) {
   return (
-    <div className="overflow-x-auto bg-white rounded-lg shadow">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto  rounded-2 shadow">
+      <table className="  table table-striped w-full table-bordered">
+        <thead className="table-primary ">
           <tr>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" className="px-3 py-3 text-left fw-medium  text-uppercase ">
               Solicitante
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" className="px-3 py-3 text-left fw-medium  text-text-uppercase ">
               Fecha
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" className="px-3 py-3 text-left fw-medium  text-text-uppercase ">
               <div className="flex items-center">
-                <HardDrive size={14} className="mr-1" />
+                <HardDrive size={14} className="m-1" />
                 Disco (GB)
               </div>
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" className="px-3 py-3 text-left fw-medium  text-uppercase ">
               <div className="flex items-center">
-                <Server size={14} className="mr-1" />
+                <Server size={14} className="m-1" />
                 RAM (GB)
               </div>
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" className="px-3 py-3 text-left fw-medium text-uppercase">
               <div className="flex items-center">
-                <Cpu size={14} className="mr-1" />
+                <Cpu size={14} className="m-1" />
                 CPU (Núcleos)
               </div>
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" className="px-3 py-3 text-left fw-medium  text-uppercase ">
               <div className="flex items-center">
-                <Monitor size={14} className="mr-1" />
+                <Monitor size={14} className="m-1" />
                 Sistema Operativo
               </div>
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" className="px-3 py-3 text-left fw-medium  text-uppercase ">
               Estado
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th scope="col" className="px-5 py-3 text-left fw-medium  text-uppercase">
               Acciones
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+
+        <tbody className=" divide-y text-center">
           {servicios.map((servicio) => (
-            <tr key={servicio.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-medium text-gray-900">{servicio.solicitante}</div>
+            <tr key={servicio.id} className="">
+              <td className="px-3 py-4 ">
+                <div className="text-sm-end fw-medium ">{servicio.solicitante}</div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-500">{servicio.fecha}</div>
+              <td className="px-3 py-4 ">
+                <div className="text-sm-end ">{servicio.fecha}</div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">{servicio.disco} GB</div>
+              <td className="px-3 py-4 ">
+                <div className="text-sm-end ">{servicio.disco} GB</div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">{servicio.ram} GB</div>
+              <td className="px-3 py-4 ">
+                <div className="text-sm-end ">{servicio.ram} GB</div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">{servicio.procesador}</div>
+              <td className="px-3 py-4 ">
+                <div className="text-sm-end ">{servicio.procesador}</div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">{servicio.sistemaOperativo}</div>
+              <td className="px-3 py-4 ">
+                <div className="text-sm-end ">{servicio.sistemaOperativo}</div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-3 py-4 ">
                 {servicio.estado === "pendiente" && (
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                  <span className="px-2 inline-flex p-1 rounded-2 bg-warning">
                     Pendiente
                   </span>
                 )}
                 {servicio.estado === "aprobado" && (
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                  <span className="px-2 inline-flex p-1 rounded-2 bg-success">
                     Aprobado
                   </span>
                 )}
                 {servicio.estado === "rechazado" && (
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                  <span className="px-2 inline-flex p-1 rounded-2 bg-danger ">
                     Rechazado
                   </span>
                 )}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <td className="px-6 py-4  text-right text-sm-end fw-medium">
                 <div className="flex space-x-2">
                   <button
                     onClick={() => setServicioDetalle(servicio)}
-                    className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                    className="btn btn-outline-primary flex items-center gap-1"
                   >
                     <Eye size={16} />
                     Ver
@@ -96,14 +97,14 @@ function TablaServicios({ servicios, setServicioDetalle, aprobarServicio, rechaz
                     <>
                       <button
                         onClick={() => aprobarServicio(servicio.id)}
-                        className="text-green-600 hover:text-green-900 flex items-center gap-1"
+                        className="btn btn-outline-success flex items-center gap-1"
                       >
                         <CheckCircle size={16} />
                         Aprobar
                       </button>
                       <button
                         onClick={() => rechazarServicio(servicio.id)}
-                        className="text-red-600 hover:text-red-900 flex items-center gap-1"
+                        className="btn btn-outline-danger rounded flex items-center gap-1"
                       >
                         <XCircle size={16} />
                         Rechazar
