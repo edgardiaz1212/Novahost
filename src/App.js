@@ -6,6 +6,7 @@ import Dahsboard from './front/js/pages/Dahsboard.jsx';
 import Layout from './front/js/component/Layout'; // Import Layout
 import ServiceSelector from './front/js/pages/ServiceSelector'; // Import ServiceSelector
 import Configuration from './front/js/pages/Configuration.jsx';
+import AprobacionServicios from './front/js/pages/AprobacionServicios.jsx';
 
 const App = () => {
     return (
@@ -17,6 +18,7 @@ const App = () => {
                     <Route path="dashboard" element={<Dahsboard />} />
                     <Route path="service-selector" element={<ServiceSelector />} />
                     <Route path="configuracion" element={<Configuration/>} />
+                    <Route path="aprobacion" element={<AprobacionServicios/>} />
                     <Route path="*" element={<h1>404</h1>} />
 
                      {/* Add the new route */}

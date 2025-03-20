@@ -19,6 +19,9 @@ function Navbar({ isOpen, toggleMenu }) {
             <Link to="/service-selector" className="nav-link" onClick={toggleMenu}>Seleccion Servicio</Link>
           </li>
           <li className="nav-item">
+            <Link to="/aprobacion" className="nav-link" onClick={toggleMenu}>Aprobacion Servicio</Link>
+          </li>
+          <li className="nav-item">
             <Link to="/configuracion" className="nav-link" onClick={toggleMenu}>Configuracion</Link>
 
           </li>

@@ -310,7 +310,7 @@ function ServiceSelector() {
                   disabled={isConfirmDisabled()}
                   className="btn btn-primary py-2 px-4 rounded-3 hover:bg-indigo-700 transition-colors mx-auto"
                 >
-                  Confirma Seleccion
+                  Crear Servicio
                 </button>
               </div>
             </>
