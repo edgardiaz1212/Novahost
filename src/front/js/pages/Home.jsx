@@ -1,12 +1,13 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import '../../styles/Home.css';
 import { Context } from '../store/appContext'; // Import Context
-import { Link } from 'react-router-dom'; // Import Link
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Home() {
   const { store, actions } = useContext(Context); // Use useContext to access store and actions
   const [showLogin, setShowLogin] = useState(false);
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const modalRef = useRef(null);
 
@@ -14,8 +15,8 @@ function Home() {
     setShowLogin(!showLogin);
   };
 
-  const handleUsernameChange = (event) => {
-    setUsername(event.target.value);
+  const handleEmailChange = (event) => {
+    setEmail(event.target.value);
   };
 
   const handlePasswordChange = (event) => {
@@ -24,14 +25,32 @@ function Home() {
 
   const handleLoginSubmit = async (event) => {
     event.preventDefault();
-    const data = await actions.login(username, password);
+    const data = await actions.login(email, password);
     if (data) {
-      setUsername('');
+      setEmail('');
       setPassword('');
       setShowLogin(false);
-      alert(`Login submitted with username: ${username}`);
+      toast.success(`Bienvenido ${data.user.name}!`, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
     } else {
-      alert("Login failed");
+      toast.error("Credenciales incorrectas", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
     }
   };
 
@@ -54,6 +73,7 @@ function Home() {
 
   return (
     <div className="home-container">
+      <ToastContainer />
       {/* ... (rest of your Home component code) */}
       <header className="header">
         <div className="logo">Novahost</div>
@@ -103,12 +123,12 @@ function Home() {
             <form className="login-form" onSubmit={handleLoginSubmit}>
               <h2>Login</h2>
               <div className="form-group">
-                <label htmlFor="username">Username:</label>
+                <label htmlFor="email">email:</label>
                 <input
-                  type="text"
-                  id="username"
-                  value={username}
-                  onChange={handleUsernameChange}
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={handleEmailChange}
                   required
                 />
               </div>

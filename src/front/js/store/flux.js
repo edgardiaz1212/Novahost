@@ -13,7 +13,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
     actions: {
       // Autenticación
-      login: async (username, password) => {
+      login: async (email, password) => {
         const store = getStore();
         try {
           const response = await fetch(
@@ -23,7 +23,7 @@ const getState = ({ getStore, getActions, setStore }) => {
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ username, password }),
+              body: JSON.stringify({ email, password }),
             }
           );
           if (response.ok) {
