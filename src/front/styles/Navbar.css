@@ -1,0 +1,8 @@
+.offcanvas {
+    width: 20px; /* Adjust this value as needed */
+}
+
+/* Optional for responsive width */
+.offcanvas {
+    width: 10vw; /* Example for responsive width */
+}
