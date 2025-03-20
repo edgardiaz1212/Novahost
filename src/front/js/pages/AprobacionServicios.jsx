@@ -118,6 +118,7 @@ function AprobacionServicios() {
         ordenAsc={ordenAsc}
         setOrdenAsc={setOrdenAsc}
         cambiarOrden={cambiarOrden}
+        
       />
 
       <TablaServicios
