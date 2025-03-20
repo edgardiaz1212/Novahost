@@ -6,7 +6,7 @@ function UsersPanel({ users, setUsers, newUser, setNewUser, showNewUserForm, set
     <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
       <div className="p-4">
         <button
-          className="bg-green-500 text-white px-3 py-2 rounded-md flex items-center gap-1 mb-4"
+          className="bg-success text-white px-3 py-2 rounded-md flex items-center gap-1 mb-4"
           onClick={() => setShowNewUserForm(!showNewUserForm)}
         >
           <Plus size={16} />
@@ -119,13 +119,13 @@ function UsersPanel({ users, setUsers, newUser, setNewUser, showNewUserForm, set
                       <td className="border p-2 text-center">
                         <button
                           onClick={() => saveUser(user.id)}
-                          className="bg-green-500 text-white p-1 rounded mr-1 inline-flex items-center"
+                          className="bg-success text-white p-1 rounded mr-1 inline-flex items-center"
                         >
                           <Save size={16} />
                         </button>
                         <button
                           onClick={() => setEditingUser(null)}
-                          className="bg-gray-500 text-white p-1 rounded inline-flex items-center"
+                          className="bg-secondary text-white p-1 rounded inline-flex items-center"
                         >
                           <X size={16} />
                         </button>
@@ -139,13 +139,13 @@ function UsersPanel({ users, setUsers, newUser, setNewUser, showNewUserForm, set
                       <td className="border p-2 text-center">
                         <button
                           onClick={() => setEditingUser({ ...user })}
-                          className="bg-blue-500 text-white p-1 rounded mr-1 inline-flex items-center"
+                          className="bg-primary text-white p-1 rounded mr-1 inline-flex items-center"
                         >
                           <Edit size={16} />
                         </button>
                         <button
                           onClick={() => deleteUser(user.id)}
-                          className="bg-red-500 text-white p-1 rounded inline-flex items-center"
+                          className="bg-danger text-white p-1 rounded inline-flex items-center"
                         >
                           <Trash size={16} />
                         </button>

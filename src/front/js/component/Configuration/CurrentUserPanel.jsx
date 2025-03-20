@@ -25,7 +25,7 @@ function CurrentUserPanel({ currentUser, setCurrentUser, editingCurrentUser, set
               </div>
             </div>
             <button
-              className="bg-blue-500 text-white px-3 py-2 rounded-md flex items-center gap-1"
+              className="bg-primary text-white px-3 py-2 rounded-md flex items-center gap-1"
               onClick={() => setEditingCurrentUser(true)}
             >
               <Edit size={16} />
@@ -79,14 +79,14 @@ function CurrentUserPanel({ currentUser, setCurrentUser, editingCurrentUser, set
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="bg-green-500 text-white px-3 py-2 rounded-md flex items-center gap-1"
+                className="bg-success text-white px-3 py-2 rounded-md flex items-center gap-1"
               >
                 <Save size={16} />
                 Guardar
               </button>
               <button
                 type="button"
-                className="bg-gray-500 text-white px-3 py-2 rounded-md flex items-center gap-1"
+                className="bg-danger text-white px-3 py-2 rounded-md flex items-center gap-1"
                 onClick={() => setEditingCurrentUser(false)}
               >
                 <X size={16} />

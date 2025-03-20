@@ -6,7 +6,7 @@ function OSPanel({ operatingSystems, setOperatingSystems, newOS, setNewOS, showN
     <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
       <div className="p-4">
         <button
-          className="bg-green-500 text-white px-3 py-2 rounded-md flex items-center gap-1 mb-4"
+          className="bg-success text-white px-3 py-2 rounded-md flex items-center gap-1 mb-4"
           onClick={() => setShowNewOSForm(!showNewOSForm)}
         >
           <Plus size={16} />
@@ -42,14 +42,14 @@ function OSPanel({ operatingSystems, setOperatingSystems, newOS, setNewOS, showN
               <div className="flex items-end gap-2">
                 <button
                   type="submit"
-                  className="bg-green-500 text-white px-3 py-2 rounded-md flex items-center gap-1"
+                  className="bg-success text-white px-3 py-2 rounded-md flex items-center gap-1"
                 >
                   <Save size={16} />
                   Guardar
                 </button>
                 <button
                   type="button"
-                  className="bg-gray-500 text-white px-3 py-2 rounded-md flex items-center gap-1"
+                  className="bg-secondary text-white px-3 py-2 rounded-md flex items-center gap-1"
                   onClick={() => setShowNewOSForm(false)}
                 >
                   <X size={16} />
@@ -97,13 +97,13 @@ function OSPanel({ operatingSystems, setOperatingSystems, newOS, setNewOS, showN
                       <td className="border p-2 text-center">
                         <button
                           onClick={() => saveOS(os.id)}
-                          className="bg-green-500 text-white p-1 rounded mr-1 inline-flex items-center"
+                          className="bg-success text-white p-1 rounded mr-1 inline-flex items-center"
                         >
                           <Save size={16} />
                         </button>
                         <button
                           onClick={() => setEditingOS(null)}
-                          className="bg-gray-500 text-white p-1 rounded inline-flex items-center"
+                          className="bg-secondary text-white p-1 rounded inline-flex items-center"
                         >
                           <X size={16} />
                         </button>
@@ -116,13 +116,13 @@ function OSPanel({ operatingSystems, setOperatingSystems, newOS, setNewOS, showN
                       <td className="border p-2 text-center">
                         <button
                           onClick={() => setEditingOS({ ...os })}
-                          className="bg-blue-500 text-white p-1 rounded mr-1 inline-flex items-center"
+                          className="bg-primary text-white p-1 rounded mr-1 inline-flex items-center"
                         >
                           <Edit size={16} />
                         </button>
                         <button
                           onClick={() => deleteOS(os.id)}
-                          className="bg-red-500 text-white p-1 rounded inline-flex items-center"
+                          className="bg-danger text-white p-1 rounded inline-flex items-center"
                         >
                           <Trash size={16} />
                         </button>
