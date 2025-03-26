@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { User, Server, Monitor, Settings, Info } from 'lucide-react';
+import { User, Server, Monitor, Settings, Info, Cloud, Building } from 'lucide-react'; // Import Building icon
 import CurrentUserPanel from '../component/Configuration/CurrentUserPanel';
 import UsersPanel from '../component/Configuration/UserPanel';
 import ServicesPanel from '../component/Configuration/ServicesPanel';
 import OSPanel from '../component/Configuration/OSPanel';
+import VMPanel from '../component/Configuration/VMPanel';
+import ClientsPanel from '../component/Configuration/ClientsPanel'; // Import the new ClientsPanel component
 
 function Configuration() {
   // State for active tab
@@ -32,10 +34,24 @@ function Configuration() {
     { id: 2, nombre: "Windows Server", version: "2022" }
   ]);
 
+  // New state for VMs
+  const [vms, setVms] = useState([
+    { id: 1, nombre: "VM-Servidor1", direccion: "192.168.1.10", plataforma: "vCenter", estado: "Activo" },
+    { id: 2, nombre: "VM-Web01", direccion: "192.168.1.20", plataforma: "Proxmox 1", estado: "Inactivo" },
+  ]);
+
+  // New state for clients
+  const [clients, setClients] = useState([
+    { id: 1, razonSocial: "Cliente Ejemplo 1", rif: "J-123456789" },
+    { id: 2, razonSocial: "Cliente Ejemplo 2", rif: "G-987654321" },
+  ]);
+
   // State for editing
   const [editingUser, setEditingUser] = useState(null);
   const [editingService, setEditingService] = useState(null);
   const [editingOS, setEditingOS] = useState(null);
+  const [editingVM, setEditingVM] = useState(null);
+  const [editingClient, setEditingClient] = useState(null); // New state for editing clients
   const [editingCurrentUser, setEditingCurrentUser] = useState(false);
 
   // State for new elements
@@ -48,11 +64,21 @@ function Configuration() {
   const [newOS, setNewOS] = useState({
     nombre: "", version: ""
   });
+  // New state for new VMs
+  const [newVM, setNewVM] = useState({
+    nombre: "", direccion: "", plataforma: "", estado: ""
+  });
+  // New state for new clients
+  const [newClient, setNewClient] = useState({
+    razonSocial: "", rif: ""
+  });
 
   // State for showing forms
   const [showNewUserForm, setShowNewUserForm] = useState(false);
   const [showNewServiceForm, setShowNewServiceForm] = useState(false);
   const [showNewOSForm, setShowNewOSForm] = useState(false);
+  const [showNewVMForm, setShowNewVMForm] = useState(false);
+  const [showNewClientForm, setShowNewClientForm] = useState(false); // New state for showing the new client form
 
   // Handle input changes
   const handleInputChange = (event, setter, object) => {
@@ -88,6 +114,24 @@ function Configuration() {
     }
   };
 
+  // New function to add a VM
+  const addVM = () => {
+    if (newVM.nombre && newVM.direccion && newVM.plataforma && newVM.estado) {
+      setVms([...vms, { id: vms.length + 2, ...newVM }]);
+      setNewVM({ nombre: "", direccion: "", plataforma: "", estado: "" });
+      setShowNewVMForm(false);
+    }
+  };
+
+  // New function to add a client
+  const addClient = () => {
+    if (newClient.razonSocial && newClient.rif) {
+      setClients([...clients, { id: clients.length + 2, ...newClient }]);
+      setNewClient({ razonSocial: "", rif: "" });
+      setShowNewClientForm(false);
+    }
+  };
+
   // Save edited elements
   const saveUser = (id) => {
     setUsers(users.map(user => user.id === id ? editingUser : user));
@@ -102,6 +146,18 @@ function Configuration() {
   const saveOS = (id) => {
     setOperatingSystems(operatingSystems.map(os => os.id === id ? editingOS : os));
     setEditingOS(null);
+  };
+
+  // New function to save an edited VM
+  const saveVM = (id) => {
+    setVms(vms.map(vm => vm.id === id ? editingVM : vm));
+    setEditingVM(null);
+  };
+
+  // New function to save an edited client
+  const saveClient = (id) => {
+    setClients(clients.map(client => client.id === id ? editingClient : client));
+    setEditingClient(null);
   };
 
   const saveCurrentUser = () => {
@@ -120,6 +176,16 @@ function Configuration() {
 
   const deleteOS = (id) => {
     setOperatingSystems(operatingSystems.filter(os => os.id !== id));
+  };
+
+  // New function to delete a VM
+  const deleteVM = (id) => {
+    setVms(vms.filter(vm => vm.id !== id));
+  };
+
+  // New function to delete a client
+  const deleteClient = (id) => {
+    setClients(clients.filter(client => client.id !== id));
   };
 
   // Render tabs
@@ -161,6 +227,26 @@ function Configuration() {
             <div className="flex items-center gap-2">
               <Monitor size={18} />
               Sistemas Operativos
+            </div>
+          </button>
+          {/* New tab for VMs */}
+          <button
+            className={`px-4 py-2 rounded-md ${activeTab === 'vms' ? 'bg-success bg-opacity-75 text-white ' : 'bg-white'}`}
+            onClick={() => setActiveTab('vms')}
+          >
+            <div className="flex items-center gap-2">
+              <Cloud size={18} />
+              Máquinas Virtuales
+            </div>
+          </button>
+          {/* New tab for clients */}
+          <button
+            className={`px-4 py-2 rounded-md ${activeTab === 'clientes' ? 'bg-success bg-opacity-75 text-white ' : 'bg-white'}`}
+            onClick={() => setActiveTab('clientes')}
+          >
+            <div className="flex items-center gap-2">
+              <Building size={18} /> {/* Building icon for clients */}
+              Clientes
             </div>
           </button>
         </div>
@@ -233,6 +319,42 @@ function Configuration() {
             deleteOS={deleteOS}
           />
         );
+      // New case for VMs
+      case 'vms':
+        return (
+          <VMPanel
+            vms={vms}
+            setVms={setVms}
+            newVM={newVM}
+            setNewVM={setNewVM}
+            showNewVMForm={showNewVMForm}
+            setShowNewVMForm={setShowNewVMForm}
+            handleInputChange={handleInputChange}
+            addVM={addVM}
+            editingVM={editingVM}
+            setEditingVM={setEditingVM}
+            saveVM={saveVM}
+            deleteVM={deleteVM}
+          />
+        );
+      // New case for clients
+      case 'clientes':
+        return (
+          <ClientsPanel
+            clients={clients}
+            setClients={setClients}
+            newClient={newClient}
+            setNewClient={setNewClient}
+            showNewClientForm={showNewClientForm}
+            setShowNewClientForm={setShowNewClientForm}
+            handleInputChange={handleInputChange}
+            addClient={addClient}
+            editingClient={editingClient}
+            setEditingClient={setEditingClient}
+            saveClient={saveClient}
+            deleteClient={deleteClient}
+          />
+        );
       default:
         return null;
     }
@@ -246,7 +368,7 @@ function Configuration() {
           Configuración del Sistema
         </h1>
         <p className="text-gray-600">
-          Administra usuarios, servicios y sistemas operativos disponibles.
+          Administra usuarios, servicios, sistemas operativos, máquinas virtuales y clientes disponibles.
         </p>
       </div>
 

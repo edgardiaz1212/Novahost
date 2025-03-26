@@ -6,7 +6,7 @@ function ServicesPanel({ services, setServices, newService, setNewService, showN
     <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
       <div className="p-4">
         <button
-          className="bg-success text-white px-3 py-2 rounded-md flex items-center gap-1 mb-4"
+          className="btn btn-success mb-4 d-flex align-items-center gap-2" // Bootstrap button
           onClick={() => setShowNewServiceForm(!showNewServiceForm)}
         >
           <Plus size={16} />
@@ -14,64 +14,64 @@ function ServicesPanel({ services, setServices, newService, setNewService, showN
         </button>
 
         {showNewServiceForm && (
-          <div className="bg-green-50 p-4 rounded-md mb-4">
+          <div className="bg-light p-4 rounded-md mb-4"> {/* Changed to bg-light */}
             <h4 className="font-semibold mb-2">Nuevo Servicio</h4>
-            <form onSubmit={(e) => { e.preventDefault(); addService() }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Nombre</label>
+            <form onSubmit={(e) => { e.preventDefault(); addService() }} className="row g-3"> {/* Bootstrap grid */}
+              <div className="col-md-6"> {/* Bootstrap column */}
+                <label className="form-label">Nombre</label> {/* Changed to form-label */}
                 <input
                   type="text"
                   name="nombre"
                   value={newService.nombre}
                   onChange={(e) => handleInputChange(e, setNewService, newService)}
-                  className="w-full p-2 border rounded-md"
+                  className="form-control" // Changed to form-control
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">RAM (GB)</label>
+              <div className="col-md-6"> {/* Bootstrap column */}
+                <label className="form-label">RAM (GB)</label> {/* Changed to form-label */}
                 <input
                   type="number"
                   name="ram"
                   value={newService.ram}
                   onChange={(e) => handleInputChange(e, setNewService, newService)}
-                  className="w-full p-2 border rounded-md"
+                  className="form-control" // Changed to form-control
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Disco (GB)</label>
+              <div className="col-md-6"> {/* Bootstrap column */}
+                <label className="form-label">Disco (GB)</label> {/* Changed to form-label */}
                 <input
                   type="number"
                   name="disco"
                   value={newService.disco}
                   onChange={(e) => handleInputChange(e, setNewService, newService)}
-                  className="w-full p-2 border rounded-md"
+                  className="form-control" // Changed to form-control
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Procesadores</label>
+              <div className="col-md-6"> {/* Bootstrap column */}
+                <label className="form-label">Procesadores</label> {/* Changed to form-label */}
                 <input
                   type="number"
                   name="procesador"
                   value={newService.procesador}
                   onChange={(e) => handleInputChange(e, setNewService, newService)}
-                  className="w-full p-2 border rounded-md"
+                  className="form-control" // Changed to form-control
                   required
                 />
               </div>
-              <div className="flex items-end gap-2">
+              <div className="col-12 d-flex gap-2"> {/* Bootstrap column and flex */}
                 <button
                   type="submit"
-                  className="bg-green-500 text-white px-3 py-2 rounded-md flex items-center gap-1"
+                  className="btn btn-success d-flex align-items-center gap-2" // Bootstrap button and flex
                 >
                   <Save size={16} />
                   Guardar
                 </button>
                 <button
                   type="button"
-                  className="bg-gray-500 text-white px-3 py-2 rounded-md flex items-center gap-1"
+                  className="btn btn-secondary d-flex align-items-center gap-2" // Bootstrap button and flex
                   onClick={() => setShowNewServiceForm(false)}
                 >
                   <X size={16} />
@@ -83,71 +83,71 @@ function ServicesPanel({ services, setServices, newService, setNewService, showN
         )}
 
         <div className="overflow-auto">
-          <table className="w-full border-collapse mb-4">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border p-2 text-left">Nombre</th>
-                <th className="border p-2 text-left">RAM (GB)</th>
-                <th className="border p-2 text-left">Disco (GB)</th>
-                <th className="border p-2 text-left">Procesadores</th>
-                <th className="border p-2 text-center">Acciones</th>
+          <table className="table table-hover"> {/* Changed to Bootstrap table */}
+            <thead className="table-light"> {/* Changed to table-light */}
+              <tr>
+                <th scope="col">Nombre</th> {/* Added scope="col" */}
+                <th scope="col">RAM (GB)</th> {/* Added scope="col" */}
+                <th scope="col">Disco (GB)</th> {/* Added scope="col" */}
+                <th scope="col">Procesadores</th> {/* Added scope="col" */}
+                <th scope="col" className="text-center">Acciones</th> {/* Added scope="col" and text-center */}
               </tr>
             </thead>
             <tbody>
               {services.map(service => (
-                <tr key={service.id} className="border-b hover:bg-gray-50">
+                <tr key={service.id}>
                   {editingService && editingService.id === service.id ? (
                     <>
-                      <td className="border p-2">
+                      <td>
                         <input
                           type="text"
                           name="nombre"
                           value={editingService.nombre}
                           onChange={(e) => handleInputChange(e, setEditingService, editingService)}
-                          className="w-full p-1 border rounded"
+                          className="form-control" // Changed to form-control
                           required
                         />
                       </td>
-                      <td className="border p-2">
+                      <td>
                         <input
                           type="number"
                           name="ram"
                           value={editingService.ram}
                           onChange={(e) => handleInputChange(e, setEditingService, editingService)}
-                          className="w-full p-1 border rounded"
+                          className="form-control" // Changed to form-control
                           required
                         />
                       </td>
-                      <td className="border p-2">
+                      <td>
                         <input
                           type="number"
                           name="disco"
                           value={editingService.disco}
                           onChange={(e) => handleInputChange(e, setEditingService, editingService)}
-                          className="w-full p-1 border rounded"
+                          className="form-control" // Changed to form-control
                           required
                         />
                       </td>
-                      <td className="border p-2">
+                      <td>
                         <input
                           type="number"
                           name="procesador"
                           value={editingService.procesador}
                           onChange={(e) => handleInputChange(e, setEditingService, editingService)}
-                          className="w-full p-1 border rounded"
+                          className="form-control" // Changed to form-control
                           required
                         />
                       </td>
-                      <td className="border p-2 text-center">
+                      <td className="text-center"> {/* Added text-center */}
                         <button
                           onClick={() => saveService(service.id)}
-                          className="bg-success text-white p-1 rounded mr-1 inline-flex items-center"
+                          className="btn btn-primary btn-sm me-2" // Bootstrap button
                         >
                           <Save size={16} />
                         </button>
                         <button
                           onClick={() => setEditingService(null)}
-                          className="bg-secondary text-white p-1 rounded inline-flex items-center"
+                          className="btn btn-secondary btn-sm" // Bootstrap button
                         >
                           <X size={16} />
                         </button>
@@ -155,20 +155,20 @@ function ServicesPanel({ services, setServices, newService, setNewService, showN
                     </>
                   ) : (
                     <>
-                      <td className="border p-2">{service.nombre}</td>
-                      <td className="border p-2">{service.ram}</td>
-                      <td className="border p-2">{service.disco}</td>
-                      <td className="border p-2">{service.procesador}</td>
-                      <td className="border p-2 text-center">
+                      <td>{service.nombre}</td>
+                      <td>{service.ram}</td>
+                      <td>{service.disco}</td>
+                      <td>{service.procesador}</td>
+                      <td className="text-center"> {/* Added text-center */}
                         <button
                           onClick={() => setEditingService({ ...service })}
-                          className="bg-primary text-white p-1 rounded mr-1 inline-flex items-center"
+                          className="btn btn-primary btn-sm me-2" // Bootstrap button
                         >
                           <Edit size={16} />
                         </button>
                         <button
                           onClick={() => deleteService(service.id)}
-                          className="bg-danger text-white p-1 rounded inline-flex items-center"
+                          className="btn btn-danger btn-sm" // Bootstrap button
                         >
                           <Trash size={16} />
                         </button>

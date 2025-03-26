@@ -6,7 +6,7 @@ function UsersPanel({ users, setUsers, newUser, setNewUser, showNewUserForm, set
     <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
       <div className="p-4">
         <button
-          className="bg-success text-white px-3 py-2 rounded-md flex items-center gap-1 mb-4"
+          className="btn btn-success mb-4 d-flex align-items-center gap-2" // Bootstrap button
           onClick={() => setShowNewUserForm(!showNewUserForm)}
         >
           <Plus size={16} />
@@ -14,53 +14,53 @@ function UsersPanel({ users, setUsers, newUser, setNewUser, showNewUserForm, set
         </button>
 
         {showNewUserForm && (
-          <div className="bg-green-50 p-4 rounded-md mb-4">
+          <div className="bg-light p-4 rounded-md mb-4"> {/* Changed to bg-light */}
             <h4 className="font-semibold mb-2">Nuevo Usuario</h4>
-            <form onSubmit={(e) => { e.preventDefault(); addUser() }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Nombre</label>
+            <form onSubmit={(e) => { e.preventDefault(); addUser() }} className="row g-3"> {/* Bootstrap grid */}
+              <div className="col-md-4"> {/* Bootstrap column */}
+                <label className="form-label">Nombre</label> {/* Changed to form-label */}
                 <input
                   type="text"
                   name="nombre"
                   value={newUser.nombre}
                   onChange={(e) => handleInputChange(e, setNewUser, newUser)}
-                  className="w-full p-2 border rounded-md"
+                  className="form-control" // Changed to form-control
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Correo</label>
+              <div className="col-md-4"> {/* Bootstrap column */}
+                <label className="form-label">Correo</label> {/* Changed to form-label */}
                 <input
                   type="email"
                   name="correo"
                   value={newUser.correo}
                   onChange={(e) => handleInputChange(e, setNewUser, newUser)}
-                  className="w-full p-2 border rounded-md"
+                  className="form-control" // Changed to form-control
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Clave</label>
+              <div className="col-md-4"> {/* Bootstrap column */}
+                <label className="form-label">Clave</label> {/* Changed to form-label */}
                 <input
                   type="password"
                   name="clave"
                   value={newUser.clave}
                   onChange={(e) => handleInputChange(e, setNewUser, newUser)}
-                  className="w-full p-2 border rounded-md"
+                  className="form-control" // Changed to form-control
                   required
                 />
               </div>
-              <div className="flex items-end gap-2">
+              <div className="col-12 d-flex gap-2"> {/* Bootstrap column and flex */}
                 <button
                   type="submit"
-                  className="bg-green-500 text-white px-3 py-2 rounded-md flex items-center gap-1"
+                  className="btn btn-success d-flex align-items-center gap-2" // Bootstrap button and flex
                 >
                   <Save size={16} />
                   Guardar
                 </button>
                 <button
                   type="button"
-                  className="bg-gray-500 text-white px-3 py-2 rounded-md flex items-center gap-1"
+                  className="btn btn-secondary d-flex align-items-center gap-2" // Bootstrap button and flex
                   onClick={() => setShowNewUserForm(false)}
                 >
                   <X size={16} />
@@ -72,60 +72,60 @@ function UsersPanel({ users, setUsers, newUser, setNewUser, showNewUserForm, set
         )}
 
         <div className="overflow-auto">
-          <table className="w-full border-collapse mb-4">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border p-2 text-left">Nombre</th>
-                <th className="border p-2 text-left">Correo</th>
-                <th className="border p-2 text-left">Clave</th>
-                <th className="border p-2 text-center">Acciones</th>
+          <table className="table table-hover"> {/* Changed to Bootstrap table */}
+            <thead className="table-light"> {/* Changed to table-light */}
+              <tr>
+                <th scope="col">Nombre</th> {/* Added scope="col" */}
+                <th scope="col">Correo</th> {/* Added scope="col" */}
+                <th scope="col">Clave</th> {/* Added scope="col" */}
+                <th scope="col" className="text-center">Acciones</th> {/* Added scope="col" and text-center */}
               </tr>
             </thead>
             <tbody>
               {users.map(user => (
-                <tr key={user.id} className="border-b hover:bg-gray-50">
+                <tr key={user.id}>
                   {editingUser && editingUser.id === user.id ? (
                     <>
-                      <td className="border p-2">
+                      <td>
                         <input
                           type="text"
                           name="nombre"
                           value={editingUser.nombre}
                           onChange={(e) => handleInputChange(e, setEditingUser, editingUser)}
-                          className="w-full p-1 border rounded"
+                          className="form-control" // Changed to form-control
                           required
                         />
                       </td>
-                      <td className="border p-2">
+                      <td>
                         <input
                           type="email"
                           name="correo"
                           value={editingUser.correo}
                           onChange={(e) => handleInputChange(e, setEditingUser, editingUser)}
-                          className="w-full p-1 border rounded"
+                          className="form-control" // Changed to form-control
                           required
                         />
                       </td>
-                      <td className="border p-2">
+                      <td>
                         <input
                           type="password"
                           name="clave"
                           value={editingUser.clave}
                           onChange={(e) => handleInputChange(e, setEditingUser, editingUser)}
-                          className="w-full p-1 border rounded"
+                          className="form-control" // Changed to form-control
                           required
                         />
                       </td>
-                      <td className="border p-2 text-center">
+                      <td className="text-center"> {/* Added text-center */}
                         <button
                           onClick={() => saveUser(user.id)}
-                          className="bg-success text-white p-1 rounded mr-1 inline-flex items-center"
+                          className="btn btn-primary btn-sm me-2" // Bootstrap button
                         >
                           <Save size={16} />
                         </button>
                         <button
                           onClick={() => setEditingUser(null)}
-                          className="bg-secondary text-white p-1 rounded inline-flex items-center"
+                          className="btn btn-secondary btn-sm" // Bootstrap button
                         >
                           <X size={16} />
                         </button>
@@ -133,19 +133,19 @@ function UsersPanel({ users, setUsers, newUser, setNewUser, showNewUserForm, set
                     </>
                   ) : (
                     <>
-                      <td className="border p-2">{user.nombre}</td>
-                      <td className="border p-2">{user.correo}</td>
-                      <td className="border p-2">********</td>
-                      <td className="border p-2 text-center">
+                      <td>{user.nombre}</td>
+                      <td>{user.correo}</td>
+                      <td>********</td>
+                      <td className="text-center"> {/* Added text-center */}
                         <button
                           onClick={() => setEditingUser({ ...user })}
-                          className="bg-primary text-white p-1 rounded mr-1 inline-flex items-center"
+                          className="btn btn-primary btn-sm me-2" // Bootstrap button
                         >
                           <Edit size={16} />
                         </button>
                         <button
                           onClick={() => deleteUser(user.id)}
-                          className="bg-danger text-white p-1 rounded inline-flex items-center"
+                          className="btn btn-danger btn-sm" // Bootstrap button
                         >
                           <Trash size={16} />
                         </button>

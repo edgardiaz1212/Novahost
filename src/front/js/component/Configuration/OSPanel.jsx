@@ -6,7 +6,7 @@ function OSPanel({ operatingSystems, setOperatingSystems, newOS, setNewOS, showN
     <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
       <div className="p-4">
         <button
-          className="bg-success text-white px-3 py-2 rounded-md flex items-center gap-1 mb-4"
+          className="btn btn-success mb-4 d-flex align-items-center gap-2" // Bootstrap button
           onClick={() => setShowNewOSForm(!showNewOSForm)}
         >
           <Plus size={16} />
@@ -14,42 +14,42 @@ function OSPanel({ operatingSystems, setOperatingSystems, newOS, setNewOS, showN
         </button>
 
         {showNewOSForm && (
-          <div className="bg-green-50 p-4 rounded-md mb-4">
+          <div className="bg-light p-4 rounded-md mb-4"> {/* Changed to bg-light */}
             <h4 className="font-semibold mb-2">Nuevo Sistema Operativo</h4>
-            <form onSubmit={(e) => { e.preventDefault(); addOS() }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Nombre</label>
+            <form onSubmit={(e) => { e.preventDefault(); addOS() }} className="row g-3"> {/* Bootstrap grid */}
+              <div className="col-md-6"> {/* Bootstrap column */}
+                <label className="form-label">Nombre</label> {/* Changed to form-label */}
                 <input
                   type="text"
                   name="nombre"
                   value={newOS.nombre}
                   onChange={(e) => handleInputChange(e, setNewOS, newOS)}
-                  className="w-full p-2 border rounded-md"
+                  className="form-control" // Changed to form-control
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Versión</label>
+              <div className="col-md-6"> {/* Bootstrap column */}
+                <label className="form-label">Versión</label> {/* Changed to form-label */}
                 <input
                   type="text"
                   name="version"
                   value={newOS.version}
                   onChange={(e) => handleInputChange(e, setNewOS, newOS)}
-                  className="w-full p-2 border rounded-md"
+                  className="form-control" // Changed to form-control
                   required
                 />
               </div>
-              <div className="flex items-end gap-2">
+              <div className="col-12 d-flex gap-2"> {/* Bootstrap column and flex */}
                 <button
                   type="submit"
-                  className="bg-success text-white px-3 py-2 rounded-md flex items-center gap-1"
+                  className="btn btn-success d-flex align-items-center gap-2" // Bootstrap button and flex
                 >
                   <Save size={16} />
                   Guardar
                 </button>
                 <button
                   type="button"
-                  className="bg-secondary text-white px-3 py-2 rounded-md flex items-center gap-1"
+                  className="btn btn-secondary d-flex align-items-center gap-2" // Bootstrap button and flex
                   onClick={() => setShowNewOSForm(false)}
                 >
                   <X size={16} />
@@ -61,49 +61,49 @@ function OSPanel({ operatingSystems, setOperatingSystems, newOS, setNewOS, showN
         )}
 
         <div className="overflow-auto">
-          <table className="w-full border-collapse mb-4">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border p-2 text-left">Nombre</th>
-                <th className="border p-2 text-left">Versión</th>
-                <th className="border p-2 text-center">Acciones</th>
+          <table className="table table-hover"> {/* Changed to Bootstrap table */}
+            <thead className="table-light"> {/* Changed to table-light */}
+              <tr>
+                <th scope="col">Nombre</th> {/* Added scope="col" */}
+                <th scope="col">Versión</th> {/* Added scope="col" */}
+                <th scope="col" className="text-center">Acciones</th> {/* Added scope="col" and text-center */}
               </tr>
             </thead>
             <tbody>
               {operatingSystems.map(os => (
-                <tr key={os.id} className="border-b hover:bg-gray-50">
+                <tr key={os.id}>
                   {editingOS && editingOS.id === os.id ? (
                     <>
-                      <td className="border p-2">
+                      <td>
                         <input
                           type="text"
                           name="nombre"
                           value={editingOS.nombre}
                           onChange={(e) => handleInputChange(e, setEditingOS, editingOS)}
-                          className="w-full p-1 border rounded"
+                          className="form-control" // Changed to form-control
                           required
                         />
                       </td>
-                      <td className="border p-2">
+                      <td>
                         <input
                           type="text"
                           name="version"
                           value={editingOS.version}
                           onChange={(e) => handleInputChange(e, setEditingOS, editingOS)}
-                          className="w-full p-1 border rounded"
+                          className="form-control" // Changed to form-control
                           required
                         />
                       </td>
-                      <td className="border p-2 text-center">
+                      <td className="text-center"> {/* Added text-center */}
                         <button
                           onClick={() => saveOS(os.id)}
-                          className="bg-success text-white p-1 rounded mr-1 inline-flex items-center"
+                          className="btn btn-primary btn-sm me-2" // Bootstrap button
                         >
                           <Save size={16} />
                         </button>
                         <button
                           onClick={() => setEditingOS(null)}
-                          className="bg-secondary text-white p-1 rounded inline-flex items-center"
+                          className="btn btn-secondary btn-sm" // Bootstrap button
                         >
                           <X size={16} />
                         </button>
@@ -111,18 +111,18 @@ function OSPanel({ operatingSystems, setOperatingSystems, newOS, setNewOS, showN
                     </>
                   ) : (
                     <>
-                      <td className="border p-2">{os.nombre}</td>
-                      <td className="border p-2">{os.version}</td>
-                      <td className="border p-2 text-center">
+                      <td>{os.nombre}</td>
+                      <td>{os.version}</td>
+                      <td className="text-center"> {/* Added text-center */}
                         <button
                           onClick={() => setEditingOS({ ...os })}
-                          className="bg-primary text-white p-1 rounded mr-1 inline-flex items-center"
+                          className="btn btn-primary btn-sm me-2" // Bootstrap button
                         >
                           <Edit size={16} />
                         </button>
                         <button
                           onClick={() => deleteOS(os.id)}
-                          className="bg-danger text-white p-1 rounded inline-flex items-center"
+                          className="btn btn-danger btn-sm" // Bootstrap button
                         >
                           <Trash size={16} />
                         </button>

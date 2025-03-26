@@ -7,25 +7,25 @@ function CurrentUserPanel({ currentUser, setCurrentUser, editingCurrentUser, set
       <div className="p-4">
         {!editingCurrentUser ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="flex items-center">
-                <User className="text-blue-600 mr-2" />
-                <span className="font-semibold mr-2">Nombre:</span>
+            <div className="row g-3 mb-4"> {/* Changed to Bootstrap grid */}
+              <div className="col-md-6 d-flex align-items-center"> {/* Changed to Bootstrap column and flex */}
+                <User className="text-primary me-2" /> {/* Changed icon color to primary */}
+                <span className="font-semibold me-2">Nombre:</span>
                 <span>{currentUser.nombre}</span>
               </div>
-              <div className="flex items-center">
-                <Mail className="text-blue-600 mr-2" />
-                <span className="font-semibold mr-2">Correo:</span>
+              <div className="col-md-6 d-flex align-items-center"> {/* Changed to Bootstrap column and flex */}
+                <Mail className="text-primary me-2" /> {/* Changed icon color to primary */}
+                <span className="font-semibold me-2">Correo:</span>
                 <span>{currentUser.correo}</span>
               </div>
-              <div className="flex items-center">
-                <Key className="text-blue-600 mr-2" />
-                <span className="font-semibold mr-2">Clave:</span>
+              <div className="col-md-6 d-flex align-items-center"> {/* Changed to Bootstrap column and flex */}
+                <Key className="text-primary me-2" /> {/* Changed icon color to primary */}
+                <span className="font-semibold me-2">Clave:</span>
                 <span>{currentUser.clave}</span>
               </div>
             </div>
             <button
-              className="bg-primary text-white px-3 py-2 rounded-md flex items-center gap-1"
+              className="btn btn-primary d-flex align-items-center gap-2" // Changed to Bootstrap button and flex
               onClick={() => setEditingCurrentUser(true)}
             >
               <Edit size={16} />
@@ -33,10 +33,10 @@ function CurrentUserPanel({ currentUser, setCurrentUser, editingCurrentUser, set
             </button>
           </>
         ) : (
-          <form onSubmit={(e) => { e.preventDefault(); saveCurrentUser() }} className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1 flex items-center gap-1">
-                <User size={16} className="text-blue-600" />
+          <form onSubmit={(e) => { e.preventDefault(); saveCurrentUser() }} className="row g-3"> {/* Changed to Bootstrap grid */}
+            <div className="col-md-12"> {/* Changed to Bootstrap column */}
+              <label className="form-label d-flex align-items-center gap-1"> {/* Changed to form-label and flex */}
+                <User size={16} className="text-primary" /> {/* Changed icon color to primary */}
                 Nombre
               </label>
               <input
@@ -44,13 +44,13 @@ function CurrentUserPanel({ currentUser, setCurrentUser, editingCurrentUser, set
                 name="nombre"
                 value={currentUser.nombre}
                 onChange={(e) => handleInputChange(e, setCurrentUser, currentUser)}
-                className="w-full p-2 border rounded-md"
+                className="form-control" // Changed to form-control
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 flex items-center gap-1">
-                <Mail size={16} className="text-blue-600" />
+            <div className="col-md-12"> {/* Changed to Bootstrap column */}
+              <label className="form-label d-flex align-items-center gap-1"> {/* Changed to form-label and flex */}
+                <Mail size={16} className="text-primary" /> {/* Changed icon color to primary */}
                 Correo
               </label>
               <input
@@ -58,13 +58,13 @@ function CurrentUserPanel({ currentUser, setCurrentUser, editingCurrentUser, set
                 name="correo"
                 value={currentUser.correo}
                 onChange={(e) => handleInputChange(e, setCurrentUser, currentUser)}
-                className="w-full p-2 border rounded-md"
+                className="form-control" // Changed to form-control
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 flex items-center gap-1">
-                <Key size={16} className="text-blue-600" />
+            <div className="col-md-12"> {/* Changed to Bootstrap column */}
+              <label className="form-label d-flex align-items-center gap-1"> {/* Changed to form-label and flex */}
+                <Key size={16} className="text-primary" /> {/* Changed icon color to primary */}
                 Clave
               </label>
               <input
@@ -72,21 +72,21 @@ function CurrentUserPanel({ currentUser, setCurrentUser, editingCurrentUser, set
                 name="clave"
                 value={currentUser.clave}
                 onChange={(e) => handleInputChange(e, setCurrentUser, currentUser)}
-                className="w-full p-2 border rounded-md"
+                className="form-control" // Changed to form-control
                 required
               />
             </div>
-            <div className="flex gap-2">
+            <div className="col-12 d-flex gap-2"> {/* Changed to Bootstrap column and flex */}
               <button
                 type="submit"
-                className="bg-success text-white px-3 py-2 rounded-md flex items-center gap-1"
+                className="btn btn-success d-flex align-items-center gap-2" // Changed to Bootstrap button and flex
               >
                 <Save size={16} />
                 Guardar
               </button>
               <button
                 type="button"
-                className="bg-danger text-white px-3 py-2 rounded-md flex items-center gap-1"
+                className="btn btn-danger d-flex align-items-center gap-2" // Changed to Bootstrap button and flex
                 onClick={() => setEditingCurrentUser(false)}
               >
                 <X size={16} />
