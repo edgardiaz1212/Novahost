@@ -7,7 +7,7 @@ const getState = ({ getStore, getActions, setStore }) => {
     store: {
       message: null,
       isAuthenticated: isAuthenticated, // Initialize with session storage value
-      user: storedUser || null, // Initialize user state with stored user data
+      user: storedUser || null,
       serverResources: [], // Add a store variable for server resources
       requests: [], // Add a store variable for requests
     },
@@ -35,15 +35,27 @@ const getState = ({ getStore, getActions, setStore }) => {
             console.log("Autenticado", data.user); // Update isAuthenticated
             return data;
           } else {
-            setStore({ isAuthenticated: false }); // Set to false on login failure
+            setStore({ isAuthenticated: false, user: null }); // Set to false and clear user on login failure
+            sessionStorage.removeItem("isAuthenticated");
+            sessionStorage.removeItem("user");
             console.error("Login failed");
             return false;
           }
         } catch (error) {
+          setStore({ isAuthenticated: false, user: null });
+          sessionStorage.removeItem("isAuthenticated");
+          sessionStorage.removeItem("user");
           console.log("Error during login", error);
           return false;
         }
       },
+      logout: () => {
+        setStore({ isAuthenticated: false, user: null });
+        sessionStorage.removeItem("isAuthenticated");
+        sessionStorage.removeItem("user");
+        console.log("Logout");
+      },
+    
       // Fetch server resources
       fetchServerResources: async () => {
         const store = getStore();

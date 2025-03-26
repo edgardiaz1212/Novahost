@@ -15,9 +15,9 @@ CORS(api)
 def add_user():
     data = request.get_json()
     user = User(email=data['email'], 
-                password=data['password']
-                userName=data['userName']
-                telephone=data['telephone']
+                password=data['password'],
+                userName=data['userName'],
+                telephone=data['telephone'],
                 role=data['role']         
                 )
     db.session.add(user)
