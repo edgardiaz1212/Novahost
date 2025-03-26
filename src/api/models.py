@@ -7,7 +7,7 @@ db = SQLAlchemy()
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    UserName = db.Column(db.String(80), nullable=False)
+    userName = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     telephone = db.Column(db.String(120), nullable=False)
     role = db.Column(db.String(120), nullable=False)
@@ -33,7 +33,7 @@ class User(db.Model):
 
     serialize = lambda self: {
         "id": self.id,
-        "UserName": self.UserName,
+        "userName": self.UserName,
         "email": self.email,
         "telephone": self.telephone,
         "created_at": self.created_at,
@@ -65,7 +65,6 @@ class PreDefinedPlans(db.Model):
     ram = db.Column(db.String(120), nullable=False)
     hdd = db.Column(db.String(120), nullable=False)
     processor = db.Column(db.String(120), nullable=False)
-    tier = db.Column(db.String(80), nullable=False) # Added tier
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     # Relationship with RequestPreDefinedPlans
@@ -77,7 +76,6 @@ class PreDefinedPlans(db.Model):
         "ram": self.ram,
         "hdd": self.hdd,
         "processor": self.processor,
-        "tier": self.tier, # Added tier
         "created_at": self.created_at,
         "updated_at": self.updated_at
     }

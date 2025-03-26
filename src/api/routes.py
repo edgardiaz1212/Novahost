@@ -11,13 +11,26 @@ api = Blueprint('api', __name__)
 # Allow CORS requests to this API
 CORS(api)
 
-@api.route('/login', methods=['POST'])
-def login_user():
+@api.route('/add-user', methods=['POST'])
+def add_user():
     data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
-    user = User.query.filter_by(email=email, password=password).first()
-    if user:
-        return jsonify({"message": "Login successful", "user": user.serialize()}), 200
-    else:
-        return jsonify({"message": "Invalid credentials"}), 401
+    user = User(email=data['email'], 
+                password=data['password']
+                userName=data['userName']
+                telephone=data['telephone']
+                role=data['role']         
+                )
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({"msg": "User created successfully"}), 200
+
+@api.routes('edit-user', methods=['PUT'])
+def edit_user():
+    data = request.get_json()
+    user = User.query.filter_by(email=data['email']).first()
+    user.userName = data['userName']
+    user.telephone = data['telephone']
+    user.role = data['role']
+    db.session.commit()
+    return jsonify({"msg": "User edited successfully"}), 200
+    
