@@ -44,7 +44,7 @@ function Navbar({ isOpen, toggleMenu }) {
         <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close" onClick={toggleMenu}></button>
       </div>
       <div className="offcanvas-body d-flex flex-column">
-        <ul className="navbar-nav justify-content-end pe-3 flex-grow-1"> {/* Removed flex-grow-1 from here */}
+        <ul className="navbar-nav justify-content-end pe-3">
           <li className="nav-item">
             <Link to="/dashboard" className="nav-link" onClick={toggleMenu}>Dashboard</Link>
           </li>
@@ -56,7 +56,7 @@ function Navbar({ isOpen, toggleMenu }) {
           </li>
           {/* Add more navigation links here */}
         </ul>
-        <div className="mt-auto"> {/* Added mt-auto here */}
+        <div className="mt-auto">
           <hr className="logout-divider" />
           <ul className="navbar-nav justify-content-end pe-3">
             <li className="nav-item">

@@ -5,13 +5,17 @@ from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, User, FinalUser, PreDefinedPlans, RequestNoCatalog, RequestPreDefinedPlans, VirtualMachines
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 import atexit
 
 api = Blueprint('api', __name__)
 
 # Allow CORS requests to this API
 CORS(api)
+
+# In-memory set to store revoked tokens (for demonstration purposes)
+revoked_tokens = set()
+
 #creacion, edicion, borrado de usuario 
 @api.route('/add-user', methods=['POST'])
 def add_user():
@@ -55,9 +59,18 @@ def login():
 @api.route('/logout', methods=['POST'])
 @jwt_required()
 def logout():
-    # In a real application, you might want to add the token to a blacklist here
-    # to prevent it from being used again.
+    jti = get_jwt()["jti"]
+    revoked_tokens.add(jti)
     return jsonify({"msg": "Logout successful"}), 200
+
+@api.before_request
+def check_if_token_revoked():
+    if request.endpoint not in ['api.login', 'api.logout']:
+        token = request.headers.get('Authorization', '').split(' ')[1]
+        decoded_token = get_jwt()
+        jti = decoded_token['jti']
+        if jti in revoked_tokens:
+            return jsonify({"msg": "Token has been revoked"}), 401
 
 @api.route('/protected', methods=['GET'])
 @jwt_required()
