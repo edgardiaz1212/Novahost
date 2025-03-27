@@ -64,9 +64,30 @@ def login():
 @api.route('/protected', methods=['GET'])
 @jwt_required()
 def protected():
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
+    try:
+        # Get the current user's ID from the JWT token
+        current_user_id = get_jwt_identity()
+        
+        # Fetch the user from the database
+        user = User.query.get(current_user_id)
+        
+        # Check if user exists
+        if not user:
+            return jsonify({"msg": "User not found"}), 404
+        
+        # Return user details, excluding sensitive information
+        return jsonify({
+            "user": {
+                "id": user.id,
+                "userName": user.userName,
+                "email": user.email,
+                "telephone": user.telephone,
+                "role": user.role
+            }
+        }), 200
     
-    return jsonify({"msg": "This is a protected route", "user": user.serialize()}), 200
-
+    except Exception as e:
+        # Log the error (replace with proper logging in production)
+        print(f"Error in protected route: {str(e)}")
+        return jsonify({"msg": "Internal server error"}), 500
 

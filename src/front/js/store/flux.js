@@ -105,12 +105,17 @@ const getState = ({ getStore, getActions, setStore }) => {
         return true;
       },
       fetchCurrentUser: async () => {
+        const store = getStore();
         try {
-          const token = sessionStorage.getItem("token");
-          
-          // Early return if no token exists
+          const token = storedToken
+          console.log("fluxToken", token);
+          // If no token, immediately return false
           if (!token) {
-            console.log("No token found");
+            console.log("No authentication token found");
+            setStore({ 
+              user: null, 
+              isAuthenticated: false 
+            });
             return false;
           }
       
@@ -128,26 +133,50 @@ const getState = ({ getStore, getActions, setStore }) => {
           if (response.ok) {
             const data = await response.json();
             
-            // Update store with current user
+            // Update store with user data
             setStore({ 
               user: data.user,
-              currentUser: data.user 
+              isAuthenticated: true
             });
       
             // Update session storage
             sessionStorage.setItem("user", JSON.stringify(data.user));
-      
-            console.log("Current user fetched successfully:", data.user);
+            
+            console.log("Current user fetched successfully", data.user);
             return data.user;
           } else {
-            // Handle unauthorized or failed request
-            const actions = getActions();
-            actions.logout(); // Automatically log out if token is invalid
+            // Handle authentication failure
             console.log("Failed to fetch current user");
+            
+            // Clear authentication
+            setStore({ 
+              user: null, 
+              isAuthenticated: false,
+              token: null
+            });
+            
+            // Clear session storage
+            sessionStorage.removeItem("user");
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("isAuthenticated");
+            
             return false;
           }
         } catch (error) {
           console.error("Error fetching current user:", error);
+          
+          // Clear authentication on error
+          setStore({ 
+            user: null, 
+            isAuthenticated: false,
+            token: null
+          });
+          
+          // Clear session storage
+          sessionStorage.removeItem("user");
+          sessionStorage.removeItem("token");
+          sessionStorage.removeItem("isAuthenticated");
+          
           return false;
         }
       },
