@@ -72,11 +72,17 @@ def sitemap():
 
 @app.route('/<path:path>', methods=['GET'])
 def serve_any_other_file(path):
-    if not os.path.isfile(os.path.join(static_file_dir, path)):
-        path = 'index.html'
-    response = send_from_directory(static_file_dir, path)
-    response.cache_control.max_age = 0  # avoid cache memory
-    return response
+    full_path = os.path.join(static_file_dir, path)
+    if os.path.isfile(full_path):
+        # If the file exists, serve it directly
+        response = send_from_directory(static_file_dir, path)
+        response.cache_control.max_age = 0  # avoid cache memory
+        return response
+    else:
+        # If the file doesn't exist, serve index.html (SPA routing)
+        response = send_from_directory(static_file_dir, 'index.html')
+        response.cache_control.max_age = 0
+        return response
 
 # Function to create the admin user
 def create_admin_user(app):

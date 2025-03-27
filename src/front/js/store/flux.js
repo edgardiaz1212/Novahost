@@ -2,7 +2,7 @@ const getState = ({ getStore, getActions, setStore }) => {
   // Check authentication state from session storage on load
   const isAuthenticated = sessionStorage.getItem("isAuthenticated") === "true";
   const storedUser = JSON.parse(sessionStorage.getItem("user")); // Retrieve user data from session storage
-
+  const storedToken = sessionStorage.getItem("token"); // Retrieve token from session storage
   return {
     store: {
       message: null,
@@ -12,6 +12,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       requests: [], // Add a store variable for requests
       users: [], // Add a store variable for users
       clients: [], // Add a store variable for clients
+      token: storedToken || null, // Initialize with session storage value
     },
 
     actions: {
@@ -34,12 +35,14 @@ const getState = ({ getStore, getActions, setStore }) => {
             setStore({ user: data.user, isAuthenticated: true });
             sessionStorage.setItem("isAuthenticated", "true"); // Store authentication state in session storage
             sessionStorage.setItem("user", JSON.stringify(data.user)); // Store user data in session storage
-            console.log("Autenticado", data.user); // Update isAuthenticated
+            sessionStorage.setItem("token", data.token); // Store token in session storage
+            console.log("Autenticado", data.user, data.token); // Update isAuthenticated
             return data;
           } else {
             setStore({ isAuthenticated: false, user: null }); // Set to false and clear user on login failure
             sessionStorage.removeItem("isAuthenticated");
             sessionStorage.removeItem("user");
+            sessionStorage.removeItem("token");
             console.log("Error al autenticar");
 
             return false;
@@ -48,6 +51,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           setStore({ isAuthenticated: false, user: null });
           sessionStorage.removeItem("isAuthenticated");
           sessionStorage.removeItem("user");
+          sessionStorage.removeItem("token");
           console.log("Error during login", error);
           return false;
         }

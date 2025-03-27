@@ -59,19 +59,35 @@ def login():
 @api.route('/logout', methods=['POST'])
 @jwt_required()
 def logout():
-    jti = get_jwt()["jti"]
-    revoked_tokens.add(jti)
-    return jsonify({"msg": "Logout successful"}), 200
+    try:
+        print("Logout request received")
+        jti = get_jwt()["jti"]
+        print(f"JTI: {jti}")
+        revoked_tokens.add(jti)
+        print(f"Token {jti} revoked")
+        return jsonify({"msg": "Logout successful"}), 200
+    except Exception as e:
+        print(f"Error during logout: {e}")
+        return jsonify({"msg": "Error during logout"}), 422
 
 @api.before_request
 def check_if_token_revoked():
-    if request.endpoint not in ['api.login', 'api.logout']:
-        token = request.headers.get('Authorization', '').split(' ')[1]
-        decoded_token = get_jwt()
-        jti = decoded_token['jti']
-        if jti in revoked_tokens:
-            return jsonify({"msg": "Token has been revoked"}), 401
-
+    try:
+        if request.endpoint not in ['api.login', 'api.logout']:
+            print("Checking if token is revoked")
+            token = request.headers.get('Authorization', '').split(' ')[1]
+            print(f"Token: {token}")
+            decoded_token = get_jwt()
+            print(f"Decoded token: {decoded_token}")
+            jti = decoded_token['jti']
+            print(f"JTI: {jti}")
+            if jti in revoked_tokens:
+                print(f"Token {jti} has been revoked")
+                return jsonify({"msg": "Token has been revoked"}), 401
+    except Exception as e:
+        print(f"Error checking token revocation: {e}")
+        return jsonify({"msg": "Error checking token revocation"}), 422
+    
 @api.route('/protected', methods=['GET'])
 @jwt_required()
 def protected():
