@@ -33,7 +33,7 @@ class User(db.Model):
 
     serialize = lambda self: {
         "id": self.id,
-        "userName": self.UserName,
+        "userName": self.userName,
         "email": self.email,
         "telephone": self.telephone,
         "created_at": self.created_at,

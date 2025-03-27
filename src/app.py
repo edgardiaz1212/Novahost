@@ -12,6 +12,8 @@ from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
 from dotenv import load_dotenv
+from flask_jwt_extended import JWTManager
+
 load_dotenv()
 # from models import Person
 
@@ -35,6 +37,11 @@ db.init_app(app)
 
 # Allow CORS requests to this API
 CORS(app)
+
+# Configure JWT
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")  # Change this!
+jwt = JWTManager(app)  # Initialize JWTManager with the app
+
 # add the admin
 setup_admin(app)
 

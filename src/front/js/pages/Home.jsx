@@ -115,9 +115,8 @@ function Home() {
       <ToastContainer />
       <header className="header">
         <div className="logo">
-        <img src={logo} alt="Logo" width="70" height="40" className="me-2" />
-          Novahost 
-       
+          <img src={logo} alt="Logo" width="70" height="40" className="me-2" />
+          Novahost
         </div>
         <nav>
           {store.isAuthenticated ? (
@@ -146,6 +145,7 @@ function Home() {
             Elige entre nuestras soluciones preconfiguradas o crea tu entorno personalizado.
           </p>
         </section>
+       
 
         <section className="features">
           <div className="feature-list">
@@ -201,7 +201,7 @@ function Home() {
       )}
 
       <footer className="footer">
-      <img className="logo-icon" src={logoMad} alt="icon" width="80" />
+        <img className="logo-icon" src={logoMad} alt="icon" width="80" />
         <p>&copy; {new Date().getFullYear()} Novahost</p>
       </footer>
     </div>
