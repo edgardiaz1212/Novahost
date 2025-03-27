@@ -105,25 +105,45 @@ const getState = ({ getStore, getActions, setStore }) => {
         return true;
       },
       fetchCurrentUser: async () => {
-        const store = getStore();
         try {
+          const token = sessionStorage.getItem("token");
+          
+          // Early return if no token exists
+          if (!token) {
+            console.log("No token found");
+            return false;
+          }
+      
           const response = await fetch(
-            `${process.env.REACT_APP_BACKEND_URL}/protected`, // Assuming /protected returns the current user
+            `${process.env.REACT_APP_BACKEND_URL}/protected`, 
             {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+                "Authorization": `Bearer ${token}`
               },
             }
           );
+      
           if (response.ok) {
             const data = await response.json();
-            setStore({ currentUser: data.user }); // Update the store with the current user
-            console.log("Current user fetched:", data.user);
+            
+            // Update store with current user
+            setStore({ 
+              user: data.user,
+              currentUser: data.user 
+            });
+      
+            // Update session storage
+            sessionStorage.setItem("user", JSON.stringify(data.user));
+      
+            console.log("Current user fetched successfully:", data.user);
             return data.user;
           } else {
-            console.error("Failed to fetch current user");
+            // Handle unauthorized or failed request
+            const actions = getActions();
+            actions.logout(); // Automatically log out if token is invalid
+            console.log("Failed to fetch current user");
             return false;
           }
         } catch (error) {
