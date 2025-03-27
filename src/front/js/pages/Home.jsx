@@ -3,6 +3,8 @@ import '../../styles/Home.css';
 import { Context } from '../store/appContext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import logo from "../../img/CDHLogo.jpg";
+import logoMad from '../../img/mad_data.png';
 import { useNavigate } from 'react-router-dom';
 
 function Home() {
@@ -112,7 +114,11 @@ function Home() {
     <div className="home-container">
       <ToastContainer />
       <header className="header">
-        <div className="logo">Novahost</div>
+        <div className="logo">
+        <img src={logo} alt="Logo" width="70" height="40" className="me-2" />
+          Novahost 
+       
+        </div>
         <nav>
           {store.isAuthenticated ? (
             <div className="d-flex align-items-center gap-3">
@@ -195,6 +201,7 @@ function Home() {
       )}
 
       <footer className="footer">
+      <img className="logo-icon" src={logoMad} alt="icon" width="80" />
         <p>&copy; {new Date().getFullYear()} Novahost</p>
       </footer>
     </div>
