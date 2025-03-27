@@ -13,9 +13,11 @@ from api.admin import setup_admin
 from api.commands import setup_commands
 from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager
+from datetime import timedelta
+import redis
 
+# Load environment variables
 load_dotenv()
-# from models import Person
 
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
@@ -23,7 +25,7 @@ static_file_dir = os.path.join(os.path.dirname(
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
-# database condiguration
+# Database configuration
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace(
@@ -39,8 +41,22 @@ db.init_app(app)
 CORS(app)
 
 # Configure JWT
-app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")  # Change this!
-jwt = JWTManager(app)  # Initialize JWTManager with the app
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=2)
+
+# Configure Redis for token blacklisting
+app.config["JWT_REDIS_URL"] = os.getenv("REDIS_URL", "redis://localhost:6379")
+redis_client = redis.from_url(app.config["JWT_REDIS_URL"])
+
+# Initialize JWTManager with additional configuration
+jwt = JWTManager(app)
+
+# Token blacklist loader
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload):
+    jti = jwt_payload["jti"]
+    token_in_redis = redis_client.exists(f'blocklist:{jti}')
+    return token_in_redis
 
 # add the admin
 setup_admin(app)
@@ -52,15 +68,11 @@ setup_commands(app)
 app.register_blueprint(api, url_prefix='/api')
 
 # Handle/serialize errors like a JSON object
-
-
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
 # generate sitemap with all your endpoints
-
-
 @app.route('/')
 def sitemap():
     if ENV == "development":
@@ -68,8 +80,6 @@ def sitemap():
     return send_from_directory(static_file_dir, 'index.html')
 
 # any other endpoint will try to serve it like a static file
-
-
 @app.route('/<path:path>', methods=['GET'])
 def serve_any_other_file(path):
     full_path = os.path.join(static_file_dir, path)

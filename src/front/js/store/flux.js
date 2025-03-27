@@ -13,6 +13,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       users: [], // Add a store variable for users
       clients: [], // Add a store variable for clients
       token: storedToken || null, // Initialize with session storage value
+      tokenExpiresIn: sessionStorage.getItem("tokenExpiresIn") || null, // Store token expiration
     },
 
     actions: {
@@ -32,38 +33,84 @@ const getState = ({ getStore, getActions, setStore }) => {
           );
           if (response.ok) {
             const data = await response.json();
-            setStore({ user: data.user, isAuthenticated: true });
-            sessionStorage.setItem("isAuthenticated", "true"); // Store authentication state in session storage
-            sessionStorage.setItem("user", JSON.stringify(data.user)); // Store user data in session storage
-            sessionStorage.setItem("token", data.token); // Store token in session storage
-            console.log("Autenticado", data.user, data.token); // Update isAuthenticated
+            setStore({ 
+              user: data.user, 
+              isAuthenticated: true,
+              token: data.token,
+              tokenExpiresIn: data.expires_in // New field for token expiration
+            });
+            
+            // Update session storage
+            sessionStorage.setItem("isAuthenticated", "true");
+            sessionStorage.setItem("user", JSON.stringify(data.user));
+            sessionStorage.setItem("token", data.token);
+            sessionStorage.setItem("tokenExpiresIn", data.expires_in);
+            
+            console.log("Autenticado", data.user, data.token);
             return data;
           } else {
-            setStore({ isAuthenticated: false, user: null }); // Set to false and clear user on login failure
+            // Reset authentication on failure
+            setStore({ 
+              isAuthenticated: false, 
+              user: null, 
+              token: null,
+              tokenExpiresIn: null 
+            });
+            
+            // Clear session storage
             sessionStorage.removeItem("isAuthenticated");
             sessionStorage.removeItem("user");
             sessionStorage.removeItem("token");
+            sessionStorage.removeItem("tokenExpiresIn");
+            
             console.log("Error al autenticar");
-
             return false;
           }
         } catch (error) {
-          setStore({ isAuthenticated: false, user: null });
+          // Reset authentication on error
+          setStore({ 
+            isAuthenticated: false, 
+            user: null, 
+            token: null,
+            tokenExpiresIn: null 
+          });
+          
+          // Clear session storage
           sessionStorage.removeItem("isAuthenticated");
           sessionStorage.removeItem("user");
           sessionStorage.removeItem("token");
+          sessionStorage.removeItem("tokenExpiresIn");
+          
           console.log("Error during login", error);
           return false;
         }
       },
 
-      logout: async () => {
+      logout: () => {
+        // Simple logout method that only clears client-side data
+        setStore({ 
+          user: null, 
+          isAuthenticated: false,
+          token: null,
+          tokenExpiresIn: null 
+        });
+        
+        // Clear session storage completely
+        sessionStorage.removeItem("isAuthenticated");
+        sessionStorage.removeItem("user");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("tokenExpiresIn");
+        
+        console.log("Logout successful");
+        return true;
+      },
+      fetchCurrentUser: async () => {
         const store = getStore();
         try {
           const response = await fetch(
-            `${process.env.REACT_APP_BACKEND_URL}/logout`,
+            `${process.env.REACT_APP_BACKEND_URL}/protected`, // Assuming /protected returns the current user
             {
-              method: "POST",
+              method: "GET",
               headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${sessionStorage.getItem("token")}`
@@ -71,82 +118,49 @@ const getState = ({ getStore, getActions, setStore }) => {
             }
           );
           if (response.ok) {
-            setStore({ user: null, isAuthenticated: false });
-            sessionStorage.removeItem("isAuthenticated");
-            sessionStorage.removeItem("user");
-            sessionStorage.removeItem("token");
-            console.log("Logout successful");
-            return true;
+            const data = await response.json();
+            setStore({ currentUser: data.user }); // Update the store with the current user
+            console.log("Current user fetched:", data.user);
+            return data.user;
           } else {
-            console.error("Logout failed");
+            console.error("Failed to fetch current user");
             return false;
           }
         } catch (error) {
-          console.error("Error during logout", error);
+          console.error("Error fetching current user:", error);
           return false;
         }
       },
-// Fetch current user
-fetchCurrentUser: async () => {
-  const store = getStore();
-  try {
-    const response = await fetch(
-      `${process.env.REACT_APP_BACKEND_URL}/protected`, // Assuming /protected returns the current user
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${sessionStorage.getItem("token")}`
-        },
-      }
-    );
-    if (response.ok) {
-      const data = await response.json();
-      setStore({ currentUser: data.user }); // Update the store with the current user
-      console.log("Current user fetched:", data.user);
-      return data.user;
-    } else {
-      console.error("Failed to fetch current user");
-      return false;
-    }
-  } catch (error) {
-    console.error("Error fetching current user:", error);
-    return false;
-  }
-},
-
-// Update current user
-updateCurrentUser: async (userData) => {
-  const store = getStore();
-  try {
-    const response = await fetch(
-      `${process.env.REACT_APP_BACKEND_URL}/edit-user`, // Endpoint to update user
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${sessionStorage.getItem("token")}`
-        },
-        body: JSON.stringify(userData),
-      }
-    );
-    if (response.ok) {
-      const data = await response.json();
-      setStore({ currentUser: data.user }); // Update the store with the updated user
-      console.log("Current user updated:", data);
-      return true;
-    } else {
-      console.error("Failed to update current user");
-      return false;
-    }
-  } catch (error) {
-    console.error("Error updating current user:", error);
-    return false;
-  }
-},
-
-
-
+      
+      // Update current user
+      updateCurrentUser: async (userData) => {
+        const store = getStore();
+        try {
+          const response = await fetch(
+            `${process.env.REACT_APP_BACKEND_URL}/edit-user`, // Endpoint to update user
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+              },
+              body: JSON.stringify(userData),
+            }
+          );
+          if (response.ok) {
+            const data = await response.json();
+            setStore({ currentUser: data.user }); // Update the store with the updated user
+            console.log("Current user updated:", data);
+            return true;
+          } else {
+            console.error("Failed to update current user");
+            return false;
+          }
+        } catch (error) {
+          console.error("Error updating current user:", error);
+          return false;
+        }
+      },
       // Fetch server resources
       fetchServerResources: async () => {
         const store = getStore();
@@ -260,3 +274,4 @@ updateCurrentUser: async (userData) => {
 };
 
 export default getState;
+
