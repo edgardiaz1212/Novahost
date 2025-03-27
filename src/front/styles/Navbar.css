@@ -17,3 +17,52 @@
     text-align: left;
     padding: 10px;
   }
+
+.user-greeting {
+  margin-top: 5px; /* Adjust as needed to increase/decrease space */
+  font-size: 1rem;
+  color: #333; /* Adjust as needed */
+}
+.offcanvas-header{
+  display: flex;
+  flex-direction: column;
+}
+
+
+.logout-container {
+  width: 100%;
+  padding: 10px;
+}
+
+.logout-divider {
+  border-top: 1px solid #ccc; /* Customize the line style */
+  margin: 10px 0; /* Adjust spacing around the line */
+}
+
+.logout-button {
+  width: 100%;
+  text-align: left;
+  padding: 10px;
+}
+
+.user-greeting {
+margin-top: 5px; /* Adjust as needed to increase/decrease space */
+font-size: 1rem;
+color: #333; /* Adjust as needed */
+}
+.offcanvas-header{
+display: flex;
+flex-direction: column;
+align-items: center; /* Center items horizontally */
+padding: 1rem; /* Add padding to the header */
+}
+.offcanvas-title {
+text-align: center; /* Center the title text */
+width: 100%; /* Ensure the title takes full width */
+}
+.title-greeting-divider {
+border-top: 1px solid #ccc; /* Customize the line style */
+width: 100%; /* Make the line full width */
+margin: 10px 0; /* Adjust spacing around the line */
+}
+
