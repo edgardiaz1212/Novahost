@@ -11,7 +11,7 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     telephone = db.Column(db.String(120), nullable=False)
     role = db.Column(db.String(120), nullable=False)
-    _password = db.Column(db.String(120), nullable=False)  # Changed to _password
+    _password = db.Column(db.String, nullable=False)  # Changed to _password
 
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))

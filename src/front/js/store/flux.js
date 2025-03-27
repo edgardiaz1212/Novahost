@@ -40,7 +40,8 @@ const getState = ({ getStore, getActions, setStore }) => {
             setStore({ isAuthenticated: false, user: null }); // Set to false and clear user on login failure
             sessionStorage.removeItem("isAuthenticated");
             sessionStorage.removeItem("user");
-            console.error("Login failed");
+            console.log("Error al autenticar");
+
             return false;
           }
         } catch (error) {

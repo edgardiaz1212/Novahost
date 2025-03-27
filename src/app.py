@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
 from api.utils import APIException, generate_sitemap
-from api.models import db
+from api.models import db, User
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -71,8 +71,27 @@ def serve_any_other_file(path):
     response.cache_control.max_age = 0  # avoid cache memory
     return response
 
+# Function to create the admin user
+def create_admin_user(app):
+    with app.app_context():
+        admin_user = User.query.filter_by(email="admin@example.com").first()
+        if not admin_user:
+            admin_user = User(
+                userName="Admin",
+                email="admin@example.com",
+                password="administrator",
+                telephone="0000000000",
+                role="admin"
+            )
+            db.session.add(admin_user)
+            db.session.commit()
+            print("Admin user created successfully.")
+        else:
+            print("Admin user already exists.")
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
+    # Create the admin user
+    create_admin_user(app)
     app.run(host='0.0.0.0', port=PORT, debug=True)
