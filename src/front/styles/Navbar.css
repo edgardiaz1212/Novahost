@@ -1,0 +1,19 @@
+/* Navbar.css */
+
+/* ... your existing styles ... */
+
+.logout-container {
+    width: 100%;
+    padding: 10px;
+  }
+  
+  .logout-divider {
+    border-top: 1px solid #ccc; /* Customize the line style */
+    margin: 10px 0; /* Adjust spacing around the line */
+  }
+  
+  .logout-button {
+    width: 100%;
+    text-align: left;
+    padding: 10px;
+  }
