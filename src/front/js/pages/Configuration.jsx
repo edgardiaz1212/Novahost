@@ -12,13 +12,6 @@ function Configuration() {
   const [activeTab, setActiveTab] = useState('usuario');
 
   // State for data
-  const [currentUser, setCurrentUser] = useState({
-    id: 1,
-    nombre: "Usuario Actual",
-    correo: "usuario@ejemplo.com",
-    clave: "********"
-  });
-
   const [users, setUsers] = useState([
     { id: 2, nombre: "Usuario Ejemplo", correo: "ejemplo@mail.com", clave: "********" },
     { id: 3, nombre: "Admin Sistema", correo: "admin@sistema.com", clave: "********" }
@@ -52,7 +45,6 @@ function Configuration() {
   const [editingOS, setEditingOS] = useState(null);
   const [editingVM, setEditingVM] = useState(null);
   const [editingClient, setEditingClient] = useState(null); // New state for editing clients
-  const [editingCurrentUser, setEditingCurrentUser] = useState(false);
 
   // State for new elements
   const [newUser, setNewUser] = useState({
@@ -160,11 +152,6 @@ function Configuration() {
     setEditingClient(null);
   };
 
-  const saveCurrentUser = () => {
-    setCurrentUser({ ...currentUser });
-    setEditingCurrentUser(false);
-  };
-
   // Delete elements
   const deleteUser = (id) => {
     setUsers(users.filter(user => user.id !== id));
@@ -259,14 +246,7 @@ function Configuration() {
     switch (activeTab) {
       case 'usuario':
         return (
-          <CurrentUserPanel
-            currentUser={currentUser}
-            setCurrentUser={setCurrentUser}
-            editingCurrentUser={editingCurrentUser}
-            setEditingCurrentUser={setEditingCurrentUser}
-            handleInputChange={handleInputChange}
-            saveCurrentUser={saveCurrentUser}
-          />
+          <CurrentUserPanel/>
         );
       case 'usuarios':
         return (

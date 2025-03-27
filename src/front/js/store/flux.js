@@ -86,6 +86,66 @@ const getState = ({ getStore, getActions, setStore }) => {
           return false;
         }
       },
+// Fetch current user
+fetchCurrentUser: async () => {
+  const store = getStore();
+  try {
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/protected`, // Assuming /protected returns the current user
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+        },
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      setStore({ currentUser: data.user }); // Update the store with the current user
+      console.log("Current user fetched:", data.user);
+      return data.user;
+    } else {
+      console.error("Failed to fetch current user");
+      return false;
+    }
+  } catch (error) {
+    console.error("Error fetching current user:", error);
+    return false;
+  }
+},
+
+// Update current user
+updateCurrentUser: async (userData) => {
+  const store = getStore();
+  try {
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/edit-user`, // Endpoint to update user
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+        },
+        body: JSON.stringify(userData),
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      setStore({ currentUser: data.user }); // Update the store with the updated user
+      console.log("Current user updated:", data);
+      return true;
+    } else {
+      console.error("Failed to update current user");
+      return false;
+    }
+  } catch (error) {
+    console.error("Error updating current user:", error);
+    return false;
+  }
+},
+
+
 
       // Fetch server resources
       fetchServerResources: async () => {
