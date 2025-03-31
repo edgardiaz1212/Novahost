@@ -54,22 +54,22 @@ def login():
     if not user or not user.check_password(password):
         return jsonify({"msg": "Bad email or password"}), 401
 
-    access_token = create_access_token(identity=user.id)
+    access_token = create_access_token(identity=str(user.id))
     return jsonify({
         "token": access_token, 
         "user": user.serialize(),
         "expires_in": 7200  # 2 hours in seconds
     }), 200
 
-@api.route('/protected', methods=['GET'])
+@api.route('/current-user', methods=['GET'])
 @jwt_required()
-def protected():
+def get_current_user():
     try:
         # Get the current user's ID from the JWT token
         current_user_id = get_jwt_identity()
         
         # Fetch the user from the database
-        user = User.query.get(current_user_id)
+        user = User.query.get(current_user_id) # Remove .first()
         
         # Check if user exists
         if not user:

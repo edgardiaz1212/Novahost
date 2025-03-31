@@ -12,6 +12,12 @@ function CurrentUserPanel() {
     password: "",
     telephone: ""
   });
+  const [initialUserData, setInitialUserData] = useState({
+    userName: "",
+    email: "",
+    password: "",
+    telephone: ""
+  });
 
   useEffect(() => {
     // Fetch the current user data when the component mounts
@@ -19,15 +25,22 @@ function CurrentUserPanel() {
   }, []);
 
   useEffect(() => {
-    if (store.currentUser) {
+    // Update the state when store.user changes
+    if (store.user) {
       setCurrentUserData({
-        userName: store.currentUser.userName,
-        email: store.currentUser.email,
-        password: "",
-        telephone: store.currentUser.telephone
+        userName: store.user.userName,
+        email: store.user.email,
+        password: "", // Don't pre-fill the password field
+        telephone: store.user.telephone
+      });
+      setInitialUserData({
+        userName: store.user.userName,
+        email: store.user.email,
+        password: "", // Don't pre-fill the password field
+        telephone: store.user.telephone
       });
     }
-  }, [store.currentUser]);
+  }, [store.user]);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -51,6 +64,7 @@ function CurrentUserPanel() {
         theme: "light",
       });
       setEditingCurrentUser(false);
+      setInitialUserData(currentUserData)
     } else {
       toast.error("Error al actualizar el usuario", {
         position: "top-right",
@@ -63,6 +77,10 @@ function CurrentUserPanel() {
         theme: "light",
       });
     }
+  };
+  const handleCancelEdit = () => {
+    setCurrentUserData(initialUserData);
+    setEditingCurrentUser(false);
   };
 
   return (
@@ -163,7 +181,7 @@ function CurrentUserPanel() {
               <button
                 type="button"
                 className="btn btn-danger d-flex align-items-center gap-2"
-                onClick={() => setEditingCurrentUser(false)}
+                onClick={handleCancelEdit}
               >
                 <X size={16} />
                 Cancelar

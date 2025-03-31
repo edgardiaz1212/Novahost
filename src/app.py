@@ -12,9 +12,9 @@ from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
 from dotenv import load_dotenv
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, get_jwt, jwt_required # Import jwt_required
 from datetime import timedelta
-import redis
+
 
 # Load environment variables
 load_dotenv()
@@ -44,19 +44,24 @@ CORS(app)
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=2)
 
-# Configure Redis for token blacklisting
-app.config["JWT_REDIS_URL"] = os.getenv("REDIS_URL", "redis://localhost:6379")
-redis_client = redis.from_url(app.config["JWT_REDIS_URL"])
-
-# Initialize JWTManager with additional configuration
+# Initialize JWTManager
 jwt = JWTManager(app)
 
 # Token blacklist loader
+blacklist = set()
+
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload):
     jti = jwt_payload["jti"]
-    token_in_redis = redis_client.exists(f'blocklist:{jti}')
-    return token_in_redis
+    return jti in blacklist
+
+@app.route('/api/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    jti = get_jwt()["jti"]
+    blacklist.add(jti)
+    return jsonify({"msg": "Successfully logged out"}), 200
+
 
 # add the admin
 setup_admin(app)

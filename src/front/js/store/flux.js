@@ -12,7 +12,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       requests: [], // Add a store variable for requests
       users: [], // Add a store variable for users
       clients: [], // Add a store variable for clients
-      token: storedToken || null, // Initialize with session storage value
+      token: sessionStorage.getItem("storedToken") || null,// Initialize with session storage value
       tokenExpiresIn: sessionStorage.getItem("tokenExpiresIn") || null, // Store token expiration
     },
 
@@ -86,31 +86,52 @@ const getState = ({ getStore, getActions, setStore }) => {
         }
       },
 
-      logout: () => {
-        // Simple logout method that only clears client-side data
-        setStore({ 
-          user: null, 
-          isAuthenticated: false,
-          token: null,
-          tokenExpiresIn: null 
-        });
-        
-        // Clear session storage completely
-        sessionStorage.removeItem("isAuthenticated");
-        sessionStorage.removeItem("user");
-        sessionStorage.removeItem("token");
-        sessionStorage.removeItem("tokenExpiresIn");
-        
-        console.log("Logout successful");
-        return true;
+      logout: async () => {
+        const store = getStore();
+        try {
+          const token = sessionStorage.getItem("token");
+          const response = await fetch(
+            `${process.env.REACT_APP_BACKEND_URL}/logout`,
+            {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${token}`,
+              },
+            }
+          );
+          if (response.ok) {
+            // Simple logout method that only clears client-side data
+            setStore({
+              user: null,
+              isAuthenticated: false,
+              token: null,
+              tokenExpiresIn: null,
+            });
+    
+            // Clear session storage completely
+            sessionStorage.removeItem("isAuthenticated");
+            sessionStorage.removeItem("user");
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("tokenExpiresIn");
+    
+            console.log("Logout successful");
+            return true;
+          } else {
+            console.log("Error during logout");
+            return false;
+          }
+        } catch (error) {
+          console.log("Error during logout", error);
+          return false;
+        }
       },
+    
       fetchCurrentUser: async () => {
         const store = getStore();
         try {
-          const token = storedToken
-          console.log("fluxToken", token);
+          
           // If no token, immediately return false
-          if (!token) {
+          if (!storedToken) {
             console.log("No authentication token found");
             setStore({ 
               user: null, 
@@ -120,12 +141,12 @@ const getState = ({ getStore, getActions, setStore }) => {
           }
       
           const response = await fetch(
-            `${process.env.REACT_APP_BACKEND_URL}/protected`, 
+            `${process.env.REACT_APP_BACKEND_URL}/current-user`, 
             {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                "Authorization": `Bearer ${storedToken}`
               },
             }
           );
@@ -264,6 +285,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           return false;
         }
       },
+      
       // Fetch users
       fetchUsers: async () => {
         const store = getStore();
