@@ -12,10 +12,7 @@ function Configuration() {
   const [activeTab, setActiveTab] = useState('usuario');
 
   // State for data
-  const [users, setUsers] = useState([
-    { id: 2, nombre: "Usuario Ejemplo", correo: "ejemplo@mail.com", clave: "********" },
-    { id: 3, nombre: "Admin Sistema", correo: "admin@sistema.com", clave: "********" }
-  ]);
+  const [users, setUsers] = useState([]);
 
   const [services, setServices] = useState([
     { id: 1, nombre: "Servicio Base", ram: 4, disco: 100, procesador: 2 },
@@ -250,20 +247,7 @@ function Configuration() {
         );
       case 'usuarios':
         return (
-          <UsersPanel
-            users={users}
-            setUsers={setUsers}
-            newUser={newUser}
-            setNewUser={setNewUser}
-            showNewUserForm={showNewUserForm}
-            setShowNewUserForm={setShowNewUserForm}
-            handleInputChange={handleInputChange}
-            addUser={addUser}
-            editingUser={editingUser}
-            setEditingUser={setEditingUser}
-            saveUser={saveUser}
-            deleteUser={deleteUser}
-          />
+          <UsersPanel/>
         );
       case 'servicios':
         return (

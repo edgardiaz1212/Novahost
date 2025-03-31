@@ -233,6 +233,34 @@ const getState = ({ getStore, getActions, setStore }) => {
           return false;
         }
       },
+      updateUser: async (userId, userData) => {
+        const store = getStore();
+        try {
+            const response = await fetch(
+                `${process.env.REACT_APP_BACKEND_URL}/edit-user/${userId}`, // New endpoint with user ID
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+                    },
+                    body: JSON.stringify(userData),
+                }
+            );
+            if (response.ok) {
+                const data = await response.json();
+                console.log("User updated:", data);
+                getActions().fetchUsers(); // Refresh user list after update
+                return true;
+            } else {
+                console.error("Failed to update user");
+                return false;
+            }
+        } catch (error) {
+            console.error("Error updating user:", error);
+            return false;
+        }
+    },
 
       addUser: async (userData) => {
         const store = getStore();

@@ -43,6 +43,22 @@ def edit_user():
     db.session.commit()
     return jsonify({"msg": "User edited successfully", "user": user.serialize()}), 200
 
+@api.route('/edit-user/<int:user_id>', methods=['PUT'])  # New route with user_id
+@jwt_required()
+def edit_user_by_id(user_id):
+    data = request.get_json()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+    user.userName = data.get('userName', user.userName)
+    user.telephone = data.get('telephone', user.telephone)
+    user.email = data.get('email', user.email)
+    user.role = data.get('role', user.role)
+    if 'password' in data and data['password'] != "":
+        user.password = data['password']
+    db.session.commit()
+    return jsonify({"msg": "User edited successfully", "user": user.serialize()}), 200
+
 @api.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
