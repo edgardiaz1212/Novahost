@@ -219,7 +219,8 @@ const getState = ({ getStore, getActions, setStore }) => {
           );
           if (response.ok) {
             const data = await response.json();
-            setStore({ currentUser: data.user }); // Update the store with the updated user
+            setStore({ user: data.user }); // Update the store with the updated user
+            sessionStorage.setItem("user", JSON.stringify(data.user));
             console.log("Current user updated:", data);
             return true;
           } else {
@@ -231,6 +232,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           return false;
         }
       },
+    
       // Fetch server resources
       fetchServerResources: async () => {
         const store = getStore();

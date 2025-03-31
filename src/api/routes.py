@@ -38,8 +38,8 @@ def edit_user():
     user.userName = data['userName']
     user.telephone = data['telephone']
     user.email = data['email']
-    if 'password' in data:
-        user.set_password(data['password'])
+    if 'password' in data and data['password'] != "":
+        user.password = data['password']
     db.session.commit()
     return jsonify({"msg": "User edited successfully", "user": user.serialize()}), 200
 
