@@ -262,6 +262,39 @@ const getState = ({ getStore, getActions, setStore }) => {
         }
     },
 
+    deleteUser: async (userId) => {
+      const store = getStore();
+      try {
+      
+        const token = sessionStorage.getItem('token'); // Use sessionStorage
+        if (!token) {
+          console.error("No token found for delete user.");
+          return false;
+        }
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/delete-user/${userId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}` // Correctly format the token
+          }
+        });
+    
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Error deleting user:", errorData);
+          return false;
+        }
+    
+        const data = await response.json();
+        console.log("User deleted successfully:", data);
+        getActions().fetchUsers();
+        return true;
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        console.log(store.token)
+        return false;
+      }
+    },
+    
       addUser: async (userData) => {
         const store = getStore();
         const token = sessionStorage.getItem("token");

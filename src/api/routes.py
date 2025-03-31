@@ -59,6 +59,21 @@ def edit_user_by_id(user_id):
     db.session.commit()
     return jsonify({"msg": "User edited successfully", "user": user.serialize()}), 200
 
+@api.route('/delete-user/<int:user_id>', methods=['DELETE'])
+@jwt_required()
+def delete_user(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({"msg": "User deleted successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error deleting user: {e}")
+        return jsonify({"msg": "Error deleting user"}), 500
+
 @api.route('/login', methods=['POST'])
 def login():
     data = request.get_json()

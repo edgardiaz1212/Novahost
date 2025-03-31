@@ -73,6 +73,22 @@ function UsersPanel() {
     }
   };
 
+  // New function to delete a user
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm("Are you sure you want to delete this user?")) {
+      setError(null);
+      try {
+        const success = await actions.deleteUser(userId);
+        if (!success) {
+          setError("Failed to delete user.");
+        }
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        setError("An unexpected error occurred while deleting the user.");
+      }
+    }
+  };
+
   const renderUserRow = (user) => {
     const isEditing = editingUser === user.id;
 
@@ -124,7 +140,7 @@ function UsersPanel() {
               <Edit size={16} />
             </button>
           )}
-          <button className="btn btn-danger">
+          <button className="btn btn-danger" onClick={() => handleDeleteUser(user.id)}>
             <Trash size={16} />
           </button>
         </td>
