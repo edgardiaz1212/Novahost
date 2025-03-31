@@ -1,12 +1,10 @@
-import React, { useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import '../../styles/Navbar.css';
+import React, { useContext, useEffect } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { Context } from '../store/appContext';
-import { toast } from 'react-toastify';
-// Import Lucide Icons
-import { LayoutDashboard, Server, CheckCircle, Settings, LogOut } from 'lucide-react';
+import { ToastContainer, toast } from 'react-toastify';
+import { User, Server, Monitor, Settings, Info, Cloud, Building, LogOut, LayoutDashboard, CheckCircle } from 'lucide-react';
 
-function Navbar({ isOpen, toggleMenu }) {
+const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
   const { store, actions } = useContext(Context);
   const navigate = useNavigate();
 
@@ -24,7 +22,6 @@ function Navbar({ isOpen, toggleMenu }) {
         theme: "light",
       });
       navigate('/');
-      toggleMenu(); // Close the navbar after logout
     } else {
       toast.error("Error al cerrar sesión", {
         position: "top-right",
@@ -40,7 +37,7 @@ function Navbar({ isOpen, toggleMenu }) {
   };
 
   return (
-    <div className={`offcanvas offcanvas-start w-25 ${isOpen ? 'show' : ''}`} tabIndex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+    <div ref={offcanvasRef} className={`offcanvas offcanvas-start w-25 ${isOpen ? 'show' : ''}`} tabIndex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
       <div className="offcanvas-header">
         <h5 className="offcanvas-title" id="offcanvasNavbarLabel">NovaHost</h5>
         <hr className="title-greeting-divider" /> {/* Separator Line */}
@@ -55,19 +52,19 @@ function Navbar({ isOpen, toggleMenu }) {
       <div className="offcanvas-body d-flex flex-column">
         <ul className="navbar-nav justify-content-end pe-3">
           <li className="nav-item">
-            <Link to="/dashboard" className="nav-link" onClick={toggleMenu}>
+            <NavLink to="/dashboard" className="nav-link" onClick={toggleMenu}>
               <LayoutDashboard className="nav-icon" /> Dashboard
-            </Link>
+            </NavLink>
           </li>
           <li className="nav-item">
-            <Link to="/service-selector" className="nav-link" onClick={toggleMenu}>
-              <Server className="nav-icon" /> Seleccion Servicio
-            </Link>
+            <NavLink to="/service-selector" className="nav-link" onClick={toggleMenu}>
+              <Cloud className="nav-icon" /> Seleccion Servicio
+            </NavLink>
           </li>
           <li className="nav-item">
-            <Link to="/aprobacion" className="nav-link" onClick={toggleMenu}>
+            <NavLink to="/aprobacion" className="nav-link" onClick={toggleMenu}>
               <CheckCircle className="nav-icon" /> Aprobacion Servicio
-            </Link>
+            </NavLink>
           </li>
           {/* Add more navigation links here */}
         </ul>
@@ -75,9 +72,9 @@ function Navbar({ isOpen, toggleMenu }) {
           <hr className="logout-divider" />
           <ul className="navbar-nav justify-content-end pe-3">
             <li className="nav-item">
-              <Link to="/configuracion" className="nav-link" onClick={toggleMenu}>
+              <NavLink to="/configuracion" className="nav-link" onClick={toggleMenu}>
                 <Settings className="nav-icon" /> Configuracion
-              </Link>
+              </NavLink>
             </li>
             {store.isAuthenticated && (
               <li className="nav-item">
@@ -91,6 +88,6 @@ function Navbar({ isOpen, toggleMenu }) {
       </div>
     </div>
   );
-}
+};
 
 export default Navbar;

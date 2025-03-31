@@ -1,49 +1,71 @@
 /* Layout.css */
 .layout-container {
-    display: flex;
-    position: relative;
-  }
-  
-  .main-content {
-    flex-grow: 1;
-    padding: 20px;
-    width: 100%;
-  }
-  
-  .hamburger-menu {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 100;
-    cursor: pointer;
-  }
-  
-  .hamburger-icon {
-    width: 30px;
-    height: 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    cursor: pointer;
-  }
-  
-  .hamburger-icon span {
-    display: block;
-    width: 100%;
-    height: 3px;
-    background-color: #333;
-    transition: all 0.3s ease-in-out;
-  }
-  
-  .hamburger-icon.open span:nth-child(1) {
-    transform: rotate(45deg) translate(6px, 6px);
-  }
-  
-  .hamburger-icon.open span:nth-child(2) {
-    opacity: 0;
-  }
-  
-  .hamburger-icon.open span:nth-child(3) {
-    transform: rotate(-45deg) translate(6px, -6px);
-  }
-  
+  display: flex;
+  position: relative;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 20px;
+  width: 100%;
+  margin-left: 0;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.hamburger-menu {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+}
+
+.hamburger-icon {
+  width: 30px;
+  height: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.hamburger-icon span {
+  display: block;
+  width: 100%;
+  height: 3px;
+  background-color: #333;
+  transition: all 0.3s ease-in-out;
+}
+
+.hamburger-icon.open span:nth-child(1) {
+  transform: rotate(45deg) translate(6px, 6px);
+}
+
+.hamburger-icon.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-icon.open span:nth-child(3) {
+  transform: rotate(-45deg) translate(6px, -6px);
+}
+.offcanvas.show ~ .main-content {
+  margin-left: 250px; /* Adjust margin for content when offcanvas is open */
+}
+.title-greeting-divider {
+  border-top: 10px solid #ccc; /* Add a border to the top */
+  margin-top: 10px; /* Add some space above the line */
+  margin-bottom: 20px; /* Add some space below the line */
+}
+
+.user-greeting {
+  margin-bottom:40px; /* Add some space below the greeting */
+}
+.logout-divider {
+  border-top: 1px solid #ccc; /* Add a border to the top */
+  margin-top: 10px; /* Add some space above the line */
+  margin-bottom: 10px; /* Add some space below the line */
+}
