@@ -12,7 +12,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       requests: [], // Add a store variable for requests
       users: [], // Add a store variable for users
       clients: [], // Add a store variable for clients
-      token: sessionStorage.getItem("storedToken") || null,// Initialize with session storage value
+      token: storedToken || null,// Initialize with session storage value
       tokenExpiresIn: sessionStorage.getItem("tokenExpiresIn") || null, // Store token expiration
     },
 
@@ -128,10 +128,11 @@ const getState = ({ getStore, getActions, setStore }) => {
     
       fetchCurrentUser: async () => {
         const store = getStore();
+        const token = sessionStorage.getItem("token");
         try {
           
           // If no token, immediately return false
-          if (!storedToken) {
+          if (!token) {
             console.log("No authentication token found");
             setStore({ 
               user: null, 
@@ -146,7 +147,7 @@ const getState = ({ getStore, getActions, setStore }) => {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${storedToken}`
+                "Authorization": `Bearer ${token}`
               },
             }
           );
@@ -232,8 +233,41 @@ const getState = ({ getStore, getActions, setStore }) => {
           return false;
         }
       },
-    
-      // Fetch server resources
+
+      addUser: async (userData) => {
+        const store = getStore();
+        const token = sessionStorage.getItem("token");
+
+        try {
+          const response = await fetch(
+            `${process.env.REACT_APP_BACKEND_URL}/add-user`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}` // Add authorization header
+              },
+              body: JSON.stringify(userData),
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log("User added successfully:", data);
+            getActions().fetchUsers(); // Refresh user list
+            return true;
+          } else {
+            const errorData = await response.json();
+            console.error("Failed to add user:", errorData);
+            return false; // Or throw an error
+          }
+        } catch (error) {
+          console.error("Error adding user:", error);
+          return false; // Or throw an error
+        }
+      },
+
+          // Fetch server resources
       fetchServerResources: async () => {
         const store = getStore();
         try {
@@ -347,4 +381,3 @@ const getState = ({ getStore, getActions, setStore }) => {
 };
 
 export default getState;
-

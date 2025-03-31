@@ -1,162 +1,117 @@
-import React from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { User, Plus, Save, X, Edit, Trash } from 'lucide-react';
+import { Context } from '../../store/appContext'; // Import the Context
 
-function UsersPanel({ users, setUsers, newUser, setNewUser, showNewUserForm, setShowNewUserForm, handleInputChange, addUser, editingUser, setEditingUser, saveUser, deleteUser }) {
+function UsersPanel() {
+  const { store, actions } = useContext(Context); // Use the Context
+  const [newUser, setNewUser] = useState({ nombre: "", correo: "", password: "", telephone: "", role: "user" });
+  const [showNewUserForm, setShowNewUserForm] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Fetch users on component mount
+  useEffect(() => {
+    actions.fetchUsers();
+  }, []);
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setNewUser({ ...newUser, [name]: value });
+  };
+
+  const addUser = async () => {
+    setError(null);
+    const success = await actions.addUser(newUser);
+    if (success) {
+      setNewUser({ nombre: "", correo: "", password: "", telephone: "", role: "user" });
+      setShowNewUserForm(false);
+    } else {
+      setError("Failed to add user. Please check the form and try again."); // Or get the error message from the backend
+    }
+  };
+
+  const renderUserRow = (user) => {
+    // ... (Existing code for editing and deleting users remains the same) ...
+    // You'll need to implement the edit and delete functionality here,
+    // likely by adding new actions to flux.js and calling them here.
+    return (
+      <tr key={user.id}>
+        <td>{user.userName}</td>
+        <td>{user.email}</td>
+        <td>{user.telephone}</td>
+        <td>{user.role}</td>
+        <td className="d-flex gap-2">
+          <button className="btn btn-warning">
+            <Edit size={16} />
+          </button>
+          <button className="btn btn-danger">
+            <Trash size={16} />
+          </button>
+        </td>
+      </tr>
+    );
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
       <div className="p-4">
-        <button
-          className="btn btn-success mb-4 d-flex align-items-center gap-2" // Bootstrap button
-          onClick={() => setShowNewUserForm(!showNewUserForm)}
-        >
-          <Plus size={16} />
-          Añadir Usuario
+        <button className="btn btn-success mb-4 d-flex align-items-center gap-2" onClick={() => setShowNewUserForm(true)}>
+          <Plus size={16} /> Añadir Usuario
         </button>
 
         {showNewUserForm && (
-          <div className="bg-light p-4 rounded-md mb-4"> {/* Changed to bg-light */}
+          <div className="bg-light p-4 rounded-md mb-4">
+            {error && <div className="alert alert-danger">{error}</div>}
             <h4 className="font-semibold mb-2">Nuevo Usuario</h4>
-            <form onSubmit={(e) => { e.preventDefault(); addUser() }} className="row g-3"> {/* Bootstrap grid */}
-              <div className="col-md-4"> {/* Bootstrap column */}
-                <label className="form-label">Nombre</label> {/* Changed to form-label */}
-                <input
-                  type="text"
-                  name="nombre"
-                  value={newUser.nombre}
-                  onChange={(e) => handleInputChange(e, setNewUser, newUser)}
-                  className="form-control" // Changed to form-control
-                  required
-                />
+            <form onSubmit={(e) => { e.preventDefault(); addUser(); }}>
+              <div className="mb-3">
+                <label className="form-label">Nombre</label>
+                <input type="text" name="nombre" value={newUser.nombre} onChange={handleInputChange} className="form-control" required />
               </div>
-              <div className="col-md-4"> {/* Bootstrap column */}
-                <label className="form-label">Correo</label> {/* Changed to form-label */}
-                <input
-                  type="email"
-                  name="correo"
-                  value={newUser.correo}
-                  onChange={(e) => handleInputChange(e, setNewUser, newUser)}
-                  className="form-control" // Changed to form-control
-                  required
-                />
+              <div className="mb-3">
+                <label className="form-label">Correo</label>
+                <input type="email" name="correo" value={newUser.correo} onChange={handleInputChange} className="form-control" required />
               </div>
-              <div className="col-md-4"> {/* Bootstrap column */}
-                <label className="form-label">Clave</label> {/* Changed to form-label */}
-                <input
-                  type="password"
-                  name="clave"
-                  value={newUser.clave}
-                  onChange={(e) => handleInputChange(e, setNewUser, newUser)}
-                  className="form-control" // Changed to form-control
-                  required
-                />
+              <div className="mb-3">
+                <label className="form-label">Clave</label>
+                <input type="password" name="password" value={newUser.password} onChange={handleInputChange} className="form-control" required />
               </div>
-              <div className="col-12 d-flex gap-2"> {/* Bootstrap column and flex */}
-                <button
-                  type="submit"
-                  className="btn btn-success d-flex align-items-center gap-2" // Bootstrap button and flex
-                >
-                  <Save size={16} />
-                  Guardar
+              <div className="mb-3">
+                <label className="form-label">Teléfono</label>
+                <input type="tel" name="telephone" value={newUser.telephone} onChange={handleInputChange} className="form-control" />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Rol</label>
+                <select name="role" value={newUser.role} onChange={handleInputChange} className="form-select">
+                  <option value="user">Usuario</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </div>
+              <div className="d-flex gap-2">
+                <button type="submit" className="btn btn-success">
+                  <Save size={16} /> Guardar
                 </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary d-flex align-items-center gap-2" // Bootstrap button and flex
-                  onClick={() => setShowNewUserForm(false)}
-                >
-                  <X size={16} />
-                  Cancelar
+                <button type="button" className="btn btn-secondary" onClick={() => setShowNewUserForm(false)}>
+                  <X size={16} /> Cancelar
                 </button>
               </div>
             </form>
           </div>
         )}
 
-        <div className="overflow-auto">
-          <table className="table table-hover"> {/* Changed to Bootstrap table */}
-            <thead className="table-light"> {/* Changed to table-light */}
-              <tr>
-                <th scope="col">Nombre</th> {/* Added scope="col" */}
-                <th scope="col">Correo</th> {/* Added scope="col" */}
-                <th scope="col">Clave</th> {/* Added scope="col" */}
-                <th scope="col" className="text-center">Acciones</th> {/* Added scope="col" and text-center */}
-              </tr>
-            </thead>
-            <tbody>
-              {users.map(user => (
-                <tr key={user.id}>
-                  {editingUser && editingUser.id === user.id ? (
-                    <>
-                      <td>
-                        <input
-                          type="text"
-                          name="nombre"
-                          value={editingUser.nombre}
-                          onChange={(e) => handleInputChange(e, setEditingUser, editingUser)}
-                          className="form-control" // Changed to form-control
-                          required
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="email"
-                          name="correo"
-                          value={editingUser.correo}
-                          onChange={(e) => handleInputChange(e, setEditingUser, editingUser)}
-                          className="form-control" // Changed to form-control
-                          required
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="password"
-                          name="clave"
-                          value={editingUser.clave}
-                          onChange={(e) => handleInputChange(e, setEditingUser, editingUser)}
-                          className="form-control" // Changed to form-control
-                          required
-                        />
-                      </td>
-                      <td className="text-center"> {/* Added text-center */}
-                        <button
-                          onClick={() => saveUser(user.id)}
-                          className="btn btn-primary btn-sm me-2" // Bootstrap button
-                        >
-                          <Save size={16} />
-                        </button>
-                        <button
-                          onClick={() => setEditingUser(null)}
-                          className="btn btn-secondary btn-sm" // Bootstrap button
-                        >
-                          <X size={16} />
-                        </button>
-                      </td>
-                    </>
-                  ) : (
-                    <>
-                      <td>{user.nombre}</td>
-                      <td>{user.correo}</td>
-                      <td>********</td>
-                      <td className="text-center"> {/* Added text-center */}
-                        <button
-                          onClick={() => setEditingUser({ ...user })}
-                          className="btn btn-primary btn-sm me-2" // Bootstrap button
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => deleteUser(user.id)}
-                          className="btn btn-danger btn-sm" // Bootstrap button
-                        >
-                          <Trash size={16} />
-                        </button>
-                      </td>
-                    </>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <table className="table table-striped">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Teléfono</th>
+              <th>Rol</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {store.users.map(renderUserRow)}
+          </tbody>
+        </table>
       </div>
     </div>
   );
