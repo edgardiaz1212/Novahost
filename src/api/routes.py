@@ -91,3 +91,8 @@ def get_current_user():
         print(f"Error in protected route: {str(e)}")
         return jsonify({"msg": "Internal server error"}), 500
 
+@api.route('/users', methods=['GET'])
+def get_users():
+    users = User.query.all()
+    users_list = [user.serialize() for user in users]
+    return jsonify(users_list), 200
