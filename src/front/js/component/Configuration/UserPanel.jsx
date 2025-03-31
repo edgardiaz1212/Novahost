@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { User, Plus, Save, X, Edit, Trash } from 'lucide-react';
+import { Plus, Save, X, Edit, Trash } from 'lucide-react';
 import { Context } from '../../store/appContext'; // Import the Context
 
 function UsersPanel() {
   const { store, actions } = useContext(Context); // Use the Context
-  const [newUser, setNewUser] = useState({ nombre: "", correo: "", password: "", telephone: "", role: "user" });
+  const [newUser, setNewUser] = useState({ userName: "", email: "", password: "", telephone: "", role: "user" });
   const [showNewUserForm, setShowNewUserForm] = useState(false);
   const [error, setError] = useState(null);
 
@@ -22,7 +22,7 @@ function UsersPanel() {
     setError(null);
     const success = await actions.addUser(newUser);
     if (success) {
-      setNewUser({ nombre: "", correo: "", password: "", telephone: "", role: "user" });
+      setNewUser({ userName: "", email: "", password: "", telephone: "", role: "user" });
       setShowNewUserForm(false);
     } else {
       setError("Failed to add user. Please check the form and try again."); // Or get the error message from the backend
@@ -65,11 +65,11 @@ function UsersPanel() {
             <form onSubmit={(e) => { e.preventDefault(); addUser(); }}>
               <div className="mb-3">
                 <label className="form-label">Nombre</label>
-                <input type="text" name="nombre" value={newUser.nombre} onChange={handleInputChange} className="form-control" required />
+                <input type="text" name="userName" value={newUser.userName} onChange={handleInputChange} className="form-control" required />
               </div>
               <div className="mb-3">
                 <label className="form-label">Correo</label>
-                <input type="email" name="correo" value={newUser.correo} onChange={handleInputChange} className="form-control" required />
+                <input type="email" name="email" value={newUser.email} onChange={handleInputChange} className="form-control" required />
               </div>
               <div className="mb-3">
                 <label className="form-label">Clave</label>

@@ -237,7 +237,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       addUser: async (userData) => {
         const store = getStore();
         const token = sessionStorage.getItem("token");
-
+        console.log("flux",token)
         try {
           const response = await fetch(
             `${process.env.REACT_APP_BACKEND_URL}/add-user`,
