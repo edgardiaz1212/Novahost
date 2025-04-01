@@ -27,8 +27,8 @@ function Configuration() {
 
   // New state for clients
   const [clients, setClients] = useState([
-    { id: 1, razonSocial: "Cliente Ejemplo 1", rif: "J-123456789" },
-    { id: 2, razonSocial: "Cliente Ejemplo 2", rif: "G-987654321" },
+    { id: 1, razon_social: "Cliente Ejemplo 1", rif: "J-123456789" },
+    { id: 2, razon_social: "Cliente Ejemplo 2", rif: "G-987654321" },
   ]);
 
   // State for editing
@@ -46,7 +46,7 @@ function Configuration() {
   });
   // New state for new clients
   const [newClient, setNewClient] = useState({
-    razonSocial: "", rif: ""
+    razon_social: "", rif: ""
   });
 
   // State for showing forms
@@ -82,9 +82,9 @@ function Configuration() {
 
   // New function to add a client
   const addClient = () => {
-    if (newClient.razonSocial && newClient.rif) {
+    if (newClient.razon_social && newClient.rif) {
       setClients([...clients, { id: clients.length + 2, ...newClient }]);
-      setNewClient({ razonSocial: "", rif: "" });
+      setNewClient({ razon_social: "", rif: "" });
       setShowNewClientForm(false);
     }
   };
@@ -239,20 +239,7 @@ function Configuration() {
       // New case for clients
       case 'clientes':
         return (
-          <ClientsPanel
-            clients={clients}
-            setClients={setClients}
-            newClient={newClient}
-            setNewClient={setNewClient}
-            showNewClientForm={showNewClientForm}
-            setShowNewClientForm={setShowNewClientForm}
-            handleInputChange={handleInputChange}
-            addClient={addClient}
-            editingClient={editingClient}
-            setEditingClient={setEditingClient}
-            saveClient={saveClient}
-            deleteClient={deleteClient}
-          />
+          <ClientsPanel/>
         );
       default:
         return null;

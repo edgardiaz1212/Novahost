@@ -600,6 +600,132 @@ deleteService: async (serviceId) => {
     return false;
   }
 },
+//Gestion de Clientes Usuario Final
+// Fetch clients
+fetchClients: async () => {
+  const store = getStore();
+  try {
+      const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/clients`,
+          {
+              method: "GET",
+              headers: {
+                  "Content-Type": "application/json",
+              },
+          }
+      );
+      if (response.ok) {
+          const data = await response.json();
+          setStore({ clients: data });
+          console.log("Clients fetched:", data);
+          return data;
+      } else {
+          console.error("Failed to fetch clients");
+          return false;
+      }
+  } catch (error) {
+      console.error("Error fetching clients:", error);
+      return false;
+  }
+},
+
+// Add a new client
+addClient: async (clientData) => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+      const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/add-client`,
+          {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`,
+              },
+              body: JSON.stringify(clientData),
+          }
+      );
+
+      if (response.ok) {
+          const data = await response.json();
+          console.log("Client added successfully:", data);
+          getActions().fetchClients(); // Refresh client list
+          return true;
+      } else {
+          const errorData = await response.json();
+          console.error("Failed to add client:", errorData);
+          return false;
+      }
+  } catch (error) {
+      console.error("Error adding client:", error);
+      return false;
+  }
+},
+
+// Update an existing client
+updateClient: async (clientId, clientData) => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+      const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/edit-client/${clientId}`,
+          {
+              method: "PUT",
+              headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`,
+              },
+              body: JSON.stringify(clientData),
+          }
+      );
+
+      if (response.ok) {
+          const data = await response.json();
+          console.log("Client updated successfully:", data);
+          getActions().fetchClients(); // Refresh client list
+          return true;
+      } else {
+          const errorData = await response.json();
+          console.error("Failed to update client:", errorData);
+          return false;
+      }
+  } catch (error) {
+      console.error("Error updating client:", error);
+      return false;
+  }
+},
+
+// Delete a client
+deleteClient: async (clientId) => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+      const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/delete-client/${clientId}`,
+          {
+              method: "DELETE",
+              headers: {
+                  "Authorization": `Bearer ${token}`,
+              },
+          }
+      );
+
+      if (response.ok) {
+          const data = await response.json();
+          console.log("Client deleted successfully:", data);
+          getActions().fetchClients(); // Refresh client list
+          return true;
+      } else {
+          const errorData = await response.json();
+          console.error("Failed to delete client:", errorData);
+          return false;
+      }
+  } catch (error) {
+      console.error("Error deleting client:", error);
+      return false;
+  }
+},
+
 
       // Fetch server resources
       fetchServerResources: async () => {
@@ -656,33 +782,7 @@ deleteService: async (serviceId) => {
         }
       },
 
-      // Fetch clients
-      fetchClients: async () => {
-        const store = getStore();
-        try {
-          const response = await fetch(
-            `${process.env.REACT_APP_BACKEND_URL}/clients`, // Replace with your actual endpoint
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          if (response.ok) {
-            const data = await response.json();
-            setStore({ clients: data }); // Update the store with fetched data
-            console.log("Clients fetched:", data);
-            return data;
-          } else {
-            console.error("Failed to fetch clients");
-            return false;
-          }
-        } catch (error) {
-          console.error("Error fetching clients:", error);
-          return false;
-        }
-      },
+     
     },
   };
 };

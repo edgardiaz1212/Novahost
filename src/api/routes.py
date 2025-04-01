@@ -176,3 +176,56 @@ def delete_service(service_id):
     db.session.commit()
     return jsonify({"msg": "Service deleted successfully"}), 200
 
+#**Gestion de clientes Usuario Final**
+# Get all clients
+@api.route('/clients', methods=['GET'])
+def get_clients():
+    clients = FinalUser.query.all()
+    clients_list = [client.serialize() for client in clients]
+    return jsonify(clients_list), 200
+
+# Add a new client
+@api.route('/add-client', methods=['POST'])
+@jwt_required()
+def add_client():
+    data = request.get_json()
+    if not data.get('razon_social') or not data.get('rif'):
+        return jsonify({"msg": "Razon Social and RIF are required"}), 400
+    
+    client = FinalUser(
+        razon_social=data['razon_social'],
+        rif=data['rif']
+    )
+    db.session.add(client)
+    db.session.commit()
+    return jsonify({"msg": "Client created successfully", "client": client.serialize()}), 201
+
+# Update an existing client
+@api.route('/edit-client/<int:client_id>', methods=['PUT'])
+@jwt_required()
+def edit_client(client_id):
+    data = request.get_json()
+    client = FinalUser.query.get(client_id)
+    if not client:
+        return jsonify({"msg": "Client not found"}), 404
+    
+    if not data.get('razon_social') or not data.get('rif'):
+        return jsonify({"msg": "Razon Social and RIF are required"}), 400
+    
+    client.razon_social = data.get('razon_social', client.razon_social)
+    client.rif = data.get('rif', client.rif)
+    db.session.commit()
+    return jsonify({"msg": "Client updated successfully", "client": client.serialize()}), 200
+
+# Delete a client
+@api.route('/delete-client/<int:client_id>', methods=['DELETE'])
+@jwt_required()
+def delete_client(client_id):
+    client = FinalUser.query.get(client_id)
+    if not client:
+        return jsonify({"msg": "Client not found"}), 404
+    db.session.delete(client)
+    db.session.commit()
+    return jsonify({"msg": "Client deleted successfully"}), 200
+
+
