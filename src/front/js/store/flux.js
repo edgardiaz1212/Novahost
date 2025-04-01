@@ -16,6 +16,8 @@ const getState = ({ getStore, getActions, setStore }) => {
       tokenExpiresIn: sessionStorage.getItem("tokenExpiresIn") || null, // Store token expiration
       services: [], 
       virtualMachines: [], 
+      hypervisors: [],
+      hypervisorVMs: [],
     },
 
     actions: {
@@ -781,7 +783,158 @@ deleteVirtualMachine: async (vmId) => {
           return false;
         }
       },
+// ***Gestion de Hypervisores***
+fetchHypervisors: async () => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+      const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/hypervisors`,
+          {
+              method: "GET",
+              headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`,
+              },
+          }
+      );
+      if (response.ok) {
+          const data = await response.json();
+          setStore({ hypervisors: data });
+          console.log("Hypervisors fetched:", data);
+          return data;
+      } else {
+          console.error("Failed to fetch Hypervisors");
+          return false;
+      }
+  } catch (error) {
+      console.error("Error fetching Hypervisors:", error);
+      return false;
+  }
+},
 
+addHypervisor: async (hypervisorData) => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+      const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/add-hypervisor`,
+          {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`,
+              },
+              body: JSON.stringify(hypervisorData),
+          }
+      );
+
+      if (response.ok) {
+          const data = await response.json();
+          console.log("Hypervisor added successfully:", data);
+          getActions().fetchHypervisors(); // Refresh hypervisor list
+          return true;
+      } else {
+          const errorData = await response.json();
+          console.error("Failed to add Hypervisor:", errorData);
+          return false;
+      }
+  } catch (error) {
+      console.error("Error adding Hypervisor:", error);
+      return false;
+  }
+},
+
+updateHypervisor: async (hypervisorId, hypervisorData) => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+      const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/edit-hypervisor/${hypervisorId}`,
+          {
+              method: "PUT",
+              headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`,
+              },
+              body: JSON.stringify(hypervisorData),
+          }
+      );
+
+      if (response.ok) {
+          const data = await response.json();
+          console.log("Hypervisor updated successfully:", data);
+          getActions().fetchHypervisors(); // Refresh hypervisor list
+          return true;
+      } else {
+          const errorData = await response.json();
+          console.error("Failed to update Hypervisor:", errorData);
+          return false;
+      }
+  } catch (error) {
+      console.error("Error updating Hypervisor:", error);
+      return false;
+  }
+},
+
+deleteHypervisor: async (hypervisorId) => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+      const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/delete-hypervisor/${hypervisorId}`,
+          {
+              method: "DELETE",
+              headers: {
+                  "Authorization": `Bearer ${token}`,
+              },
+          }
+      );
+
+      if (response.ok) {
+          const data = await response.json();
+          console.log("Hypervisor deleted successfully:", data);
+          getActions().fetchHypervisors(); // Refresh hypervisor list
+          return true;
+      } else {
+          const errorData = await response.json();
+          console.error("Failed to delete Hypervisor:", errorData);
+          return false;
+      }
+  } catch (error) {
+      console.error("Error deleting Hypervisor:", error);
+      return false;
+  }
+},
+
+fetchHypervisorVMs: async (hypervisorId) => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+      const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/hypervisor/${hypervisorId}/vms`,
+          {
+              method: "GET",
+              headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`,
+              },
+          }
+      );
+      if (response.ok) {
+          const data = await response.json();
+          setStore({ hypervisorVMs: data });
+          console.log("Hypervisor VMs fetched:", data);
+          return data;
+      } else {
+          console.error("Failed to fetch Hypervisor VMs");
+          return false;
+      }
+  } catch (error) {
+      console.error("Error fetching Hypervisor VMs:", error);
+      return false;
+  }
+},
      
     },
   };

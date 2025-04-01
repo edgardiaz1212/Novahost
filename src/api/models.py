@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timezone
-from sqlalchemy import LargeBinary
+from sqlalchemy import Enum
 from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
@@ -288,3 +288,13 @@ class RequestNoCatalog(db.Model):
         "created_at": self.created_at,
         "updated_at": self.updated_at
     }
+class OperationLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    operation_type = db.Column(db.String(50), nullable=False)  # create, delete, sync, etc.
+    hypervisor_id = db.Column(db.Integer, db.ForeignKey('hypervisor.id'), nullable=True)
+    vm_id = db.Column(db.Integer, db.ForeignKey('virtual_machines.id'), nullable=True)
+    request_id = db.Column(db.Integer, nullable=True)
+    request_type = db.Column(db.String(20), nullable=True)  # catalog, no_catalog
+    status = db.Column(db.String(20), nullable=False)  # success, error
+    message = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))

@@ -1,12 +1,12 @@
 // c:\Users\AdminLocal\Documents\Github\proyectonovahost\Novahost\src\front\js\pages\Configuration.jsx
 import React, { useState, useEffect } from 'react';
-import { User, Server, Monitor, Settings, Info, Cloud } from 'lucide-react'; // Import Building icon
+import { User, Server, Monitor, Settings, Info, Cloud } from 'lucide-react';
 import CurrentUserPanel from '../component/Configuration/CurrentUserPanel';
 import UsersPanel from '../component/Configuration/UserPanel';
 import ServicesPanel from '../component/Configuration/ServicesPanel';
-import OSPanel from '../component/Configuration/OSPanel';
 import VMPanel from '../component/Configuration/VMPanel';
-import ClientsPanel from '../component/Configuration/ClientsPanel'; // Import the new ClientsPanel component
+import ClientsPanel from '../component/Configuration/ClientsPanel';
+import HypervisorPanel from '../component/Configuration/HypervisorPanel.jsx'; // Import HypervisorPanel
 
 function Configuration() {
     // State for active tab
@@ -14,48 +14,6 @@ function Configuration() {
 
     // State for data
     const [users, setUsers] = useState([]);
-
-    const [operatingSystems, setOperatingSystems] = useState([
-        { id: 1, nombre: "Ubuntu", version: "22.04 LTS" },
-        { id: 2, nombre: "Windows Server", version: "2022" }
-    ]);
-
-    // State for editing
-    const [editingOS, setEditingOS] = useState(null);
-
-    // State for new elements
-    const [newOS, setNewOS] = useState({
-        nombre: "", version: ""
-    });
-
-    // State for showing forms
-    const [showNewOSForm, setShowNewOSForm] = useState(false);
-
-    // Handle input changes
-    const handleInputChange = (event, setter, object) => {
-        const { name, value } = event.target;
-        setter({
-            ...object,
-            [name]: value
-        });
-    };
-
-    const addOS = () => {
-        if (newOS.nombre && newOS.version) {
-            setOperatingSystems([...operatingSystems, { id: operatingSystems.length + 2, ...newOS }]);
-            setNewOS({ nombre: "", version: "" });
-            setShowNewOSForm(false);
-        }
-    };
-
-    const saveOS = (id) => {
-        setOperatingSystems(operatingSystems.map(os => os.id === id ? editingOS : os));
-        setEditingOS(null);
-    };
-
-    const deleteOS = (id) => {
-        setOperatingSystems(operatingSystems.filter(os => os.id !== id));
-    };
 
     // Render tabs
     const renderTabs = () => {
@@ -89,15 +47,7 @@ function Configuration() {
                             Servicios
                         </div>
                     </button>
-                    <button
-                        className={`px-4 py-2 rounded-md ${activeTab === 'sistemas' ? 'bg-success bg-opacity-75 text-white ' : 'bg-white'}`}
-                        onClick={() => setActiveTab('sistemas')}
-                    >
-                        <div className="flex items-center gap-2">
-                            <Monitor size={18} />
-                            Sistemas Operativos
-                        </div>
-                    </button>
+                    {/* Remove "Sistemas Operativos" tab */}
                     {/* New tab for VMs */}
                     <button
                         className={`px-4 py-2 rounded-md ${activeTab === 'vms' ? 'bg-success bg-opacity-75 text-white ' : 'bg-white'}`}
@@ -116,6 +66,16 @@ function Configuration() {
                         <div className="flex items-center gap-2">
                             <User size={18} /> {/* Building icon for clients */}
                             Clientes
+                        </div>
+                    </button>
+                    {/* New tab for hypervisors */}
+                    <button
+                        className={`px-4 py-2 rounded-md ${activeTab === 'hypervisors' ? 'bg-success bg-opacity-75 text-white ' : 'bg-white'}`}
+                        onClick={() => setActiveTab('hypervisors')}
+                    >
+                        <div className="flex items-center gap-2">
+                            <Server size={18} />
+                            Hypervisores
                         </div>
                     </button>
                 </div>
@@ -138,23 +98,7 @@ function Configuration() {
                 return (
                     <ServicesPanel />
                 );
-            case 'sistemas':
-                return (
-                    <OSPanel
-                        operatingSystems={operatingSystems}
-                        setOperatingSystems={setOperatingSystems}
-                        newOS={newOS}
-                        setNewOS={setNewOS}
-                        showNewOSForm={showNewOSForm}
-                        setShowNewOSForm={setShowNewOSForm}
-                        handleInputChange={handleInputChange}
-                        addOS={addOS}
-                        editingOS={editingOS}
-                        setEditingOS={setEditingOS}
-                        saveOS={saveOS}
-                        deleteOS={deleteOS}
-                    />
-                );
+            // Remove 'sistemas' case
             // New case for VMs
             case 'vms':
                 return (
@@ -164,6 +108,11 @@ function Configuration() {
             case 'clientes':
                 return (
                     <ClientsPanel />
+                );
+            // New case for hypervisors
+            case 'hypervisors':
+                return (
+                    <HypervisorPanel />
                 );
             default:
                 return null;
@@ -178,7 +127,7 @@ function Configuration() {
                     Configuración del Sistema
                 </h1>
                 <p className="text-gray-600">
-                    Administra usuarios, servicios, sistemas operativos, máquinas virtuales y clientes disponibles.
+                    Administra usuarios, servicios, máquinas virtuales, clientes e hypervisores disponibles.
                 </p>
             </div>
 

@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, FinalUser, PreDefinedPlans, RequestNoCatalog, RequestPreDefinedPlans, VirtualMachines
+from api.models import db, User, FinalUser, PreDefinedPlans, RequestNoCatalog, RequestPreDefinedPlans, VirtualMachines, Hypervisor
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
@@ -228,6 +228,74 @@ def delete_client(client_id):
     db.session.commit()
     return jsonify({"msg": "Client deleted successfully"}), 200
 
+
+# **Gestion de Hypervisores**
+
+# Get all hypervisors
+@api.route('/hypervisors', methods=['GET'])
+@jwt_required()
+def get_hypervisors():
+    hypervisors = Hypervisor.query.all()
+    hypervisors_list = [hypervisor.serialize() for hypervisor in hypervisors]
+    return jsonify(hypervisors_list), 200
+
+# Add a new hypervisor
+@api.route('/add-hypervisor', methods=['POST'])
+@jwt_required()
+def add_hypervisor():
+    data = request.get_json()
+    hypervisor = Hypervisor(
+        name=data['name'],
+        type=data['type'],
+        hostname=data['hostname'],
+        port=data['port'],
+        username=data['username'],
+        password=data['password']
+    )
+    db.session.add(hypervisor)
+    db.session.commit()
+    return jsonify({"msg": "Hypervisor created successfully", "hypervisor": hypervisor.serialize()}), 201
+
+# Update an existing hypervisor
+@api.route('/edit-hypervisor/<int:hypervisor_id>', methods=['PUT'])
+@jwt_required()
+def edit_hypervisor(hypervisor_id):
+    data = request.get_json()
+    hypervisor = Hypervisor.query.get(hypervisor_id)
+    if not hypervisor:
+        return jsonify({"msg": "Hypervisor not found"}), 404
+    hypervisor.name = data.get('name', hypervisor.name)
+    hypervisor.type = data.get('type', hypervisor.type)
+    hypervisor.hostname = data.get('hostname', hypervisor.hostname)
+    hypervisor.port = data.get('port', hypervisor.port)
+    hypervisor.username = data.get('username', hypervisor.username)
+    hypervisor.password = data.get('password', hypervisor.password)
+    db.session.commit()
+    return jsonify({"msg": "Hypervisor updated successfully", "hypervisor": hypervisor.serialize()}), 200
+
+# Delete a hypervisor
+@api.route('/delete-hypervisor/<int:hypervisor_id>', methods=['DELETE'])
+@jwt_required()
+def delete_hypervisor(hypervisor_id):
+    hypervisor = Hypervisor.query.get(hypervisor_id)
+    if not hypervisor:
+        return jsonify({"msg": "Hypervisor not found"}), 404
+    db.session.delete(hypervisor)
+    db.session.commit()
+    return jsonify({"msg": "Hypervisor deleted successfully"}), 200
+
+# Get VMs from a hypervisor
+@api.route('/hypervisor/<int:hypervisor_id>/vms', methods=['GET'])
+@jwt_required()
+def get_hypervisor_vms(hypervisor_id):
+    try:
+        manager = HypervisorManager(hypervisor_id)
+        manager.connect()
+        vms = manager.get_vms()
+        manager.disconnect()
+        return jsonify(vms), 200
+    except Exception as e:
+        return jsonify({"msg": str(e)}), 500
 #**Gestion Maquinas Virtuales**
 # Get all VMs
 @api.route('/virtual-machines', methods=['GET'])
@@ -276,5 +344,3 @@ def delete_virtual_machine(vm_id):
     db.session.delete(vm)
     db.session.commit()
     return jsonify({"msg": "VM deleted successfully"}), 200
-
-
