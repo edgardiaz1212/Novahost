@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Server, Monitor, Settings, Info, Cloud, Building } from 'lucide-react'; // Import Building icon
+import { User, Server, Monitor, Settings, Info, Cloud } from 'lucide-react'; // Import Building icon
 import CurrentUserPanel from '../component/Configuration/CurrentUserPanel';
 import UsersPanel from '../component/Configuration/UserPanel';
 import ServicesPanel from '../component/Configuration/ServicesPanel';
@@ -25,16 +25,9 @@ function Configuration() {
     { id: 2, nombre: "VM-Web01", direccion: "192.168.1.20", plataforma: "Proxmox 1", estado: "Inactivo" },
   ]);
 
-  // New state for clients
-  const [clients, setClients] = useState([
-    { id: 1, razon_social: "Cliente Ejemplo 1", rif: "J-123456789" },
-    { id: 2, razon_social: "Cliente Ejemplo 2", rif: "G-987654321" },
-  ]);
-
   // State for editing
   const [editingOS, setEditingOS] = useState(null);
   const [editingVM, setEditingVM] = useState(null);
-  const [editingClient, setEditingClient] = useState(null); // New state for editing clients
 
   // State for new elements
   const [newOS, setNewOS] = useState({
@@ -44,15 +37,10 @@ function Configuration() {
   const [newVM, setNewVM] = useState({
     nombre: "", direccion: "", plataforma: "", estado: ""
   });
-  // New state for new clients
-  const [newClient, setNewClient] = useState({
-    razon_social: "", rif: ""
-  });
 
   // State for showing forms
   const [showNewOSForm, setShowNewOSForm] = useState(false);
   const [showNewVMForm, setShowNewVMForm] = useState(false);
-  const [showNewClientForm, setShowNewClientForm] = useState(false); // New state for showing the new client form
 
   // Handle input changes
   const handleInputChange = (event, setter, object) => {
@@ -80,15 +68,6 @@ function Configuration() {
     }
   };
 
-  // New function to add a client
-  const addClient = () => {
-    if (newClient.razon_social && newClient.rif) {
-      setClients([...clients, { id: clients.length + 2, ...newClient }]);
-      setNewClient({ razon_social: "", rif: "" });
-      setShowNewClientForm(false);
-    }
-  };
-
   const saveOS = (id) => {
     setOperatingSystems(operatingSystems.map(os => os.id === id ? editingOS : os));
     setEditingOS(null);
@@ -100,12 +79,6 @@ function Configuration() {
     setEditingVM(null);
   };
 
-  // New function to save an edited client
-  const saveClient = (id) => {
-    setClients(clients.map(client => client.id === id ? editingClient : client));
-    setEditingClient(null);
-  };
-
   const deleteOS = (id) => {
     setOperatingSystems(operatingSystems.filter(os => os.id !== id));
   };
@@ -113,11 +86,6 @@ function Configuration() {
   // New function to delete a VM
   const deleteVM = (id) => {
     setVms(vms.filter(vm => vm.id !== id));
-  };
-
-  // New function to delete a client
-  const deleteClient = (id) => {
-    setClients(clients.filter(client => client.id !== id));
   };
 
   // Render tabs
@@ -177,7 +145,7 @@ function Configuration() {
             onClick={() => setActiveTab('clientes')}
           >
             <div className="flex items-center gap-2">
-              <Building size={18} /> {/* Building icon for clients */}
+              <User size={18} /> {/* Building icon for clients */}
               Clientes
             </div>
           </button>
