@@ -14,11 +14,6 @@ function Configuration() {
   // State for data
   const [users, setUsers] = useState([]);
 
-  const [services, setServices] = useState([
-    { id: 1, nombre: "Servicio Base", ram: 4, disco: 100, procesador: 2 },
-    { id: 2, nombre: "Servicio Premium", ram: 16, disco: 500, procesador: 8 }
-  ]);
-
   const [operatingSystems, setOperatingSystems] = useState([
     { id: 1, nombre: "Ubuntu", version: "22.04 LTS" },
     { id: 2, nombre: "Windows Server", version: "2022" }
@@ -37,19 +32,11 @@ function Configuration() {
   ]);
 
   // State for editing
-  const [editingUser, setEditingUser] = useState(null);
-  const [editingService, setEditingService] = useState(null);
   const [editingOS, setEditingOS] = useState(null);
   const [editingVM, setEditingVM] = useState(null);
   const [editingClient, setEditingClient] = useState(null); // New state for editing clients
 
   // State for new elements
-  const [newUser, setNewUser] = useState({
-    nombre: "", correo: "", clave: ""
-  });
-  const [newService, setNewService] = useState({
-    nombre: "", ram: "", disco: "", procesador: ""
-  });
   const [newOS, setNewOS] = useState({
     nombre: "", version: ""
   });
@@ -63,8 +50,6 @@ function Configuration() {
   });
 
   // State for showing forms
-  const [showNewUserForm, setShowNewUserForm] = useState(false);
-  const [showNewServiceForm, setShowNewServiceForm] = useState(false);
   const [showNewOSForm, setShowNewOSForm] = useState(false);
   const [showNewVMForm, setShowNewVMForm] = useState(false);
   const [showNewClientForm, setShowNewClientForm] = useState(false); // New state for showing the new client form
@@ -76,23 +61,6 @@ function Configuration() {
       ...object,
       [name]: value
     });
-  };
-
-  // Add new elements
-  const addUser = () => {
-    if (newUser.nombre && newUser.correo && newUser.clave) {
-      setUsers([...users, { id: users.length + 2, ...newUser }]);
-      setNewUser({ nombre: "", correo: "", clave: "" });
-      setShowNewUserForm(false);
-    }
-  };
-
-  const addService = () => {
-    if (newService.nombre && newService.ram && newService.disco && newService.procesador) {
-      setServices([...services, { id: services.length + 2, ...newService }]);
-      setNewService({ nombre: "", ram: "", disco: "", procesador: "" });
-      setShowNewServiceForm(false);
-    }
   };
 
   const addOS = () => {
@@ -121,17 +89,6 @@ function Configuration() {
     }
   };
 
-  // Save edited elements
-  const saveUser = (id) => {
-    setUsers(users.map(user => user.id === id ? editingUser : user));
-    setEditingUser(null);
-  };
-
-  const saveService = (id) => {
-    setServices(services.map(service => service.id === id ? editingService : service));
-    setEditingService(null);
-  };
-
   const saveOS = (id) => {
     setOperatingSystems(operatingSystems.map(os => os.id === id ? editingOS : os));
     setEditingOS(null);
@@ -147,15 +104,6 @@ function Configuration() {
   const saveClient = (id) => {
     setClients(clients.map(client => client.id === id ? editingClient : client));
     setEditingClient(null);
-  };
-
-  // Delete elements
-  const deleteUser = (id) => {
-    setUsers(users.filter(user => user.id !== id));
-  };
-
-  const deleteService = (id) => {
-    setServices(services.filter(service => service.id !== id));
   };
 
   const deleteOS = (id) => {
@@ -251,20 +199,7 @@ function Configuration() {
         );
       case 'servicios':
         return (
-          <ServicesPanel
-            services={services}
-            setServices={setServices}
-            newService={newService}
-            setNewService={setNewService}
-            showNewServiceForm={showNewServiceForm}
-            setShowNewServiceForm={setShowNewServiceForm}
-            handleInputChange={handleInputChange}
-            addService={addService}
-            editingService={editingService}
-            setEditingService={setEditingService}
-            saveService={saveService}
-            deleteService={deleteService}
-          />
+          <ServicesPanel/>
         );
       case 'sistemas':
         return (

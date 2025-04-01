@@ -61,9 +61,9 @@ class FinalUser(db.Model):
 
 class PreDefinedPlans(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    nombre_plan = db.Column(db.String(80), nullable=False)
+    name  = db.Column(db.String(80), nullable=False)
     ram = db.Column(db.String(120), nullable=False)
-    hdd = db.Column(db.String(120), nullable=False)
+    disk = db.Column(db.String(120), nullable=False)
     processor = db.Column(db.String(120), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
@@ -72,10 +72,10 @@ class PreDefinedPlans(db.Model):
 
     serialize = lambda self: {
         "id": self.id,
-        "nombre_plan": self.nombre_plan,
+        "nombre": self.name ,
         "ram": self.ram,
-        "hdd": self.hdd,
-        "processor": self.processor,
+        "disco": self.disk,
+        "procesador": self.processor,
         "created_at": self.created_at,
         "updated_at": self.updated_at
     }

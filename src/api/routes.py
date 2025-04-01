@@ -13,6 +13,24 @@ api = Blueprint('api', __name__)
 # Allow CORS requests to this API
 CORS(api)
 
+@api.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user or not user.check_password(password):
+        return jsonify({"msg": "Bad email or password"}), 401
+
+    access_token = create_access_token(identity=str(user.id))
+    return jsonify({
+        "token": access_token, 
+        "user": user.serialize(),
+        "expires_in": 7200  # 2 hours in seconds
+    }), 200
+##Gestion de usuarios**
 # Creation, editing, deletion of user 
 @api.route('/add-user', methods=['POST'])
 def add_user():
@@ -74,24 +92,6 @@ def delete_user(user_id):
         print(f"Error deleting user: {e}")
         return jsonify({"msg": "Error deleting user"}), 500
 
-@api.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
-
-    user = User.query.filter_by(email=email).first()
-
-    if not user or not user.check_password(password):
-        return jsonify({"msg": "Bad email or password"}), 401
-
-    access_token = create_access_token(identity=str(user.id))
-    return jsonify({
-        "token": access_token, 
-        "user": user.serialize(),
-        "expires_in": 7200  # 2 hours in seconds
-    }), 200
-
 @api.route('/current-user', methods=['GET'])
 @jwt_required()
 def get_current_user():
@@ -127,3 +127,52 @@ def get_users():
     users = User.query.all()
     users_list = [user.serialize() for user in users]
     return jsonify(users_list), 200
+# **Gestion de servicios**
+# Get all services
+@api.route('/services', methods=['GET'])
+def get_services():
+    services = PreDefinedPlans.query.all() # Changed to PreDefinedPlans
+    services_list = [service.serialize() for service in services]
+    return jsonify(services_list), 200
+
+# Add a new service
+@api.route('/add-service', methods=['POST'])
+@jwt_required()
+def add_service():
+    data = request.get_json()
+    service = PreDefinedPlans( # Changed to PreDefinedPlans
+        name=data['nombre'],
+        ram=data['ram'],
+        disk=data['disco'],
+        processor=data['procesador']
+    )
+    db.session.add(service)
+    db.session.commit()
+    return jsonify({"msg": "Service created successfully", "service": service.serialize()}), 200
+
+# Update an existing service
+@api.route('/edit-service/<int:service_id>', methods=['PUT'])
+@jwt_required()
+def edit_service(service_id):
+    data = request.get_json()
+    service = PreDefinedPlans.query.get(service_id) # Changed to PreDefinedPlans
+    if not service:
+        return jsonify({"msg": "Service not found"}), 404
+    service.name = data.get('nombre', service.name)
+    service.ram = data.get('ram', service.ram)
+    service.disk = data.get('disco', service.disk)
+    service.processor = data.get('procesador', service.processor)
+    db.session.commit()
+    return jsonify({"msg": "Service updated successfully", "service": service.serialize()}), 200
+
+# Delete a service
+@api.route('/delete-service/<int:service_id>', methods=['DELETE'])
+@jwt_required()
+def delete_service(service_id):
+    service = PreDefinedPlans.query.get(service_id) # Changed to PreDefinedPlans
+    if not service:
+        return jsonify({"msg": "Service not found"}), 404
+    db.session.delete(service)
+    db.session.commit()
+    return jsonify({"msg": "Service deleted successfully"}), 200
+

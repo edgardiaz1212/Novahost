@@ -12,8 +12,9 @@ const getState = ({ getStore, getActions, setStore }) => {
       requests: [], // Add a store variable for requests
       users: [], // Add a store variable for users
       clients: [], // Add a store variable for clients
-      token: storedToken || null,// Initialize with session storage value
+      token: storedToken || null, // Initialize with session storage value
       tokenExpiresIn: sessionStorage.getItem("tokenExpiresIn") || null, // Store token expiration
+      services: [], 
     },
 
     actions: {
@@ -33,54 +34,54 @@ const getState = ({ getStore, getActions, setStore }) => {
           );
           if (response.ok) {
             const data = await response.json();
-            setStore({ 
-              user: data.user, 
+            setStore({
+              user: data.user,
               isAuthenticated: true,
               token: data.token,
-              tokenExpiresIn: data.expires_in // New field for token expiration
+              tokenExpiresIn: data.expires_in, // New field for token expiration
             });
-            
+
             // Update session storage
             sessionStorage.setItem("isAuthenticated", "true");
             sessionStorage.setItem("user", JSON.stringify(data.user));
             sessionStorage.setItem("token", data.token);
             sessionStorage.setItem("tokenExpiresIn", data.expires_in);
-            
+
             console.log("Autenticado", data.user, data.token);
             return data;
           } else {
             // Reset authentication on failure
-            setStore({ 
-              isAuthenticated: false, 
-              user: null, 
+            setStore({
+              isAuthenticated: false,
+              user: null,
               token: null,
-              tokenExpiresIn: null 
+              tokenExpiresIn: null,
             });
-            
+
             // Clear session storage
             sessionStorage.removeItem("isAuthenticated");
             sessionStorage.removeItem("user");
             sessionStorage.removeItem("token");
             sessionStorage.removeItem("tokenExpiresIn");
-            
+
             console.log("Error al autenticar");
             return false;
           }
         } catch (error) {
           // Reset authentication on error
-          setStore({ 
-            isAuthenticated: false, 
-            user: null, 
+          setStore({
+            isAuthenticated: false,
+            user: null,
             token: null,
-            tokenExpiresIn: null 
+            tokenExpiresIn: null,
           });
-          
+
           // Clear session storage
           sessionStorage.removeItem("isAuthenticated");
           sessionStorage.removeItem("user");
           sessionStorage.removeItem("token");
           sessionStorage.removeItem("tokenExpiresIn");
-          
+
           console.log("Error during login", error);
           return false;
         }
@@ -95,7 +96,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             {
               method: "POST",
               headers: {
-                "Authorization": `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
               },
             }
           );
@@ -107,13 +108,13 @@ const getState = ({ getStore, getActions, setStore }) => {
               token: null,
               tokenExpiresIn: null,
             });
-    
+
             // Clear session storage completely
             sessionStorage.removeItem("isAuthenticated");
             sessionStorage.removeItem("user");
             sessionStorage.removeItem("token");
             sessionStorage.removeItem("tokenExpiresIn");
-    
+
             console.log("Logout successful");
             return true;
           } else {
@@ -125,84 +126,109 @@ const getState = ({ getStore, getActions, setStore }) => {
           return false;
         }
       },
-    
+      // ***Gestion de usuarios***
       fetchCurrentUser: async () => {
         const store = getStore();
         const token = sessionStorage.getItem("token");
         try {
-          
           // If no token, immediately return false
           if (!token) {
             console.log("No authentication token found");
-            setStore({ 
-              user: null, 
-              isAuthenticated: false 
+            setStore({
+              user: null,
+              isAuthenticated: false,
             });
             return false;
           }
-      
+
           const response = await fetch(
-            `${process.env.REACT_APP_BACKEND_URL}/current-user`, 
+            `${process.env.REACT_APP_BACKEND_URL}/current-user`,
             {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                Authorization: `Bearer ${token}`,
               },
             }
           );
-      
+
           if (response.ok) {
             const data = await response.json();
-            
+
             // Update store with user data
-            setStore({ 
+            setStore({
               user: data.user,
-              isAuthenticated: true
+              isAuthenticated: true,
             });
-      
+
             // Update session storage
             sessionStorage.setItem("user", JSON.stringify(data.user));
-            
+
             console.log("Current user fetched successfully", data.user);
             return data.user;
           } else {
             // Handle authentication failure
             console.log("Failed to fetch current user");
-            
+
             // Clear authentication
-            setStore({ 
-              user: null, 
+            setStore({
+              user: null,
               isAuthenticated: false,
-              token: null
+              token: null,
             });
-            
+
             // Clear session storage
             sessionStorage.removeItem("user");
             sessionStorage.removeItem("token");
             sessionStorage.removeItem("isAuthenticated");
-            
+
             return false;
           }
         } catch (error) {
           console.error("Error fetching current user:", error);
-          
+
           // Clear authentication on error
-          setStore({ 
-            user: null, 
+          setStore({
+            user: null,
             isAuthenticated: false,
-            token: null
+            token: null,
           });
-          
+
           // Clear session storage
           sessionStorage.removeItem("user");
           sessionStorage.removeItem("token");
           sessionStorage.removeItem("isAuthenticated");
-          
+
           return false;
         }
       },
-      
+      // Fetch users
+      fetchUsers: async () => {
+        const store = getStore();
+        try {
+          const response = await fetch(
+            `${process.env.REACT_APP_BACKEND_URL}/users`, // Replace with your actual endpoint
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          if (response.ok) {
+            const data = await response.json();
+            setStore({ users: data }); // Update the store with fetched data
+            console.log("Users fetched:", data);
+            return data;
+          } else {
+            console.error("Failed to fetch users");
+            return false;
+          }
+        } catch (error) {
+          console.error("Error fetching users:", error);
+          return false;
+        }
+      },
       // Update current user
       updateCurrentUser: async (userData) => {
         const store = getStore();
@@ -213,7 +239,7 @@ const getState = ({ getStore, getActions, setStore }) => {
               method: "PUT",
               headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+                Authorization: `Bearer ${sessionStorage.getItem("token")}`,
               },
               body: JSON.stringify(userData),
             }
@@ -236,69 +262,35 @@ const getState = ({ getStore, getActions, setStore }) => {
       updateUser: async (userId, userData) => {
         const store = getStore();
         try {
-            const response = await fetch(
-                `${process.env.REACT_APP_BACKEND_URL}/edit-user/${userId}`, // New endpoint with user ID
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${sessionStorage.getItem("token")}`
-                    },
-                    body: JSON.stringify(userData),
-                }
-            );
-            if (response.ok) {
-                const data = await response.json();
-                console.log("User updated:", data);
-                getActions().fetchUsers(); // Refresh user list after update
-                return true;
-            } else {
-                console.error("Failed to update user");
-                return false;
+          const response = await fetch(
+            `${process.env.REACT_APP_BACKEND_URL}/edit-user/${userId}`, // New endpoint with user ID
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+              },
+              body: JSON.stringify(userData),
             }
-        } catch (error) {
-            console.error("Error updating user:", error);
+          );
+          if (response.ok) {
+            const data = await response.json();
+            console.log("User updated:", data);
+            getActions().fetchUsers(); // Refresh user list after update
+            return true;
+          } else {
+            console.error("Failed to update user");
             return false;
-        }
-    },
-
-    deleteUser: async (userId) => {
-      const store = getStore();
-      try {
-      
-        const token = sessionStorage.getItem('token'); // Use sessionStorage
-        if (!token) {
-          console.error("No token found for delete user.");
-          return false;
-        }
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/delete-user/${userId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}` // Correctly format the token
           }
-        });
-    
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error("Error deleting user:", errorData);
+        } catch (error) {
+          console.error("Error updating user:", error);
           return false;
         }
-    
-        const data = await response.json();
-        console.log("User deleted successfully:", data);
-        getActions().fetchUsers();
-        return true;
-      } catch (error) {
-        console.error("Error deleting user:", error);
-        console.log(store.token)
-        return false;
-      }
-    },
-    
+      },
       addUser: async (userData) => {
         const store = getStore();
         const token = sessionStorage.getItem("token");
-        console.log("flux",token)
+        console.log("flux", token);
         try {
           const response = await fetch(
             `${process.env.REACT_APP_BACKEND_URL}/add-user`,
@@ -306,7 +298,7 @@ const getState = ({ getStore, getActions, setStore }) => {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}` // Add authorization header
+                Authorization: `Bearer ${token}`, // Add authorization header
               },
               body: JSON.stringify(userData),
             }
@@ -327,8 +319,289 @@ const getState = ({ getStore, getActions, setStore }) => {
           return false; // Or throw an error
         }
       },
+      deleteUser: async (userId) => {
+        const store = getStore();
+        try {
+          const token = sessionStorage.getItem("token"); // Use sessionStorage
+          if (!token) {
+            console.error("No token found for delete user.");
+            return false;
+          }
+          const response = await fetch(
+            `${process.env.REACT_APP_BACKEND_URL}/delete-user/${userId}`,
+            {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${token}`, // Correctly format the token
+              },
+            }
+          );
 
-          // Fetch server resources
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error deleting user:", errorData);
+            return false;
+          }
+
+          const data = await response.json();
+          console.log("User deleted successfully:", data);
+          getActions().fetchUsers();
+          return true;
+        } catch (error) {
+          console.error("Error deleting user:", error);
+          console.log(store.token);
+          return false;
+        }
+      },
+//***Gestion servicios*** 
+fetchServices: async () => {
+  const store = getStore();
+  try {
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/services`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      setStore({ services: data });
+      console.log("Services fetched:", data);
+      return data;
+    } else {
+      console.error("Failed to fetch services");
+      return false;
+    }
+  } catch (error) {
+    console.error("Error fetching services:", error);
+    return false;
+  }
+},
+
+// Add a new service
+addService: async (serviceData) => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/add-service`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // Add authorization header
+        },
+        body: JSON.stringify(serviceData),
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log("Service added successfully:", data);
+      getActions().fetchServices(); // Refresh service list
+      return true;
+    } else {
+      const errorData = await response.json();
+      console.error("Failed to add service:", errorData);
+      return false;
+    }
+  } catch (error) {
+    console.error("Error adding service:", error);
+    return false;
+  }
+},
+
+// Update an existing service
+updateService: async (serviceId, serviceData) => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/edit-service/${serviceId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // Add authorization header
+        },
+        body: JSON.stringify(serviceData),
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log("Service updated successfully:", data);
+      getActions().fetchServices(); // Refresh service list
+      return true;
+    } else {
+      const errorData = await response.json();
+      console.error("Failed to update service:", errorData);
+      return false;
+    }
+  } catch (error) {
+    console.error("Error updating service:", error);
+    return false;
+  }
+},
+
+// Delete a service
+deleteService: async (serviceId) => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/delete-service/${serviceId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`, // Add authorization header
+        },
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log("Service deleted successfully:", data);
+      getActions().fetchServices(); // Refresh service list
+      return true;
+    } else {
+      const errorData = await response.json();
+      console.error("Failed to delete service:", errorData);
+      return false;
+    }
+  } catch (error) {
+    console.error("Error deleting service:", error);
+    return false;
+  }
+}, // Fetch services
+fetchServices: async () => {
+  const store = getStore();
+  try {
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/services`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      setStore({ services: data });
+      console.log("Services fetched:", data);
+      return data;
+    } else {
+      console.error("Failed to fetch services");
+      return false;
+    }
+  } catch (error) {
+    console.error("Error fetching services:", error);
+    return false;
+  }
+},
+
+// Add a new service
+addService: async (serviceData) => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/add-service`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // Add authorization header
+        },
+        body: JSON.stringify(serviceData),
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log("Service added successfully:", data);
+      getActions().fetchServices(); // Refresh service list
+      return true;
+    } else {
+      const errorData = await response.json();
+      console.error("Failed to add service:", errorData);
+      return false;
+    }
+  } catch (error) {
+    console.error("Error adding service:", error);
+    return false;
+  }
+},
+
+// Update an existing service
+updateService: async (serviceId, serviceData) => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/edit-service/${serviceId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // Add authorization header
+        },
+        body: JSON.stringify(serviceData),
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log("Service updated successfully:", data);
+      getActions().fetchServices(); // Refresh service list
+      return true;
+    } else {
+      const errorData = await response.json();
+      console.error("Failed to update service:", errorData);
+      return false;
+    }
+  } catch (error) {
+    console.error("Error updating service:", error);
+    return false;
+  }
+},
+
+// Delete a service
+deleteService: async (serviceId) => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/delete-service/${serviceId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`, // Add authorization header
+        },
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log("Service deleted successfully:", data);
+      getActions().fetchServices(); // Refresh service list
+      return true;
+    } else {
+      const errorData = await response.json();
+      console.error("Failed to delete service:", errorData);
+      return false;
+    }
+  } catch (error) {
+    console.error("Error deleting service:", error);
+    return false;
+  }
+},
+
+      // Fetch server resources
       fetchServerResources: async () => {
         const store = getStore();
         try {
@@ -382,34 +655,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           return false;
         }
       },
-      
-      // Fetch users
-      fetchUsers: async () => {
-        const store = getStore();
-        try {
-          const response = await fetch(
-            `${process.env.REACT_APP_BACKEND_URL}/users`, // Replace with your actual endpoint
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          if (response.ok) {
-            const data = await response.json();
-            setStore({ users: data }); // Update the store with fetched data
-            console.log("Users fetched:", data);
-            return data;
-          } else {
-            console.error("Failed to fetch users");
-            return false;
-          }
-        } catch (error) {
-          console.error("Error fetching users:", error);
-          return false;
-        }
-      },
+
       // Fetch clients
       fetchClients: async () => {
         const store = getStore();
