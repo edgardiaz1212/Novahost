@@ -1,19 +1,29 @@
 import React, { useState } from 'react';
 import { Search, Filter } from 'lucide-react';
 
-function RequestsTable({ requests }) {
+function RequestsTable({ requests, hypervisors }) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
 
-  const filteredRequests = requests.filter(request =>
-    request.id.toString().includes(searchTerm) ||
-    request.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    request.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    request.status.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter requests that are "En Proceso"
+  const inProgressRequests = requests.filter(
+    (request) => request.status === 'En Proceso'
   );
+
+  // Filter requests based on search term
+  const filteredRequests = inProgressRequests.filter((request) => {
+    const hypervisorName = hypervisors.find(h => h.id === request.hypervisor_id)?.name || 'N/A';
+    return (
+      request.id.toString().includes(searchTerm) ||
+      request.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      hypervisorName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
 
   return (
     <div className="card shadow-sm">
@@ -49,27 +59,32 @@ function RequestsTable({ requests }) {
               <th scope="col">Cliente</th>
               <th scope="col">Servicio</th>
               <th scope="col">Estado</th>
+              <th scope="col">Hypervisor</th> {/* New column */}
               <th scope="col">Fecha</th>
             </tr>
           </thead>
           <tbody>
-            {filteredRequests.map((request) => (
-              <tr key={request.id}>
-                <td>#{request.id}</td>
-                <td>{request.client}</td>
-                <td>{request.service}</td>
-                <td>
-                  <span className={`badge ${
-                    request.status === 'Completado' ? 'bg-success' :
-                    request.status === 'En Proceso' ? 'bg-primary' :
-                    'bg-warning'
-                  }`}>
-                    {request.status}
-                  </span>
-                </td>
-                <td>{request.date}</td>
-              </tr>
-            ))}
+            {filteredRequests.map((request) => {
+              const hypervisorName = hypervisors.find(h => h.id === request.hypervisor_id)?.name || 'N/A';
+              return (
+                <tr key={request.id}>
+                  <td>#{request.id}</td>
+                  <td>{request.client}</td>
+                  <td>{request.service}</td>
+                  <td>
+                    <span className={`badge ${
+                      request.status === 'Completado' ? 'bg-success' :
+                      request.status === 'En Proceso' ? 'bg-primary' :
+                      'bg-warning'
+                    }`}>
+                      {request.status}
+                    </span>
+                  </td>
+                  <td>{hypervisorName}</td> {/* Display hypervisor name */}
+                  <td>{request.date}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

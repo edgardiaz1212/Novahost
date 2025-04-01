@@ -33,9 +33,9 @@ function Dahsboard() {
   // Simulate stats data - replace with actual data if needed
   const stats = {
     completed: requests.filter(req => req.status === "Completado").length,
-    pending: requests.filter(req => req.status === "Pendiente").length,
+    failed: requests.filter(req => req.status === "Falla").length, // New: Count failed requests
     inProgress: requests.filter(req => req.status === "En Proceso").length,
-    total: requests.length
+    total: virtualMachines.length, // Changed: Total is now the number of virtual machines
   };
 
   return (
@@ -61,15 +61,15 @@ function Dahsboard() {
           </div>
           <div className="col">
             <StatCard
-              icon={Clock}
-              title="Pendientes"
-              value={stats.pending}
-              color="border-yellow-500"
+              icon={AlertCircle}
+              title="Fallidas"
+              value={stats.failed}
+              color="border-red-500" // New: Red color for failed requests
             />
           </div>
           <div className="col">
             <StatCard
-              icon={AlertCircle}
+              icon={Clock}
               title="En Proceso"
               value={stats.inProgress}
               color="border-blue-500"
@@ -78,7 +78,7 @@ function Dahsboard() {
           <div className="col">
             <StatCard
               icon={BarChart3}
-              title="Total"
+              title="Total VMs"
               value={stats.total}
               color="border-purple-500"
             />
