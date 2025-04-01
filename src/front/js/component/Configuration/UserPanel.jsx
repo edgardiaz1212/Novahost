@@ -152,8 +152,8 @@ function UsersPanel() {
     <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
       <div className="p-4">
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="text-xl font-semibold">Lista de Usuarios</h2>
-          <button className="btn btn-primary" onClick={() => setShowNewUserForm(!showNewUserForm)}>
+          {/* <h2 className="text-xl font-semibold">Lista de Usuarios</h2> */}
+          <button className="btn btn-success " onClick={() => setShowNewUserForm(!showNewUserForm)}>
             <Plus size={16} /> Añadir Usuario
           </button>
         </div>
