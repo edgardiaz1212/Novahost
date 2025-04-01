@@ -91,6 +91,15 @@ class VirtualMachines(db.Model):
     request_no_catalog_id = db.Column(db.Integer, db.ForeignKey('request_no_catalog.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    # New fields for external VMs
+    hypervisor_id = db.Column(db.Integer, db.ForeignKey('hypervisor.id'), nullable=True)  # Foreign key to Hypervisor
+    external_vm_id = db.Column(db.String(255), nullable=True)  # Unique ID from vCenter/Proxmox
+    external_vm_name = db.Column(db.String(255), nullable=True)  # Name from vCenter/Proxmox
+    external_vm_power_state = db.Column(db.String(50), nullable=True)  # Power state from vCenter/Proxmox
+    external_vm_guest_os = db.Column(db.String(255), nullable=True)  # Guest OS from vCenter/Proxmox
+    external_vm_ip_address = db.Column(db.String(120), nullable=True)  # IP address from vCenter/Proxmox
+    external_vm_cpu_count = db.Column(db.Integer, nullable=True)  # CPU count from vCenter/Proxmox
+    external_vm_memory_mb = db.Column(db.Integer, nullable=True)  # Memory in MB from vCenter/Proxmox
 
     serialize = lambda self: {
         "id": self.id,
@@ -100,6 +109,38 @@ class VirtualMachines(db.Model):
         "status": self.status,
         "request_id": self.request_id,
         "request_no_catalog_id": self.request_no_catalog_id,
+        "created_at": self.created_at,
+        "updated_at": self.updated_at,
+        "hypervisor_id": self.hypervisor_id,
+        "external_vm_id": self.external_vm_id,
+        "external_vm_name": self.external_vm_name,
+        "external_vm_power_state": self.external_vm_power_state,
+        "external_vm_guest_os": self.external_vm_guest_os,
+        "external_vm_ip_address": self.external_vm_ip_address,
+        "external_vm_cpu_count": self.external_vm_cpu_count,
+        "external_vm_memory_mb": self.external_vm_memory_mb,
+    }
+class Hypervisor(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    type = db.Column(Enum('vcenter', 'proxmox', name='hypervisor_type'), nullable=False)  # vcenter or proxmox
+    hostname = db.Column(db.String(120), nullable=False)
+    port = db.Column(db.Integer, nullable=False)
+    username = db.Column(db.String(120), nullable=False)
+    password = db.Column(db.String(120), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    # Relationship with VirtualMachines
+    vms = db.relationship('VirtualMachines', backref='hypervisor', lazy=True)
+
+    serialize = lambda self: {
+        "id": self.id,
+        "name": self.name,
+        "type": self.type,
+        "hostname": self.hostname,
+        "port": self.port,
+        "username": self.username,
+        "password": self.password,
         "created_at": self.created_at,
         "updated_at": self.updated_at
     }
