@@ -89,46 +89,63 @@ const getState = ({ getStore, getActions, setStore }) => {
           return false;
         }
       },
+// Verificar expiración del token
+checkTokenExpiration: () => {
+  const store = getStore();
+  const tokenExpiresIn = store.tokenExpiresIn;
 
-      logout: async () => {
-        const store = getStore();
-        try {
-          const token = sessionStorage.getItem("token");
-          const response = await fetch(
-            `${process.env.REACT_APP_BACKEND_URL}/logout`,
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          if (response.ok) {
-            // Simple logout method that only clears client-side data
-            setStore({
-              user: null,
-              isAuthenticated: false,
-              token: null,
-              tokenExpiresIn: null,
-            });
+  if (tokenExpiresIn) {
+    const expirationTime = new Date(parseInt(tokenExpiresIn) * 1000); // Convertir a fecha
+    const currentTime = new Date();
 
-            // Clear session storage completely
-            sessionStorage.removeItem("isAuthenticated");
-            sessionStorage.removeItem("user");
-            sessionStorage.removeItem("token");
-            sessionStorage.removeItem("tokenExpiresIn");
+    if (currentTime >= expirationTime) {
+      getActions().logout(); // Cerrar sesión automáticamente
+      setStore({ redirectPath: "/" }); // Set redirect path to home
+    }
+  }
+},
+logout: async () => {
+  const store = getStore();
+  try {
+    const token = sessionStorage.getItem("token");
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/logout`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (response.ok) {
+      // Simple logout method that only clears client-side data
+      setStore({
+        user: null,
+        isAuthenticated: false,
+        token: null,
+        tokenExpiresIn: null,
+        redirectPath: null, // Clear redirect path on logout
+      });
 
-            console.log("Logout successful");
-            return true;
-          } else {
-            console.log("Error during logout");
-            return false;
-          }
-        } catch (error) {
-          console.log("Error during logout", error);
-          return false;
-        }
-      },
+      // Clear session storage completely
+      sessionStorage.removeItem("isAuthenticated");
+      sessionStorage.removeItem("user");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("tokenExpiresIn");
+
+      console.log("Logout successful");
+      return true;
+    } else {
+      console.log("Error during logout");
+      return false;
+    }
+  } catch (error) {
+    console.log("Error during logout", error);
+    return false;
+  }
+},
+
+
       // ***Gestion de usuarios***
       fetchCurrentUser: async () => {
         const store = getStore();
