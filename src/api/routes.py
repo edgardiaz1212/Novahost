@@ -228,4 +228,53 @@ def delete_client(client_id):
     db.session.commit()
     return jsonify({"msg": "Client deleted successfully"}), 200
 
+#**Gestion Maquinas Virtuales**
+# Get all VMs
+@api.route('/virtual-machines', methods=['GET'])
+def get_virtual_machines():
+    vms = VirtualMachines.query.all()
+    vms_list = [vm.serialize() for vm in vms]
+    return jsonify(vms_list), 200
+
+# Add a new VM
+@api.route('/add-virtual-machine', methods=['POST'])
+@jwt_required()
+def add_virtual_machine():
+    data = request.get_json()
+    vm = VirtualMachines(
+        nombre_maquina=data['nombre'],
+        ip=data['direccion'],
+        platform=data['plataforma'],
+        status=data['estado']
+    )
+    db.session.add(vm)
+    db.session.commit()
+    return jsonify({"msg": "VM created successfully", "vm": vm.serialize()}), 201
+
+# Update an existing VM
+@api.route('/edit-virtual-machine/<int:vm_id>', methods=['PUT'])
+@jwt_required()
+def edit_virtual_machine(vm_id):
+    data = request.get_json()
+    vm = VirtualMachines.query.get(vm_id)
+    if not vm:
+        return jsonify({"msg": "VM not found"}), 404
+    vm.nombre_maquina = data.get('nombre', vm.nombre_maquina)
+    vm.ip = data.get('direccion', vm.ip)
+    vm.platform = data.get('plataforma', vm.platform)
+    vm.status = data.get('estado', vm.status)
+    db.session.commit()
+    return jsonify({"msg": "VM updated successfully", "vm": vm.serialize()}), 200
+
+# Delete a VM
+@api.route('/delete-virtual-machine/<int:vm_id>', methods=['DELETE'])
+@jwt_required()
+def delete_virtual_machine(vm_id):
+    vm = VirtualMachines.query.get(vm_id)
+    if not vm:
+        return jsonify({"msg": "VM not found"}), 404
+    db.session.delete(vm)
+    db.session.commit()
+    return jsonify({"msg": "VM deleted successfully"}), 200
+
 

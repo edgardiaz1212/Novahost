@@ -15,6 +15,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       token: storedToken || null, // Initialize with session storage value
       tokenExpiresIn: sessionStorage.getItem("tokenExpiresIn") || null, // Store token expiration
       services: [], 
+      virtualMachines: [], 
     },
 
     actions: {
@@ -354,6 +355,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         }
       },
 //***Gestion servicios*** 
+ // Fetch services
 fetchServices: async () => {
   const store = getStore();
   try {
@@ -476,131 +478,8 @@ deleteService: async (serviceId) => {
     console.error("Error deleting service:", error);
     return false;
   }
-}, // Fetch services
-fetchServices: async () => {
-  const store = getStore();
-  try {
-    const response = await fetch(
-      `${process.env.REACT_APP_BACKEND_URL}/services`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    if (response.ok) {
-      const data = await response.json();
-      setStore({ services: data });
-      console.log("Services fetched:", data);
-      return data;
-    } else {
-      console.error("Failed to fetch services");
-      return false;
-    }
-  } catch (error) {
-    console.error("Error fetching services:", error);
-    return false;
-  }
 },
-
-// Add a new service
-addService: async (serviceData) => {
-  const store = getStore();
-  const token = sessionStorage.getItem("token");
-  try {
-    const response = await fetch(
-      `${process.env.REACT_APP_BACKEND_URL}/add-service`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, // Add authorization header
-        },
-        body: JSON.stringify(serviceData),
-      }
-    );
-
-    if (response.ok) {
-      const data = await response.json();
-      console.log("Service added successfully:", data);
-      getActions().fetchServices(); // Refresh service list
-      return true;
-    } else {
-      const errorData = await response.json();
-      console.error("Failed to add service:", errorData);
-      return false;
-    }
-  } catch (error) {
-    console.error("Error adding service:", error);
-    return false;
-  }
-},
-
-// Update an existing service
-updateService: async (serviceId, serviceData) => {
-  const store = getStore();
-  const token = sessionStorage.getItem("token");
-  try {
-    const response = await fetch(
-      `${process.env.REACT_APP_BACKEND_URL}/edit-service/${serviceId}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, // Add authorization header
-        },
-        body: JSON.stringify(serviceData),
-      }
-    );
-
-    if (response.ok) {
-      const data = await response.json();
-      console.log("Service updated successfully:", data);
-      getActions().fetchServices(); // Refresh service list
-      return true;
-    } else {
-      const errorData = await response.json();
-      console.error("Failed to update service:", errorData);
-      return false;
-    }
-  } catch (error) {
-    console.error("Error updating service:", error);
-    return false;
-  }
-},
-
-// Delete a service
-deleteService: async (serviceId) => {
-  const store = getStore();
-  const token = sessionStorage.getItem("token");
-  try {
-    const response = await fetch(
-      `${process.env.REACT_APP_BACKEND_URL}/delete-service/${serviceId}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`, // Add authorization header
-        },
-      }
-    );
-
-    if (response.ok) {
-      const data = await response.json();
-      console.log("Service deleted successfully:", data);
-      getActions().fetchServices(); // Refresh service list
-      return true;
-    } else {
-      const errorData = await response.json();
-      console.error("Failed to delete service:", errorData);
-      return false;
-    }
-  } catch (error) {
-    console.error("Error deleting service:", error);
-    return false;
-  }
-},
-//Gestion de Clientes Usuario Final
+//***Gestion de Clientes Usuario Final***
 // Fetch clients
 fetchClients: async () => {
   const store = getStore();
@@ -725,9 +604,130 @@ deleteClient: async (clientId) => {
       return false;
   }
 },
+//***Gestion de Maquinas Virtuales***
+fetchVirtualMachines: async () => {
+  const store = getStore();
+  try {
+      const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/virtual-machines`,
+          {
+              method: "GET",
+              headers: {
+                  "Content-Type": "application/json",
+              },
+          }
+      );
+      if (response.ok) {
+          const data = await response.json();
+          setStore({ virtualMachines: data });
+          console.log("Virtual Machines fetched:", data);
+          return data;
+      } else {
+          console.error("Failed to fetch Virtual Machines");
+          return false;
+      }
+  } catch (error) {
+      console.error("Error fetching Virtual Machines:", error);
+      return false;
+  }
+},
+
+addVirtualMachine: async (vmData) => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+      const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/add-virtual-machine`,
+          {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`,
+              },
+              body: JSON.stringify(vmData),
+          }
+      );
+
+      if (response.ok) {
+          const data = await response.json();
+          console.log("Virtual Machine added successfully:", data);
+          getActions().fetchVirtualMachines(); // Refresh VM list
+          return true;
+      } else {
+          const errorData = await response.json();
+          console.error("Failed to add Virtual Machine:", errorData);
+          return false;
+      }
+  } catch (error) {
+      console.error("Error adding Virtual Machine:", error);
+      return false;
+  }
+},
+
+updateVirtualMachine: async (vmId, vmData) => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+      const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/edit-virtual-machine/${vmId}`,
+          {
+              method: "PUT",
+              headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`,
+              },
+              body: JSON.stringify(vmData),
+          }
+      );
+
+      if (response.ok) {
+          const data = await response.json();
+          console.log("Virtual Machine updated successfully:", data);
+          getActions().fetchVirtualMachines(); // Refresh VM list
+          return true;
+      } else {
+          const errorData = await response.json();
+          console.error("Failed to update Virtual Machine:", errorData);
+          return false;
+      }
+  } catch (error) {
+      console.error("Error updating Virtual Machine:", error);
+      return false;
+  }
+},
+
+deleteVirtualMachine: async (vmId) => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+      const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/delete-virtual-machine/${vmId}`,
+          {
+              method: "DELETE",
+              headers: {
+                  "Authorization": `Bearer ${token}`,
+              },
+          }
+      );
+
+      if (response.ok) {
+          const data = await response.json();
+          console.log("Virtual Machine deleted successfully:", data);
+          getActions().fetchVirtualMachines(); // Refresh VM list
+          return true;
+      } else {
+          const errorData = await response.json();
+          console.error("Failed to delete Virtual Machine:", errorData);
+          return false;
+      }
+  } catch (error) {
+      console.error("Error deleting Virtual Machine:", error);
+      return false;
+  }
+},      
 
 
-      // Fetch server resources
+// Fetch server resources
       fetchServerResources: async () => {
         const store = getStore();
         try {
