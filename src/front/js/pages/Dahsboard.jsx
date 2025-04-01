@@ -6,11 +6,11 @@ import {
   BarChart3,
 } from 'lucide-react';
 import '../../styles/Dashboard.css';
-import StatCard from '../component/Home/StatCard';
+import StatCard from '../component/Dashboard/StatCard';
 import { Context } from '../store/appContext'; // Import Context
-import HypervisorStatus from '../component/Home/HypervisorStatus'; // Import HypervisorStatus
-import VirtualMachinesStatus from '../component/Home/VirtualMachinesStatus'; // Import VirtualMachinesStatus
-import RequestsTable from '../component/Home/RequestsTable'; // Import RequestsTable
+import HypervisorStatus from '../component/Dashboard/HypervisorStatus'; // Import HypervisorStatus
+import VirtualMachinesStatus from '../component/Dashboard/VirtualMachinesStatus'; // Import VirtualMachinesStatus
+import RequestsTable from '../component/Dashboard/RequestsTable'; // Import RequestsTable
 
 function Dahsboard() {
   const { store, actions } = useContext(Context);
