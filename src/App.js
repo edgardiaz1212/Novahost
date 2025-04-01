@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import HomePage from './front/js/pages/Home.jsx';
 import injectContext, { Context } from './front/js/store/appContext';
 import Dahsboard from './front/js/pages/Dahsboard.jsx';
@@ -26,7 +26,7 @@ const App = () => {
                         <Route path="*" element={<h1>404</h1>} />
                     </Route>
                 ) : (
-                    <Route path="/*" element={<h1>Please log in to access other pages.</h1>} />
+                    <Route path="/*" element={<h1>Ingresa con tu Usuario. <Link to="/">Volver a Inicio</Link></h1>} />
                 )}
             </Routes>
         </Router>

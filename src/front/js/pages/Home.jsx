@@ -181,7 +181,7 @@ function Home() {
               </div>
               <div className="mb-3">
                 <label htmlFor="password" className="form-label">
-                  Password:
+                  Clave:
                 </label>
                 <input
                   type="password"
@@ -193,7 +193,7 @@ function Home() {
                 />
               </div>
               <button type="submit" className="btn btn-success">
-                Login
+                Inicio de Sesión
               </button>
             </form>
           </div>
