@@ -811,6 +811,9 @@ deleteVirtualMachine: async (vmId) => {
           return false;
         }
       },
+
+
+
 // ***Gestion de Hypervisores***
 fetchHypervisors: async () => {
   const store = getStore();
@@ -963,6 +966,119 @@ fetchHypervisorVMs: async (hypervisorId) => {
       return false;
   }
 },
+
+//*Creacion maquinas Virtuales
+createVirtualMachine: async (hypervisorId, vmSpec) => {
+  const token = sessionStorage.getItem("token");
+  try {
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/create-vm`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ hypervisor_id: hypervisorId, vm_spec: vmSpec }),
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      console.log("VM created successfully:", data);
+      return data;
+    } else {
+      console.error("Failed to create VM");
+      return false;
+    }
+  } catch (error) {
+    console.error("Error creating VM:", error);
+    return false;
+  }
+},
+//capacidad de un hipervisor
+fetchHypervisorCapacity: async (hypervisorId) => {
+  const token = sessionStorage.getItem("token");
+  try {
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/hypervisor/${hypervisorId}/capacity`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      console.log("Hypervisor capacity fetched:", data);
+      return data;
+    } else {
+      console.error("Failed to fetch hypervisor capacity");
+      return false;
+    }
+  } catch (error) {
+    console.error("Error fetching hypervisor capacity:", error);
+    return false;
+  }
+},
+//Listar Hypervisores
+fetchHypervisors: async () => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/hypervisors`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      setStore({ hypervisors: data });
+      console.log("Hypervisors fetched:", data);
+      return data;
+    } else {
+      console.error("Failed to fetch hypervisors");
+      return false;
+    }
+  } catch (error) {
+    console.error("Error fetching hypervisors:", error);
+    return false;
+  }
+},
+//Fetch maquinas virtuales
+fetchVirtualMachines: async () => {
+  const store = getStore();
+  try {
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/virtual-machines`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      setStore({ virtualMachines: data });
+      console.log("Virtual Machines fetched:", data);
+      return data;
+    } else {
+      console.error("Failed to fetch Virtual Machines");
+      return false;
+    }
+  } catch (error) {
+    console.error("Error fetching Virtual Machines:", error);
+    return false;
+  }
+},
+
+
      
     },
   };

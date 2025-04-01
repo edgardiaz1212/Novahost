@@ -250,10 +250,7 @@ def delete_client(client_id):
     db.session.delete(client)
     db.session.commit()
     return jsonify({"msg": "Client deleted successfully"}), 200
-
-
 # **Gestion de Hypervisores**
-
 # Get all hypervisors
 @api.route('/hypervisors', methods=['GET'])
 @jwt_required()
@@ -323,7 +320,41 @@ def get_hypervisor_vms(hypervisor_id):
         return jsonify(vms), 200
     except Exception as e:
         return jsonify({"msg": str(e)}), 500
-#**Gestion Maquinas Virtuales**
+
+#***Gestion maquinas virtuales conectadas a hypervisor***
+@api.route('/create-vm', methods=['POST'])
+@jwt_required()
+def create_vm():
+    data = request.get_json()
+    hypervisor_id = data.get('hypervisor_id')
+    vm_spec = data.get('vm_spec')
+
+    try:
+        manager = HypervisorManager(hypervisor_id)
+        manager.connect()
+        result = manager.create_vm(vm_spec)
+        manager.disconnect()
+        return jsonify(result), 201
+    except Exception as e:
+        return jsonify({"msg": str(e)}), 500
+    
+@api.route('/hypervisor/<int:hypervisor_id>/capacity', methods=['GET'])
+@jwt_required()
+def get_hypervisor_capacity(hypervisor_id):
+    try:
+        manager = HypervisorManager(hypervisor_id)
+        manager.connect()
+        capacity = manager.get_capacity()
+        manager.disconnect()
+        return jsonify(capacity), 200
+    except Exception as e:
+        return jsonify({"msg": str(e)}), 500
+
+
+
+
+
+#**Gestion Maquinas Virtuales listado eliminar...**
 # Get all VMs
 @api.route('/virtual-machines', methods=['GET'])
 def get_virtual_machines():

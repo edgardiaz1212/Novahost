@@ -7,16 +7,32 @@ import {
   Search,
   Filter,
   Server,
+  Cpu,
+  Database,
+  Memory,
+  Power,
 } from 'lucide-react';
 import '../../styles/Dashboard.css';
 import StatCard from '../component/StatCard';
-import ServerCapacity from '../component/ServerCapacity';
 import { Context } from '../store/appContext'; // Import Context
 
 function Dahsboard() {
-  const { store, actions } = useContext(Context); // Access store and actions
-  const { serverResources, requests } = store; // Get serverResources and requests from store
+  const { store, actions } = useContext(Context);
+  const { serverResources, requests, hypervisors, virtualMachines } = store;
   const [isLoading, setIsLoading] = useState(true); // Add a loading state
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      await actions.fetchServerResources();
+      await actions.fetchRequests();
+      await actions.fetchHypervisors(); // Cargar hipervisores
+      await actions.fetchVirtualMachines(); // Cargar máquinas virtuales
+      setIsLoading(false);
+    };
+
+    fetchData();
+  }, []);
 
   // Simulate stats data - replace with actual data if needed
   const stats = {
@@ -26,36 +42,118 @@ function Dahsboard() {
     total: requests.length
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true); // Start loading
-      await actions.fetchServerResources(); // Fetch server resources
-      await actions.fetchRequests(); // Fetch requests
-      setIsLoading(false); // Finish loading
-    };
-
-    fetchData();
-  }, []);
-
   return (
     <div className="container-fluid bg-light min-vh-100">
       <div className="container py-4">
         <h1 className="h3 mb-4 p-3">Panel de Control de Solicitudes</h1>
 
-        {/* Display multiple ServerCapacity components */}
+        {/* Hypervisor Status Section */}
         <div className="row row-cols-1 row-cols-md-2 g-4 mb-4">
           {isLoading ? (
             <div className="col">
               <div className="card shadow-sm p-4">
                 <div className="text-center">
-                  <p className="text-muted">Cargando datos del servidor...</p>
+                  <p className="text-muted">Cargando datos de Hypervisores...</p>
                 </div>
               </div>
             </div>
           ) : (
-            serverResources.map((server, index) => (
+            hypervisors.map((hypervisor, index) => (
               <div className="col" key={index}>
-                <ServerCapacity serverData={server} />
+                <div className="card shadow-sm">
+                  <div className="card-header d-flex align-items-center gap-2">
+                    <Server className="text-primary" />
+                    <h5 className="mb-0">{hypervisor.name}</h5>
+                  </div>
+                  <div className="card-body">
+                    <p>
+                      <strong>Tipo:</strong> {hypervisor.type}
+                    </p>
+                    <p>
+                      <strong>Hostname:</strong> {hypervisor.hostname}
+                    </p>
+                    <p>
+                      <strong>Puerto:</strong> {hypervisor.port}
+                    </p>
+                    <p>
+                      <strong>Usuario:</strong> {hypervisor.username}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Virtual Machines Status Section */}
+        <div className="row row-cols-1 row-cols-md-2 g-4 mb-4">
+          {isLoading ? (
+            <div className="col">
+              <div className="card shadow-sm p-4">
+                <div className="text-center">
+                  <p className="text-muted">Cargando datos de Máquinas Virtuales...</p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            virtualMachines.slice(0, 4).map((vm, index) => ( // Display only the last 4 VMs
+              <div className="col" key={index}>
+                <div className="card shadow-sm">
+                  <div className="card-header d-flex align-items-center gap-2">
+                    <Cpu className="text-primary" />
+                    <h5 className="mb-0">{vm.nombre_maquina}</h5>
+                  </div>
+                  <div className="card-body">
+                    <p>
+                      <strong>IP:</strong> {vm.ip}
+                    </p>
+                    <p>
+                      <strong>Plataforma:</strong> {vm.platform}
+                    </p>
+                    <p>
+                      <strong>Estado:</strong>
+                      <span className={`badge ${
+                        vm.status === 'Activa' ? 'bg-success' :
+                        vm.status === 'Inactiva' ? 'bg-danger' :
+                        'bg-warning'
+                      }`}>
+                        {vm.status}
+                      </span>
+                    </p>
+                    {vm.external_vm_power_state && (
+                      <p>
+                        <strong>Estado Externo:</strong>
+                        <span className={`badge ${
+                          vm.external_vm_power_state === 'poweredOn' ? 'bg-success' :
+                          vm.external_vm_power_state === 'poweredOff' ? 'bg-danger' :
+                          'bg-warning'
+                        }`}>
+                          {vm.external_vm_power_state}
+                        </span>
+                      </p>
+                    )}
+                    {vm.external_vm_guest_os && (
+                      <p>
+                        <strong>Sistema Operativo:</strong> {vm.external_vm_guest_os}
+                      </p>
+                    )}
+                    {vm.external_vm_ip_address && (
+                      <p>
+                        <strong>IP Externa:</strong> {vm.external_vm_ip_address}
+                      </p>
+                    )}
+                    {vm.external_vm_cpu_count && (
+                      <p>
+                        <strong>CPUs:</strong> {vm.external_vm_cpu_count}
+                      </p>
+                    )}
+                    {vm.external_vm_memory_mb && (
+                      <p>
+                        <strong>Memoria:</strong> {vm.external_vm_memory_mb} MB
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             ))
           )}

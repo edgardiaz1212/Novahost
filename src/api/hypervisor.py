@@ -105,3 +105,85 @@ class HypervisorManager:
                     "memory_mb": vm['maxmem'] / 1024 / 1024,
                 })
         return vms
+    
+    def create_vm(self, vm_spec):
+        # Actualizar el estado de creación a "in_progress"
+        vm = VirtualMachines.query.get(vm_spec['vm_id'])
+        vm.creation_status = "in_progress"
+        db.session.commit()
+
+        try:
+            if self.hypervisor.type == 'vcenter':
+                result = self._create_vm_vcenter(vm_spec)
+            elif self.hypervisor.type == 'proxmox':
+                result = self._create_vm_proxmox(vm_spec)
+            else:
+                raise ValueError("Invalid hypervisor type")
+
+            # Actualizar el estado de creación a "completed"
+            vm.creation_status = "completed"
+            db.session.commit()
+            return result
+        except Exception as e:
+            # Actualizar el estado de creación a "failed"
+            vm.creation_status = "failed"
+            db.session.commit()
+            raise Exception(f"Failed to create VM: {e}")
+
+    def _create_vm_vcenter(self, vm_spec):
+        # Implementación para crear una VM en vCenter
+        try:
+            # Aquí usarías las APIs de pyVmomi para crear la VM
+            # Ejemplo: Crear especificaciones de hardware, red, etc.
+            return {"status": "success", "message": "VM created in vCenter"}
+        except Exception as e:
+            raise Exception(f"Failed to create VM in vCenter: {e}")
+
+    def _create_vm_proxmox(self, vm_spec):
+        # Implementación para crear una VM en Proxmox
+        try:
+            # Aquí usarías las APIs de Proxmox para crear la VM
+            # Ejemplo: Crear especificaciones de hardware, red, etc.
+            return {"status": "success", "message": "VM created in Proxmox"}
+        except Exception as e:
+            raise Exception(f"Failed to create VM in Proxmox: {e}")
+    
+    def get_capacity(self):
+        if not self.connection:
+            raise Exception("Not connected to hypervisor")
+        if self.hypervisor.type == 'vcenter':
+            return self._get_capacity_vcenter()
+        elif self.hypervisor.type == 'proxmox':
+            return self._get_capacity_proxmox()
+        else:
+            raise ValueError("Invalid hypervisor type")
+
+    def _get_capacity_vcenter(self):
+        # Implementación para obtener capacidad en vCenter
+        try:
+            # Ejemplo: Obtener datos de recursos del clúster
+            return {
+                "cpu_total": 100,
+                "cpu_used": 50,
+                "ram_total": 256,
+                "ram_used": 128,
+                "disk_total": 1024,
+                "disk_used": 512,
+            }
+        except Exception as e:
+            raise Exception(f"Failed to get capacity from vCenter: {e}")
+
+    def _get_capacity_proxmox(self):
+        # Implementación para obtener capacidad en Proxmox
+        try:
+            # Ejemplo: Obtener datos de recursos del nodo
+            return {
+                "cpu_total": 80,
+                "cpu_used": 40,
+                "ram_total": 128,
+                "ram_used": 64,
+                "disk_total": 512,
+                "disk_used": 256,
+            }
+        except Exception as e:
+            raise Exception(f"Failed to get capacity from Proxmox: {e}")
