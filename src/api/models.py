@@ -136,7 +136,7 @@ class Hypervisor(db.Model):
     hostname = db.Column(db.String(120), nullable=False)
     port = db.Column(db.Integer, nullable=False)
     username = db.Column(db.String(120), nullable=False)
-    _password = db.Column(db.String(120), nullable=False, default="")  # Changed to _password
+    _password = db.Column(db.String, nullable=False, default="")  # Changed to _password
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     # Relationship with VirtualMachines
