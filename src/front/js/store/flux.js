@@ -788,28 +788,28 @@ fetchHypervisors: async () => {
   const store = getStore();
   const token = sessionStorage.getItem("token");
   try {
-      const response = await fetch(
-          `${process.env.REACT_APP_BACKEND_URL}/hypervisors`,
-          {
-              method: "GET",
-              headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${token}`,
-              },
-          }
-      );
-      if (response.ok) {
-          const data = await response.json();
-          setStore({ hypervisors: data });
-          console.log("Hypervisors fetched:", data);
-          return data;
-      } else {
-          console.error("Failed to fetch Hypervisors");
-          return false;
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/hypervisors`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       }
-  } catch (error) {
-      console.error("Error fetching Hypervisors:", error);
+    );
+    if (response.ok) {
+      const data = await response.json();
+      setStore({ hypervisors: data });
+      console.log("Hypervisors fetched:", data);
+      return data;
+    } else {
+      console.error("Failed to fetch Hypervisors");
       return false;
+    }
+  } catch (error) {
+    console.error("Error fetching Hypervisors:", error);
+    return false;
   }
 },
 

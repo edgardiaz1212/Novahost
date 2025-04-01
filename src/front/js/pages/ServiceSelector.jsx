@@ -18,7 +18,8 @@ function ServiceSelector() {
   const [selectedClient, setSelectedClient] = useState('');
   const [clients, setClients] = useState([]);
   const [selectedVM, setSelectedVM] = useState(null);
-  const [vmOptions, setVmOptions] = useState([]);
+  //const [vmOptions, setVmOptions] = useState([]); // Remove vmOptions
+  const [hypervisors, setHypervisors] = useState([]); // New state for hypervisors
 
   // New states for VM details
   const [vmName, setVmName] = useState('');
@@ -75,24 +76,17 @@ function ServiceSelector() {
     fetchClients();
   }, []);
 
-  // Fetch VM options
+  // Fetch Hypervisors
   useEffect(() => {
-    const fetchVmOptions = async () => {
+    const fetchHypervisors = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/vms`);
-        if (response.ok) {
-          const data = await response.json();
-          setVmOptions(data);
-        } else {
-          console.error('Failed to fetch VM options');
-          setVmOptions([{ id: 1, name: "vCenter" }, { id: 2, name: "Proxmox 1" }, { id: 3, name: "Proxmox 2" }]);
-        }
+        await actions.fetchHypervisors();
+        setHypervisors(store.hypervisors);
       } catch (error) {
-        console.error('Error fetching VM options:', error);
-        setVmOptions([{ id: 1, name: "vCenter" }, { id: 2, name: "Proxmox 1" }, { id: 3, name: "Proxmox 2" }]);
+        console.error('Error fetching hypervisors:', error);
       }
     };
-    fetchVmOptions();
+    fetchHypervisors();
   }, []);
 
   const handleConfirm = () => {
@@ -218,10 +212,10 @@ function ServiceSelector() {
     if (!selectedOS) return true;
     if (!network) return true;
     if (!storage) return true;
-    if (selectedVM === 'vCenter' && !diskType) return true;
-    if (selectedVM.startsWith('Proxmox') && !vmType) return true;
-    if (selectedVM.startsWith('Proxmox') && !diskFormat) return true;
-    if (selectedVM.startsWith('Proxmox') && !biosOrUefi) return true;
+    if (selectedVM && selectedVM.type === 'vcenter' && !diskType) return true;
+    if (selectedVM && selectedVM.type === 'proxmox' && !vmType) return true;
+    if (selectedVM && selectedVM.type === 'proxmox' && !diskFormat) return true;
+    if (selectedVM && selectedVM.type === 'proxmox' && !biosOrUefi) return true;
 
     return false;
   };
@@ -342,16 +336,16 @@ function ServiceSelector() {
                 <div className="mb-3">
                   <select
                     className="form-select"
-                    value={selectedVM || ''}
+                    value={selectedVM ? selectedVM.id : ''} // Use selectedVM.id for value
                     onChange={handleVMSelect}
                     required
                   >
                     <option value="" disabled>
                       Selecciona VM
                     </option>
-                    {vmOptions.map((vm) => (
-                      <option key={vm.id} value={vm.name}>
-                        {vm.name}
+                    {hypervisors.map((hypervisor) => (
+                      <option key={hypervisor.id} value={hypervisor.id}>
+                        {hypervisor.name}
                       </option>
                     ))}
                   </select>
@@ -500,7 +494,7 @@ function ServiceSelector() {
               )}
 
               {/* vCenter Specific Options */}
-              {selectedVM === 'vCenter' && (
+              {selectedVM && selectedVM.type === 'vcenter' && (
                 <div className="bg-gray-50 p-4 p-md-8 rounded-3 mb-6">
                   <h2 className="h4 fw-bold text-gray-800 mb-4 d-flex align-items-center gap-2">
                     <Cloud className="w-6 h-6 text-indigo-600" />
@@ -593,7 +587,7 @@ function ServiceSelector() {
               )}
 
               {/* Proxmox Specific Options */}
-              {selectedVM && selectedVM.startsWith('Proxmox') && (
+              {selectedVM && selectedVM.type === 'proxmox' && (
                 <div className="bg-gray-50 p-4 p-md-8 rounded-3 mb-6">
                   <h2 className="h4 fw-bold text-gray-800 mb-4 d-flex align-items-center gap-2">
                     <Cloud className="w-6 h-6 text-indigo-600" />
