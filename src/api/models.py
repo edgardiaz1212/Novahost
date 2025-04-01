@@ -31,15 +31,16 @@ class User(db.Model):
     def check_password(self, value):
         return check_password_hash(self._password, value)
 
-    serialize = lambda self: {
-        "id": self.id,
-        "userName": self.userName,
-        "email": self.email,
-        "telephone": self.telephone,
-        "created_at": self.created_at,
-        "updated_at": self.updated_at,
-        "role": self.role
-    }
+    def serialize(self):
+        return {
+            "id": self.id,
+            "userName": self.userName,
+            "email": self.email,
+            "telephone": self.telephone,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "role": self.role
+        }
 
 class FinalUser(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -51,13 +52,14 @@ class FinalUser(db.Model):
     requests = db.relationship('RequestPreDefinedPlans', backref='client', lazy=True)
     requests_no_catalog = db.relationship('RequestNoCatalog', backref='client', lazy=True)
 
-    serialize = lambda self: {
-        "id": self.id,
-        "razon_social": self.razon_social,
-        "rif": self.rif,
-        "created_at": self.created_at,
-        "updated_at": self.updated_at
-    }
+    def serialize(self):
+        return {
+            "id": self.id,
+            "razon_social": self.razon_social,
+            "rif": self.rif,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        }
 
 class PreDefinedPlans(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -65,20 +67,23 @@ class PreDefinedPlans(db.Model):
     ram = db.Column(db.String(120), nullable=False)
     disk = db.Column(db.String(120), nullable=False)
     processor = db.Column(db.String(120), nullable=False)
+    order = db.Column(db.Integer, nullable=False, default=0)  # New order field
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     # Relationship with RequestPreDefinedPlans
     requests = db.relationship('RequestPreDefinedPlans', backref='plan', lazy=True)
 
-    serialize = lambda self: {
-        "id": self.id,
-        "nombre": self.name ,
-        "ram": self.ram,
-        "disco": self.disk,
-        "procesador": self.processor,
-        "created_at": self.created_at,
-        "updated_at": self.updated_at
-    }
+    def serialize(self):
+        return {
+            "id": self.id,
+            "nombre": self.name ,
+            "ram": self.ram,
+            "disco": self.disk,
+            "order": self.order,
+            "procesador": self.processor,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        }
 
 class VirtualMachines(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -86,9 +91,11 @@ class VirtualMachines(db.Model):
     ip = db.Column(db.String(120), nullable=False)
     platform = db.Column(db.String(120), nullable=False)
     status = db.Column(db.String(120), nullable=False)
+    creation_status = db.Column(db.String(20), default="queued")
     # Relationship with RequestPreDefinedPlans
     request_id = db.Column(db.Integer, db.ForeignKey('request_pre_defined_plans.id'), nullable=True)
     request_no_catalog_id = db.Column(db.Integer, db.ForeignKey('request_no_catalog.id'), nullable=True)
+    hypervisor_id = db.Column(db.Integer, db.ForeignKey('hypervisor.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     # New fields for external VMs
@@ -101,25 +108,27 @@ class VirtualMachines(db.Model):
     external_vm_cpu_count = db.Column(db.Integer, nullable=True)  # CPU count from vCenter/Proxmox
     external_vm_memory_mb = db.Column(db.Integer, nullable=True)  # Memory in MB from vCenter/Proxmox
 
-    serialize = lambda self: {
-        "id": self.id,
-        "nombre_maquina": self.nombre_maquina,
-        "ip": self.ip,
-        "platform": self.platform,
-        "status": self.status,
-        "request_id": self.request_id,
-        "request_no_catalog_id": self.request_no_catalog_id,
-        "created_at": self.created_at,
-        "updated_at": self.updated_at,
-        "hypervisor_id": self.hypervisor_id,
-        "external_vm_id": self.external_vm_id,
-        "external_vm_name": self.external_vm_name,
-        "external_vm_power_state": self.external_vm_power_state,
-        "external_vm_guest_os": self.external_vm_guest_os,
-        "external_vm_ip_address": self.external_vm_ip_address,
-        "external_vm_cpu_count": self.external_vm_cpu_count,
-        "external_vm_memory_mb": self.external_vm_memory_mb,
-    }
+    def serialize(self):
+        return {
+            "id": self.id,
+            "nombre_maquina": self.nombre_maquina,
+            "ip": self.ip,
+            "platform": self.platform,
+            "status": self.status,
+            "request_id": self.request_id,
+            "request_no_catalog_id": self.request_no_catalog_id,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "hypervisor_id": self.hypervisor_id,
+            "external_vm_id": self.external_vm_id,
+            "external_vm_name": self.external_vm_name,
+            "external_vm_power_state": self.external_vm_power_state,
+            "external_vm_guest_os": self.external_vm_guest_os,
+            "external_vm_ip_address": self.external_vm_ip_address,
+            "external_vm_cpu_count": self.external_vm_cpu_count,
+            "external_vm_memory_mb": self.external_vm_memory_mb,
+            "creation_status": self.creation_status
+        }
 class Hypervisor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
@@ -127,30 +136,49 @@ class Hypervisor(db.Model):
     hostname = db.Column(db.String(120), nullable=False)
     port = db.Column(db.Integer, nullable=False)
     username = db.Column(db.String(120), nullable=False)
-    password = db.Column(db.String(120), nullable=False)
+    _password = db.Column(db.String(120), nullable=False, default="")  # Changed to _password
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     # Relationship with VirtualMachines
     vms = db.relationship('VirtualMachines', backref='hypervisor', lazy=True)
 
-    serialize = lambda self: {
-        "id": self.id,
-        "name": self.name,
-        "type": self.type,
-        "hostname": self.hostname,
-        "port": self.port,
-        "username": self.username,
-        "password": self.password,
-        "created_at": self.created_at,
-        "updated_at": self.updated_at
-    }
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.password = kwargs.get('password')
+
+    @property
+    def password(self):
+        return self._password
+
+    @password.setter
+    def password(self, value):
+        self._password = generate_password_hash(value)
+
+    def check_password(self, value):
+        return check_password_hash(self._password, value)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "type": self.type,
+            "hostname": self.hostname,
+            "port": self.port,
+            "username": self.username,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        }
 
 class RequestPreDefinedPlans(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    ticket_number = db.Column(db.String(50), nullable=False, unique=True)  # Número de ticket único
     status = db.Column(db.String(120), nullable=False)
+    vm_creation_status = db.Column(db.String(20), default="queued")
     # Foreign keys
     plan_id = db.Column(db.Integer, db.ForeignKey('pre_defined_plans.id'), nullable=True)
     client_id = db.Column(db.Integer, db.ForeignKey('final_user.id'), nullable=True)
+    hypervisor_id = db.Column(db.Integer, db.ForeignKey('hypervisor.id'), nullable=False)
+    vm = db.relationship('VirtualMachines', backref='request', uselist=False, lazy=True)
     # New fields from ServiceSelector
     selected_os = db.Column(db.String(80), nullable=True)
     custom_os = db.Column(db.String(80), nullable=True)
@@ -183,43 +211,51 @@ class RequestPreDefinedPlans(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
-    serialize = lambda self: {
-        "id": self.id,
-        "status": self.status,
-        "plan_id": self.plan_id,
-        "client_id": self.client_id,
-        "selected_os": self.selected_os,
-        "custom_os": self.custom_os,
-        "network": self.network,
-        "network_adapter": self.network_adapter,
-        "os_credentials_user": self.os_credentials_user,
-        "os_credentials_password": self.os_credentials_password,
-        "ssh_keys": self.ssh_keys,
-        "resource_group": self.resource_group,
-        "storage": self.storage,
-        "template_or_iso": self.template_or_iso,
-        "disk_type": self.disk_type,
-        "storage_policy": self.storage_policy,
-        "guest_os_customization": self.guest_os_customization,
-        "high_availability": self.high_availability,
-        "drs": self.drs,
-        "snapshot_policy": self.snapshot_policy,
-        "vm_type": self.vm_type,
-        "disk_format": self.disk_format,
-        "bios_or_uefi": self.bios_or_uefi,
-        "cloud_init": self.cloud_init,
-        "numa": self.numa,
-        "backup_schedule": self.backup_schedule,
-        "hotplug": self.hotplug,
-        "created_at": self.created_at,
-        "updated_at": self.updated_at
-    }
+    def serialize(self):
+        return {
+            "id": self.id,
+            "ticket_number": self.ticket_number,
+            "status": self.status,
+            "plan_id": self.plan_id,
+            "client_id": self.client_id,
+            "selected_os": self.selected_os,
+            "custom_os": self.custom_os,
+            "network": self.network,
+            "network_adapter": self.network_adapter,
+            "os_credentials_user": self.os_credentials_user,
+            "os_credentials_password": self.os_credentials_password,
+            "ssh_keys": self.ssh_keys,
+            "resource_group": self.resource_group,
+            "storage": self.storage,
+            "template_or_iso": self.template_or_iso,
+            "disk_type": self.disk_type,
+            "storage_policy": self.storage_policy,
+            "guest_os_customization": self.guest_os_customization,
+            "high_availability": self.high_availability,
+            "drs": self.drs,
+            "snapshot_policy": self.snapshot_policy,
+            "vm_type": self.vm_type,
+            "disk_format": self.disk_format,
+            "bios_or_uefi": self.bios_or_uefi,
+            "cloud_init": self.cloud_init,
+            "numa": self.numa,
+            "backup_schedule": self.backup_schedule,
+            "hotplug": self.hotplug,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "vm_creation_status": self.vm_creation_status
+        }
 
 class RequestNoCatalog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String(120), nullable=False)
+    ticket_number = db.Column(db.String(50), nullable=False, unique=True)  # Número de ticket único
+    status = db.Column(db.String(120), nullable=False)
+    vm_creation_status = db.Column(db.String(20), default="queued")
     # Foreign keys
     client_id = db.Column(db.Integer, db.ForeignKey('final_user.id'), nullable=True)
+    hypervisor_id = db.Column(db.Integer, db.ForeignKey('hypervisor.id'), nullable=False)
+    vm = db.relationship('VirtualMachines', backref='request_no_catalog', uselist=False, lazy=True)
     # New fields from ServiceSelector
     selected_os = db.Column(db.String(80), nullable=True)
     custom_os = db.Column(db.String(80), nullable=True)
@@ -255,39 +291,42 @@ class RequestNoCatalog(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
-    serialize = lambda self: {
-        "id": self.id,
-        "status": self.status,
-        "client_id": self.client_id,
-        "selected_os": self.selected_os,
-        "custom_os": self.custom_os,
-        "ram": self.ram,
-        "disk": self.disk,
-        "processors": self.processors,
-        "network": self.network,
-        "network_adapter": self.network_adapter,
-        "os_credentials_user": self.os_credentials_user,
-        "os_credentials_password": self.os_credentials_password,
-        "ssh_keys": self.ssh_keys,
-        "resource_group": self.resource_group,
-        "storage": self.storage,
-        "template_or_iso": self.template_or_iso,
-        "disk_type": self.disk_type,
-        "storage_policy": self.storage_policy,
-        "guest_os_customization": self.guest_os_customization,
-        "high_availability": self.high_availability,
-        "drs": self.drs,
-        "snapshot_policy": self.snapshot_policy,
-        "vm_type": self.vm_type,
-        "disk_format": self.disk_format,
-        "bios_or_uefi": self.bios_or_uefi,
-        "cloud_init": self.cloud_init,
-        "numa": self.numa,
-        "backup_schedule": self.backup_schedule,
-        "hotplug": self.hotplug,
-        "created_at": self.created_at,
-        "updated_at": self.updated_at
-    }
+    def serialize(self):
+        return {
+            "id": self.id,
+            "ticket_number": self.ticket_number,
+            "status": self.status,
+            "client_id": self.client_id,
+            "selected_os": self.selected_os,
+            "custom_os": self.custom_os,
+            "ram": self.ram,
+            "disk": self.disk,
+            "processors": self.processors,
+            "network": self.network,
+            "network_adapter": self.network_adapter,
+            "os_credentials_user": self.os_credentials_user,
+            "os_credentials_password": self.os_credentials_password,
+            "ssh_keys": self.ssh_keys,
+            "resource_group": self.resource_group,
+            "storage": self.storage,
+            "template_or_iso": self.template_or_iso,
+            "disk_type": self.disk_type,
+            "storage_policy": self.storage_policy,
+            "guest_os_customization": self.guest_os_customization,
+            "high_availability": self.high_availability,
+            "drs": self.drs,
+            "snapshot_policy": self.snapshot_policy,
+            "vm_type": self.vm_type,
+            "disk_format": self.disk_format,
+            "bios_or_uefi": self.bios_or_uefi,
+            "cloud_init": self.cloud_init,
+            "numa": self.numa,
+            "backup_schedule": self.backup_schedule,
+            "hotplug": self.hotplug,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "vm_creation_status": self.vm_creation_status
+        }
 class OperationLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     operation_type = db.Column(db.String(50), nullable=False)  # create, delete, sync, etc.
@@ -298,3 +337,16 @@ class OperationLog(db.Model):
     status = db.Column(db.String(20), nullable=False)  # success, error
     message = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "operation_type": self.operation_type,
+            "hypervisor_id": self.hypervisor_id,
+            "vm_id": self.vm_id,
+            "request_id": self.request_id,
+            "request_type": self.request_type,
+            "status": self.status,
+            "message": self.message,
+            "created_at": self.created_at.isoformat() if self.created_at else None
+        }

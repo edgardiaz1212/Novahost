@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 9b3bac7417e6
+Revision ID: a60f90711e7e
 Revises: 
-Create Date: 2025-03-27 09:48:30.767967
+Create Date: 2025-04-01 12:23:19.288320
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '9b3bac7417e6'
+revision = 'a60f90711e7e'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -27,12 +27,25 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('rif')
     )
+    op.create_table('hypervisor',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=80), nullable=False),
+    sa.Column('type', sa.Enum('vcenter', 'proxmox', name='hypervisor_type'), nullable=False),
+    sa.Column('hostname', sa.String(length=120), nullable=False),
+    sa.Column('port', sa.Integer(), nullable=False),
+    sa.Column('username', sa.String(length=120), nullable=False),
+    sa.Column('_password', sa.String(length=120), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('pre_defined_plans',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('nombre_plan', sa.String(length=80), nullable=False),
+    sa.Column('name', sa.String(length=80), nullable=False),
     sa.Column('ram', sa.String(length=120), nullable=False),
-    sa.Column('hdd', sa.String(length=120), nullable=False),
+    sa.Column('disk', sa.String(length=120), nullable=False),
     sa.Column('processor', sa.String(length=120), nullable=False),
+    sa.Column('order', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id')
@@ -52,7 +65,10 @@ def upgrade():
     op.create_table('request_no_catalog',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('status', sa.String(length=120), nullable=False),
+    sa.Column('ticket_number', sa.String(length=50), nullable=False),
+    sa.Column('vm_creation_status', sa.String(length=20), nullable=True),
     sa.Column('client_id', sa.Integer(), nullable=True),
+    sa.Column('hypervisor_id', sa.Integer(), nullable=False),
     sa.Column('selected_os', sa.String(length=80), nullable=True),
     sa.Column('custom_os', sa.String(length=80), nullable=True),
     sa.Column('ram', sa.String(length=80), nullable=True),
@@ -82,13 +98,18 @@ def upgrade():
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['client_id'], ['final_user.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['hypervisor_id'], ['hypervisor.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('ticket_number')
     )
     op.create_table('request_pre_defined_plans',
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('ticket_number', sa.String(length=50), nullable=False),
     sa.Column('status', sa.String(length=120), nullable=False),
+    sa.Column('vm_creation_status', sa.String(length=20), nullable=True),
     sa.Column('plan_id', sa.Integer(), nullable=True),
     sa.Column('client_id', sa.Integer(), nullable=True),
+    sa.Column('hypervisor_id', sa.Integer(), nullable=False),
     sa.Column('selected_os', sa.String(length=80), nullable=True),
     sa.Column('custom_os', sa.String(length=80), nullable=True),
     sa.Column('network', sa.String(length=80), nullable=True),
@@ -115,8 +136,10 @@ def upgrade():
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['client_id'], ['final_user.id'], ),
+    sa.ForeignKeyConstraint(['hypervisor_id'], ['hypervisor.id'], ),
     sa.ForeignKeyConstraint(['plan_id'], ['pre_defined_plans.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('ticket_number')
     )
     op.create_table('virtual_machines',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -124,12 +147,36 @@ def upgrade():
     sa.Column('ip', sa.String(length=120), nullable=False),
     sa.Column('platform', sa.String(length=120), nullable=False),
     sa.Column('status', sa.String(length=120), nullable=False),
+    sa.Column('creation_status', sa.String(length=20), nullable=True),
     sa.Column('request_id', sa.Integer(), nullable=True),
     sa.Column('request_no_catalog_id', sa.Integer(), nullable=True),
+    sa.Column('hypervisor_id', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.Column('external_vm_id', sa.String(length=255), nullable=True),
+    sa.Column('external_vm_name', sa.String(length=255), nullable=True),
+    sa.Column('external_vm_power_state', sa.String(length=50), nullable=True),
+    sa.Column('external_vm_guest_os', sa.String(length=255), nullable=True),
+    sa.Column('external_vm_ip_address', sa.String(length=120), nullable=True),
+    sa.Column('external_vm_cpu_count', sa.Integer(), nullable=True),
+    sa.Column('external_vm_memory_mb', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['hypervisor_id'], ['hypervisor.id'], ),
     sa.ForeignKeyConstraint(['request_id'], ['request_pre_defined_plans.id'], ),
     sa.ForeignKeyConstraint(['request_no_catalog_id'], ['request_no_catalog.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('operation_log',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('operation_type', sa.String(length=50), nullable=False),
+    sa.Column('hypervisor_id', sa.Integer(), nullable=True),
+    sa.Column('vm_id', sa.Integer(), nullable=True),
+    sa.Column('request_id', sa.Integer(), nullable=True),
+    sa.Column('request_type', sa.String(length=20), nullable=True),
+    sa.Column('status', sa.String(length=20), nullable=False),
+    sa.Column('message', sa.Text(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['hypervisor_id'], ['hypervisor.id'], ),
+    sa.ForeignKeyConstraint(['vm_id'], ['virtual_machines.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
@@ -137,10 +184,12 @@ def upgrade():
 
 def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_table('operation_log')
     op.drop_table('virtual_machines')
     op.drop_table('request_pre_defined_plans')
     op.drop_table('request_no_catalog')
     op.drop_table('user')
     op.drop_table('pre_defined_plans')
+    op.drop_table('hypervisor')
     op.drop_table('final_user')
     # ### end Alembic commands ###

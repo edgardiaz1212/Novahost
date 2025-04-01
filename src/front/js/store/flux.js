@@ -358,33 +358,61 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
 //***Gestion servicios*** 
  // Fetch services
-fetchServices: async () => {
+ fetchServices: async () => {
   const store = getStore();
   try {
-    const response = await fetch(
-      `${process.env.REACT_APP_BACKEND_URL}/services`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/services`,
+          {
+              method: "GET",
+              headers: {
+                  "Content-Type": "application/json",
+              },
+          }
+      );
+      if (response.ok) {
+          const data = await response.json();
+          setStore({ services: data });
+          console.log("Services fetched:", data);
+          return data;
+      } else {
+          console.error("Failed to fetch services");
+          return false;
       }
-    );
-    if (response.ok) {
-      const data = await response.json();
-      setStore({ services: data });
-      console.log("Services fetched:", data);
-      return data;
-    } else {
-      console.error("Failed to fetch services");
-      return false;
-    }
   } catch (error) {
-    console.error("Error fetching services:", error);
-    return false;
+      console.error("Error fetching services:", error);
+      return false;
   }
 },
-
+//  update service order
+updateServiceOrder: async (newOrder) => {
+  const store = getStore();
+  const token = sessionStorage.getItem("token");
+  try {
+      const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URL}/update-service-order`,
+          {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`,
+              },
+              body: JSON.stringify(newOrder),
+          }
+      );
+      if (response.ok) {
+          console.log("Service order updated successfully");
+          getActions().fetchServices(); // Refresh service list
+          return true;
+      } else {
+          console.error("Failed to update service order");
+          return false;
+      }
+  } catch (error) {
+      console.error("Error updating service order:", error);
+      return false;
+  }
+},
 // Add a new service
 addService: async (serviceData) => {
   const store = getStore();

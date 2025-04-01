@@ -7,6 +7,8 @@ from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 import atexit
+from api.hypervisor import HypervisorManager
+
 
 api = Blueprint('api', __name__)
 
@@ -131,7 +133,7 @@ def get_users():
 # Get all services
 @api.route('/services', methods=['GET'])
 def get_services():
-    services = PreDefinedPlans.query.all() # Changed to PreDefinedPlans
+    services = PreDefinedPlans.query.order_by(PreDefinedPlans.order).all() # Order by the 'order' field
     services_list = [service.serialize() for service in services]
     return jsonify(services_list), 200
 
@@ -140,15 +142,36 @@ def get_services():
 @jwt_required()
 def add_service():
     data = request.get_json()
+    # Get the maximum current order and increment it
+    max_order = db.session.query(db.func.max(PreDefinedPlans.order)).scalar() or 0
+    new_order = max_order + 1
     service = PreDefinedPlans( # Changed to PreDefinedPlans
         name=data['nombre'],
         ram=data['ram'],
         disk=data['disco'],
-        processor=data['procesador']
+        processor=data['procesador'],
+        order=new_order # Assign the new order
     )
     db.session.add(service)
     db.session.commit()
     return jsonify({"msg": "Service created successfully", "service": service.serialize()}), 200
+
+# update service order
+@api.route('/update-service-order', methods=['POST'])
+@jwt_required()
+def update_service_order():
+    data = request.get_json()
+    try:
+        for item in data:
+            service = PreDefinedPlans.query.get(item['id'])
+            if service:
+                service.order = item['order']
+        db.session.commit()
+        return jsonify({"msg": "Service order updated successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error updating service order: {e}")
+        return jsonify({"msg": "Error updating service order"}), 500
 
 # Update an existing service
 @api.route('/edit-service/<int:service_id>', methods=['PUT'])
@@ -269,7 +292,8 @@ def edit_hypervisor(hypervisor_id):
     hypervisor.hostname = data.get('hostname', hypervisor.hostname)
     hypervisor.port = data.get('port', hypervisor.port)
     hypervisor.username = data.get('username', hypervisor.username)
-    hypervisor.password = data.get('password', hypervisor.password)
+    if 'password' in data and data['password'] != "":
+        hypervisor.password = data['password']
     db.session.commit()
     return jsonify({"msg": "Hypervisor updated successfully", "hypervisor": hypervisor.serialize()}), 200
 
@@ -288,6 +312,9 @@ def delete_hypervisor(hypervisor_id):
 @api.route('/hypervisor/<int:hypervisor_id>/vms', methods=['GET'])
 @jwt_required()
 def get_hypervisor_vms(hypervisor_id):
+    hypervisor = Hypervisor.query.get(hypervisor_id)
+    if not hypervisor:
+        return jsonify({"msg": "Hypervisor not found"}), 404
     try:
         manager = HypervisorManager(hypervisor_id)
         manager.connect()
