@@ -437,10 +437,7 @@ function ServiceSelector() {
                   Número de Ticket
                 </h2>
                 <div className="mb-3">
-                  <label htmlFor="ticketNumber" className="form-label d-flex align-items-center gap-2">
-                    <File className="w-4 h-4 text-indigo-600" />
-                    Ticket
-                  </label>
+                 
                   <input
                     type="text"
                     className="form-control"

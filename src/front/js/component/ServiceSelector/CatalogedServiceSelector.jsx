@@ -7,15 +7,19 @@ function CatalogedServiceSelector({ onTierSelect }) {
   const [predefinedPlans, setPredefinedPlans] = useState([]);
   const [selectedTier, setSelectedTier] = useState(null);
   const [tierColors, setTierColors] = useState({}); // New state for dynamic tier colors
+  const [isLoading, setIsLoading] = useState(true); // New state for loading indicator
 
   // Fetch predefined plans (services)
   useEffect(() => {
     const fetchPredefinedPlans = async () => {
+      setIsLoading(true); // Start loading
       try {
         await actions.fetchServices();
         setPredefinedPlans(store.services);
       } catch (error) {
         console.error('Error fetching predefined plans:', error);
+      } finally {
+        setIsLoading(false); // Stop loading
       }
     };
     fetchPredefinedPlans();
@@ -63,35 +67,43 @@ function CatalogedServiceSelector({ onTierSelect }) {
           <Server className="w-6 h-6 text-indigo-600" />
           Selecciona Plan Hosting
         </h2>
-        <div className="row row-cols-2 g-4">
-          {predefinedPlans.map((plan) => {
-            const tierColor = getTierColor(plan.nombre); // Use plan name as "tier"
-            const isActive = selectedTier && selectedTier.id === plan.id;
+        {isLoading ? (
+          <div className="d-flex justify-content-center">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        ) : (
+          <div className="row row-cols-2 g-4">
+            {predefinedPlans.map((plan) => {
+              const tierColor = getTierColor(plan.nombre);
+              const isActive = selectedTier && selectedTier.id === plan.id;
 
-            return (
-              <div className="col" key={plan.id}>
-                <button
-                  onClick={() => handleTierSelect(plan)}
-                  className="btn w-100 p-3 rounded-3 border-2 transition-all"
-                  style={{
-                    backgroundColor: isActive ? tierColor.bg : 'transparent',
-                    borderColor: tierColor.border,
-                    color: isActive ? tierColor.text : tierColor.border,
-                    fontWeight: isActive ? 'bold' : 'normal',
-                  }}
-                >
-                  {plan.nombre}
-                  <br />
-                  RAM: {plan.ram} GB
-                  <br />
-                  Disco: {plan.disco} GB
-                  <br />
-                  Procesador: {plan.procesador}
-                </button>
-              </div>
-            );
-          })}
-        </div>
+              return (
+                <div className="col" key={plan.id}>
+                  <button
+                    onClick={() => handleTierSelect(plan)}
+                    className="btn w-100 p-3 rounded-3 border-2 transition-all"
+                    style={{
+                      backgroundColor: isActive ? tierColor.bg : 'transparent',
+                      borderColor: tierColor.border,
+                      color: isActive ? tierColor.text : tierColor.border,
+                      fontWeight: isActive ? 'bold' : 'normal',
+                    }}
+                  >
+                    {plan.nombre}
+                    <br />
+                    RAM: {plan.ram} GB
+                    <br />
+                    Disco: {plan.disco} GB
+                    <br />
+                    Procesador: {plan.procesador}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </>
   );
