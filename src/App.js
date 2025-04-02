@@ -9,17 +9,17 @@ import Configuration from './front/js/pages/Configuration.jsx';
 import AprobacionServicios from './front/js/pages/AprobacionServicios.jsx';
 
 const App = () => {
-    const { store } = useContext(Context);
+    const { store, actions } = useContext(Context);
     const { isAuthenticated, redirectPath } = store;
     const navigate = useNavigate(); // Get the navigate function
 
     useEffect(() => {
         if (redirectPath) {
             navigate(redirectPath); // Redirect to the specified path
-            // Clear the redirectPath after navigating
-            store.actions.setStore({ redirectPath: null });
+            actions.setRedirectPath(null); // Clear the redirectPath after navigating
         }
     }, [redirectPath]); // Run this effect when redirectPath changes
+
 
     return (
         <Routes>
@@ -33,7 +33,7 @@ const App = () => {
                     <Route path="*" element={<h1>404</h1>} />
                 </Route>
             ) : (
-                <Route path="/*" element={<h1>Ingresa con tu Usuario. <Link to="/">Volver a Inicio</Link></h1>} />
+                <Route path="/*" element={<HomePage />} />
             )}
         </Routes>
     );
