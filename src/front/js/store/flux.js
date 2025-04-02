@@ -101,9 +101,6 @@ const getState = ({ getStore, getActions, setStore }) => {
           const expirationTime = new Date(parseInt(tokenExpiresIn)); // Convertir a fecha
           const currentTime = new Date();
 
-          console.log("expiration", expirationTime);
-          console.log("current", currentTime);
-
           if (currentTime >= expirationTime) {
             const confirmLogout = window.confirm(
               "Tu sesión ha expirado. ¿Deseas ser redirigido al inicio?"

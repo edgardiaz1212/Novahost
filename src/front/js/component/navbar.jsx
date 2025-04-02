@@ -1,12 +1,13 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Context } from '../store/appContext';
 import { ToastContainer, toast } from 'react-toastify';
-import { User, Server, Monitor, Settings, Info, Cloud, Building, LogOut, LayoutDashboard, CheckCircle } from 'lucide-react';
+import { User, Server, Monitor, Settings, Info, Cloud, Building, LogOut, LayoutDashboard, CheckCircle, AlertCircle, Clock, BarChart3 } from 'lucide-react';
 
 const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
   const { store, actions } = useContext(Context);
   const navigate = useNavigate();
+  const [showDetailsDropdown, setShowDetailsDropdown] = useState(false);
 
   const handleLogout = async () => {
     const success = await actions.logout();
@@ -34,6 +35,10 @@ const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
         theme: "light",
       });
     }
+  };
+
+  const toggleDetailsDropdown = () => {
+    setShowDetailsDropdown(!showDetailsDropdown);
   };
 
   return (
@@ -65,6 +70,42 @@ const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
             <NavLink to="/aprobacion" className="nav-link" onClick={toggleMenu}>
               <CheckCircle className="nav-icon" /> Aprobacion Servicio
             </NavLink>
+          </li>
+          {/* Details Dropdown */}
+          <li className="nav-item dropdown">
+            <a
+              className="nav-link dropdown-toggle"
+              href="#"
+              id="detailsDropdown"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded={showDetailsDropdown}
+              onClick={toggleDetailsDropdown}
+            >
+              <Info className="nav-icon" /> Detalles
+            </a>
+            <ul className={`dropdown-menu  border-0 ${showDetailsDropdown ? 'show' : ''}`} aria-labelledby="detailsDropdown">
+              <li>
+                <NavLink to="/details/completed" className="dropdown-item" onClick={toggleMenu} state={{ color: 'border-green-500' }}>
+                  <CheckCircle className="nav-icon" /> Completadas
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/details/failed" className="dropdown-item" onClick={toggleMenu} state={{ color: 'border-red-500' }}>
+                  <AlertCircle className="nav-icon" /> Fallidas
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/details/inProgress" className="dropdown-item" onClick={toggleMenu} state={{ color: 'border-blue-500' }}>
+                  <Clock className="nav-icon" /> En Proceso
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/details/total" className="dropdown-item" onClick={toggleMenu} state={{ color: 'border-purple-500' }}>
+                  <BarChart3 className="nav-icon" /> Total VMs
+                </NavLink>
+              </li>
+            </ul>
           </li>
           {/* Add more navigation links here */}
         </ul>
