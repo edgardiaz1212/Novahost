@@ -39,8 +39,8 @@ function Home() {
         </nav>
       </header>
 
-      <main className="main-content">
-        <section className="hero  border border-danger">
+
+        <section className="hero">
         <div className="hero-content">
           <h1>Bienvenido a Novahost</h1>
           <h1 className="text-5xl font-bold mb-6 text-white">
@@ -54,8 +54,10 @@ function Home() {
         </section>
         
         <section className="features">
+        <h2>Nuestros Planes</h2>
           <div className="feature-list">
             <div className="feature-item">
+              
               <h3>Planes Hosting </h3>
               <p>Soluciones preconfiguradas para implementación inmediata.</p>
             </div>
@@ -65,10 +67,10 @@ function Home() {
             </div>
           </div>
         </section>
-      </main>
+      
 
       {/* About Section */}
-      <section className="about border border-danger">
+      <section className="about ">
           <h2>¿Quiénes Somos?</h2>
           <p>
             En el Centro de Datos el Hatillo nos especializamos en proporcionar soluciones de infraestructura para empresas de todos los tamaños.

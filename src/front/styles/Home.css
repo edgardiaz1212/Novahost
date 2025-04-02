@@ -13,7 +13,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem ;
-  background-color: #bbb7b7;
+  background-color: #1e1e1e;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   
 }
@@ -21,6 +21,7 @@
 .logo {
   font-weight: bold;
   font-size: 1.5rem;
+  color: white;
 }
 
 .login-button {
@@ -32,10 +33,7 @@
   cursor: pointer;
 }
 
-.main-content {
-  flex-grow: 1;
-  padding: 2rem;
-}
+
 
 .hero {
   text-align: center;
@@ -44,7 +42,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-image: url('../img/datacenter.png'); 
+  background-image: url('../img/1af41ff1-16cc-487d-aab8-bcb225b63907.png'); 
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -53,7 +51,10 @@
 
 }
 .hero-content {
-  z-index: 2; /* Para asegurarse de que el contenido esté por encima de la imagen */
+  z-index: 2;
+  width: 100%;
+  max-width: none; /* Remove any max-width */
+  margin: 0;
 }
 
 .hero h1 {
