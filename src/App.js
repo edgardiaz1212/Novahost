@@ -8,6 +8,7 @@ import ServiceSelector from './front/js/pages/ServiceSelector';
 import Configuration from './front/js/pages/Configuration.jsx';
 import AprobacionServicios from './front/js/pages/AprobacionServicios.jsx';
 import Details from './front/js/pages/Details.jsx';
+import ReportsPage from './front/js/pages/ReportsPage.jsx';
 
 const App = () => {
     const { store, actions } = useContext(Context);
@@ -30,7 +31,8 @@ const App = () => {
                     <Route path="service-selector" element={<ServiceSelector />} />
                     <Route path="configuracion" element={<Configuration />} />
                     <Route path="aprobacion" element={<AprobacionServicios />} />
-                    <Route path="details/:category" element={<Details />} /> {/* Relative path */}
+                    <Route path="details/:category" element={<Details />} /> 
+                    <Route path="reports" element={<ReportsPage/>} /> 
                     <Route path="*" element={<h1>404</h1>} />
                 </Route>
             ) : (

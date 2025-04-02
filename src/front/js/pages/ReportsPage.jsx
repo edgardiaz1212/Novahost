@@ -1,19 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { CSVLink } from 'react-csv';
 import { Filter } from 'lucide-react';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
-import { Pie, Bar } from 'react-chartjs-2';
-
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 function ReportsPage({ requests, virtualMachines, hypervisors }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [filteredData, setFilteredData] = useState([]);
   const [headers, setHeaders] = useState([]);
   const [csvData, setCsvData] = useState([]);
-  const [requestStatusData, setRequestStatusData] = useState({});
-  const [vmByHypervisorData, setVmByHypervisorData] = useState({});
-  const [requestByServiceData, setRequestByServiceData] = useState({});
 
   useEffect(() => {
     let dataToFilter = [];
@@ -90,60 +83,6 @@ function ReportsPage({ requests, virtualMachines, hypervisors }) {
     setCsvData(formattedData);
   }, [filteredData, hypervisors]);
 
-  useEffect(() => {
-    // Request Status Distribution
-    const statusCounts = requests.reduce((acc, req) => {
-      acc[req.status] = (acc[req.status] || 0) + 1;
-      return acc;
-    }, {});
-
-    setRequestStatusData({
-      labels: Object.keys(statusCounts),
-      datasets: [
-        {
-          label: 'Estado de Solicitudes',
-          data: Object.values(statusCounts),
-          backgroundColor: ['#28a745', '#dc3545', '#007bff'], // Green, Red, Blue
-        },
-      ],
-    });
-
-    // Virtual Machine Distribution by Hypervisor
-    const vmCountsByHypervisor = virtualMachines.reduce((acc, vm) => {
-      const hypervisorName = hypervisors.find(h => h.id === vm.hypervisor_id)?.name || 'N/A';
-      acc[hypervisorName] = (acc[hypervisorName] || 0) + 1;
-      return acc;
-    }, {});
-
-    setVmByHypervisorData({
-      labels: Object.keys(vmCountsByHypervisor),
-      datasets: [
-        {
-          label: 'Máquinas Virtuales por Hypervisor',
-          data: Object.values(vmCountsByHypervisor),
-          backgroundColor: ['#007bff', '#6c757d', '#28a745', '#ffc107', '#dc3545'], // Example colors
-        },
-      ],
-    });
-
-    // Request Distribution by Service
-    const requestCountsByService = requests.reduce((acc, req) => {
-      acc[req.service] = (acc[req.service] || 0) + 1;
-      return acc;
-    }, {});
-
-    setRequestByServiceData({
-      labels: Object.keys(requestCountsByService),
-      datasets: [
-        {
-          label: 'Solicitudes por Servicio',
-          data: Object.values(requestCountsByService),
-          backgroundColor: ['#007bff', '#6c757d', '#28a745', '#ffc107', '#dc3545'], // Example colors
-        },
-      ],
-    });
-  }, [requests, virtualMachines, hypervisors]);
-
   const handleCategoryChange = (event) => {
     setSelectedCategory(event.target.value);
   };
@@ -164,34 +103,6 @@ function ReportsPage({ requests, virtualMachines, hypervisors }) {
               <option value="inProgress">En Proceso</option>
               <option value="total">Máquinas Virtuales</option>
             </select>
-          </div>
-        </div>
-
-        {/* Charts */}
-        <div className="row mb-4">
-          <div className="col-md-4">
-            <div className="card shadow-sm">
-              <div className="card-body">
-                <h5 className="card-title">Estado de Solicitudes</h5>
-                <Pie data={requestStatusData} />
-              </div>
-            </div>
-          </div>
-          <div className="col-md-4">
-            <div className="card shadow-sm">
-              <div className="card-body">
-                <h5 className="card-title">Máquinas Virtuales por Hypervisor</h5>
-                <Bar data={vmByHypervisorData} />
-              </div>
-            </div>
-          </div>
-          <div className="col-md-4">
-            <div className="card shadow-sm">
-              <div className="card-body">
-                <h5 className="card-title">Solicitudes por Servicio</h5>
-                <Bar data={requestByServiceData} />
-              </div>
-            </div>
           </div>
         </div>
 

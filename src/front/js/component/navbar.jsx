@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Context } from '../store/appContext';
 import { ToastContainer, toast } from 'react-toastify';
-import { User, Server, Monitor, Settings, Info, Cloud, Building, LogOut, LayoutDashboard, CheckCircle, AlertCircle, Clock, BarChart3 } from 'lucide-react';
+import { User, Server, Monitor, Settings, Info, Cloud, Building, LogOut, LayoutDashboard, CheckCircle, AlertCircle, Clock, BarChart3, BarChart } from 'lucide-react';
 
 const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
   const { store, actions } = useContext(Context);
@@ -110,6 +110,11 @@ const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
                 </NavLink>
               </li>
             </ul>
+          </li>
+          <li className="nav-item">
+            <NavLink to="/reports" className="nav-link" onClick={toggleMenu}>
+              <BarChart className="nav-icon" /> Reportes
+            </NavLink>
           </li>
           {/* Add more navigation links here */}
         </ul>
