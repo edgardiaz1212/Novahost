@@ -80,7 +80,11 @@ const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
               role="button"
               data-bs-toggle="dropdown"
               aria-expanded={showDetailsDropdown}
-              onClick={toggleDetailsDropdown}
+              onClick={(e) => {
+                e.preventDefault(); // Evitar el comportamiento predeterminado
+                e.stopPropagation(); // Evitar que el evento cierre el menú principal
+                toggleDetailsDropdown(); // Alternar el estado del dropdown
+              }}
             >
               <Info className="nav-icon" /> Detalles
             </a>
