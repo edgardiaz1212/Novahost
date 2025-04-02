@@ -106,6 +106,17 @@
   background-position: center;
   background-repeat: no-repeat;
 }
+.about p{
+  font-size: 1.2rem;
+}
+
+/* Footer */
+.footer {
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  padding: 20px 0;
+}
 
 .footer {
   text-align: center;
