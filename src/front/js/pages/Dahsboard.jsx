@@ -57,6 +57,7 @@ function Dahsboard() {
               title="Completadas"
               value={stats.completed}
               color="border-green-500"
+              category="completed" 
             />
           </div>
           <div className="col">
@@ -64,7 +65,8 @@ function Dahsboard() {
               icon={AlertCircle}
               title="Fallidas"
               value={stats.failed}
-              color="border-red-500" // New: Red color for failed requests
+              color="border-red-500" 
+              category="failed"
             />
           </div>
           <div className="col">
@@ -73,6 +75,7 @@ function Dahsboard() {
               title="En Proceso"
               value={stats.inProgress}
               color="border-blue-500"
+              category="inProgress"
             />
           </div>
           <div className="col">
@@ -81,6 +84,7 @@ function Dahsboard() {
               title="Total VMs"
               value={stats.total}
               color="border-purple-500"
+              category="total"
             />
           </div>
         </div>

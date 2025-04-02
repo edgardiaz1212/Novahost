@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
 import HomePage from './front/js/pages/Home.jsx';
 import injectContext, { Context } from './front/js/store/appContext';
 import Dahsboard from './front/js/pages/Dahsboard.jsx';
@@ -7,19 +7,19 @@ import Layout from './front/js/component/Layout';
 import ServiceSelector from './front/js/pages/ServiceSelector';
 import Configuration from './front/js/pages/Configuration.jsx';
 import AprobacionServicios from './front/js/pages/AprobacionServicios.jsx';
+import Details from './front/js/pages/Details.jsx';
 
 const App = () => {
     const { store, actions } = useContext(Context);
     const { isAuthenticated, redirectPath } = store;
-    const navigate = useNavigate(); // Get the navigate function
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (redirectPath) {
-            navigate(redirectPath); // Redirect to the specified path
-            actions.setRedirectPath(null); // Clear the redirectPath after navigating
+            navigate(redirectPath);
+            actions.setRedirectPath(null);
         }
-    }, [redirectPath]); // Run this effect when redirectPath changes
-
+    }, [redirectPath]);
 
     return (
         <Routes>
@@ -30,6 +30,7 @@ const App = () => {
                     <Route path="service-selector" element={<ServiceSelector />} />
                     <Route path="configuracion" element={<Configuration />} />
                     <Route path="aprobacion" element={<AprobacionServicios />} />
+                    <Route path="details/:category" element={<Details />} /> {/* Relative path */}
                     <Route path="*" element={<h1>404</h1>} />
                 </Route>
             ) : (
