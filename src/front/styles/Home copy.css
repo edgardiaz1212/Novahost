@@ -1,0 +1,37 @@
+.hero {
+  
+  background-image: url('../../img/your-image.jpg'); /* Asegúrate de poner la ruta correcta */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100vh; /* Altura completa de la pantalla */
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 0 20px; /* Opcional, para ajustar el espacio interno */
+}
+
+.hero-content {
+  z-index: 2; /* Para asegurarse de que el contenido esté por encima de la imagen */
+}
+
+.hero h1 {
+  font-size: 3rem;
+}
+
+.hero p {
+  font-size: 1.2rem;
+}
+
+footer {
+  background-color: #333;
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+}
+
+footer img {
+  margin-bottom: 10px;
+}

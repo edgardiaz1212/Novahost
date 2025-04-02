@@ -1,157 +1,165 @@
 /* Home.css */
 .home-container {
-    font-family: sans-serif;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    background-color: #190f2b;
-    color: #333;
-  }
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2rem;
-    background-color: #bbb7b7;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    
-  }
   
-  .logo {
-    font-weight: bold;
-    font-size: 1.5rem;
-  }
-  
-  .login-button {
-    background-color: #1500ff;
-    color: #fff;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .main-content {
-    flex-grow: 1;
-    padding: 2rem;
-  }
-  
-  .hero {
-    text-align: center;
-    margin-bottom: 3rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-image: url('../img/datacenter.png'); 
-    background-size: cover;
-    min-height: 450px; /* Added min-height */
+}
 
-  }
-  .hero img {
-        max-width: 100%;
-        height: auto;
-       margin-bottom: 1rem;
-       
-      }
-  .hero h1 {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    color: rgb(252, 245, 245);
-  }
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem ;
+  background-color: #bbb7b7;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   
-  .hero p {
-    font-size: 1.2rem;
-    color: #fff;
-  }
-  .cta-button {
-    background-color: #28a745;
-    color: #fff;
-    border: none;
-    padding: 1rem 2rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1.1rem;
-  }
-  
-  .features {
-    text-align: center;
-    margin-bottom: 3rem;
-  }
-  
-  .feature-list {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-  }
-  
-  .feature-item {
-    width: 30%;
-    min-width: 200px;
-    margin-bottom: 1rem;
-    padding: 1rem;
-    background-color: #ffffffbc; /* This is the background color */
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  
-  .footer {
-    text-align: center;
-    padding: 1rem;
-    background-color: #333;
-    color: #fff;
-  }
-  
-  /* Login Modal */
-  .login-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-  }
-  
-  .login-form-container {
-    background-color: #fff;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .login-form {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .form-group {
-    margin-bottom: 1rem;
-  }
-  
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-  }
-  
-  .form-group input {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  .submit-button {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.login-button {
+  background-color: #1500ff;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 2rem;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-image: url('../img/datacenter.png'); 
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100vh; /* Altura completa de la pantalla */
+  color: white;
+
+}
+.hero-content {
+  z-index: 2; /* Para asegurarse de que el contenido esté por encima de la imagen */
+}
+
+.hero h1 {
+  font-size: 3rem;
+}
+
+.hero p {
+  font-size: 1.2rem;
+}
+.cta-button {
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.features {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 40px;
+}
+
+.feature-list {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.feature-item {
+  width: 30%;
+  min-width: 200px;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background-color: #ffffffbc; /* This is the background color */
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.about{
+  text-align: center;
+  color: white;
+  margin-bottom: 3rem;
+  padding: 40px;
+ height: 250px;
+  background-image:url('../img/code.png');
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.footer {
+  text-align: center;
+  padding:20px 0;
+  background-color: #333;
+  color: #fff;
+}
+
+/* Login Modal */
+.login-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.login-form-container {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.submit-button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}

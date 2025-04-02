@@ -1,108 +1,22 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+// c:\Users\AdminLocal\Documents\Github\proyectonovahost\Novahost\src\front\js\pages\Home.jsx
+import React, { useState, useContext, useEffect } from 'react';
 import '../../styles/Home.css';
 import { Context } from '../store/appContext';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import logo from "../../img/CDHLogo.jpg";
 import logoMad from '../../img/mad_data.png';
 import { useNavigate } from 'react-router-dom';
+import LoginModal from '../component/LoginModal.jsx'; 
 
 function Home() {
-  const { store, actions } = useContext(Context);
+  const { store } = useContext(Context);
   const [showLogin, setShowLogin] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const modalRef = useRef(null);
   const navigate = useNavigate();
 
   const handleLoginClick = () => {
     setShowLogin(!showLogin);
   };
-
-  const handleEmailChange = (event) => {
-    setEmail(event.target.value);
-  };
-
-  const handlePasswordChange = (event) => {
-    setPassword(event.target.value);
-  };
-
-  const handleLoginSubmit = async (event) => {
-    event.preventDefault();
-    const data = await actions.login(email, password);
-    if (data) {
-      setEmail('');
-      setPassword('');
-      setShowLogin(false);
-      toast.success(`Bienvenido ${data.user.userName}!`, {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-      navigate('/dashboard'); // Redirect to /dashboard
-    } else {
-      toast.error("Credenciales incorrectas", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-    }
-  };
-
-  const handleLogout = async () => {
-    const success = await actions.logout();
-    if (success) {
-      toast.success("Logout exitoso", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-      navigate('/');
-    } else {
-      toast.error("Error al cerrar sesión", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-    }
-  };
-
-  const handleClickOutside = (event) => {
-    if (modalRef.current && !modalRef.current.contains(event.target)) {
-      setShowLogin(false);
-    }
-  };
-
-  useEffect(() => {
-    if (showLogin) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showLogin]);
 
   useEffect(() => {
     if (store.isAuthenticated) {
@@ -113,40 +27,32 @@ function Home() {
   return (
     <div className="home-container">
       <ToastContainer />
-      <header className="header">
+      <header className="header ">
         <div className="logo">
           <img src={logo} alt="Logo" width="70" height="40" className="me-2" />
           Novahost
         </div>
         <nav>
-          {store.isAuthenticated ? (
-            <div className="d-flex align-items-center gap-3">
-              <span className="text-white">Bienvenido, {store.user.userName}</span>
-              <button className="btn btn-danger" onClick={handleLogout}>
-                Logout
-              </button>
-            </div>
-          ) : (
-            <button className="btn btn-primary" onClick={handleLoginClick}>
-              {showLogin ? 'Close Login' : 'Login'}
-            </button>
-          )}
+          <button className="btn btn-primary" onClick={handleLoginClick}>
+            {showLogin ? 'Close Login' : 'Login'}
+          </button>
         </nav>
       </header>
 
       <main className="main-content">
-        <section className="hero">
+        <section className="hero  border border-danger">
+        <div className="hero-content">
           <h1>Bienvenido a Novahost</h1>
           <h1 className="text-5xl font-bold mb-6 text-white">
-            Soluciones de Centro de Datos de Nivel Empresarial
+            Soluciones Hosting de Centro de Datos
           </h1>
           <p className="mx-auto">
             Despliega y gestiona tu infraestructura con nuestros servicios de centro de datos seguros y escalables.
             Elige entre nuestras soluciones preconfiguradas o crea tu entorno personalizado.
           </p>
+          </div>
         </section>
-       
-
+        
         <section className="features">
           <div className="feature-list">
             <div className="feature-item">
@@ -161,44 +67,16 @@ function Home() {
         </section>
       </main>
 
-      {showLogin && (
-        <div className="login-modal">
-          <div className="login-form-container" ref={modalRef}>
-            <form className="login-form" onSubmit={handleLoginSubmit}>
-              <h2 className="mb-4">Login</h2>
-              <div className="mb-3">
-                <label htmlFor="email" className="form-label">
-                  Email:
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={handleEmailChange}
-                  className="form-control"
-                  required
-                />
-              </div>
-              <div className="mb-3">
-                <label htmlFor="password" className="form-label">
-                  Clave:
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={handlePasswordChange}
-                  className="form-control"
-                  required
-                />
-              </div>
-              <button type="submit" className="btn btn-success">
-                Inicio de Sesión
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* About Section */}
+      <section className="about border border-danger">
+          <h2>¿Quiénes Somos?</h2>
+          <p>
+            En el Centro de Datos el Hatillo nos especializamos en proporcionar soluciones de infraestructura para empresas de todos los tamaños.
+            Nos dedicamos a ofrecer un servicio eficiente, seguro y confiable para garantizar que tus datos y aplicaciones estén siempre disponibles.
+          </p>
+        </section>
+
+      {showLogin && <LoginModal showLogin={showLogin} setShowLogin={setShowLogin} />}
 
       <footer className="footer">
         <img className="logo-icon" src={logoMad} alt="icon" width="80" />

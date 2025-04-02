@@ -1,201 +1,229 @@
-import React, { useState, useEffect } from 'react';
-import {
-  CheckCircle,
-  Clock,
-  AlertCircle,
-  BarChart3,
-  Search,
-  Filter,
-  Server,
-} from 'lucide-react';
-import '../../styles/Dashboard.css';
-import StatCard from '../component/StatCard';
-import ServerCapacity from '../component/ServerCapacity';
+import React, { useState, useContext, useEffect, useRef } from 'react';
+import '../../styles/Home.css';
+import { Context } from '../store/appContext';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import logo from "../../img/CDHLogo.jpg";
+import logoMad from '../../img/mad_data.png';
+import { useNavigate } from 'react-router-dom';
 
-// Sample data - replace with your actual data
-const requestsData = [
-  { id: 1, client: "Acme Corp", service: "VPS Hosting", status: "En Proceso", date: "2024-03-15" },
-  { id: 2, client: "Tech Solutions", service: "Shared Hosting", status: "Pendiente", date: "2024-03-14" },
-  { id: 3, client: "Digital Inc", service: "Dedicated Server", status: "Completado", date: "2024-03-13" },
-  { id: 4, client: "WebHost Pro", service: "Cloud Hosting", status: "En Proceso", date: "2024-03-12" },
-];
+function Home() {
+  const { store, actions } = useContext(Context);
+  const [showLogin, setShowLogin] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const modalRef = useRef(null);
+  const navigate = useNavigate();
 
-const stats = {
-  completed: 45,
-  pending: 12,
-  inProgress: 23,
-  total: 80
-};
+  const handleLoginClick = () => {
+    setShowLogin(!showLogin);
+  };
 
-function Dahsboard() {
-  const [serverResources, setServerResources] = useState([]); // Initialize as an empty array
-  const [isLoading, setIsLoading] = useState(true); // Add a loading state
+  const handleEmailChange = (event) => {
+    setEmail(event.target.value);
+  };
 
-  // Simulate fetching data for multiple servers
+  const handlePasswordChange = (event) => {
+    setPassword(event.target.value);
+  };
+
+  const handleLoginSubmit = async (event) => {
+    event.preventDefault();
+    const data = await actions.login(email, password);
+    if (data) {
+      setEmail('');
+      setPassword('');
+      setShowLogin(false);
+      toast.success(`Bienvenido ${data.user.userName}!`, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      navigate('/dashboard'); // Redirect to /dashboard
+    } else {
+      toast.error("Credenciales incorrectas", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    }
+  };
+
+  const handleLogout = async () => {
+    const success = await actions.logout();
+    if (success) {
+      toast.success("Logout exitoso", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      navigate('/');
+    } else {
+      toast.error("Error al cerrar sesión", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    }
+  };
+
+  const handleClickOutside = (event) => {
+    if (modalRef.current && !modalRef.current.contains(event.target)) {
+      setShowLogin(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true); // Start loading
-      // Simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Simulate data for multiple servers
-      const serverData = [
-        {
-          platform: "VMware",
-          cpuTotal: 16,
-          cpuUsed: 8,
-          ramTotal: 64,
-          ramUsed: 32,
-          diskTotal: 1000,
-          diskUsed: 500,
-        },
-        {
-          platform: "Proxmox",
-          cpuTotal: 24,
-          cpuUsed: 12,
-          ramTotal: 128,
-          ramUsed: 64,
-          diskTotal: 2000,
-          diskUsed: 1000,
-        },
-        {
-          platform: "Proxmox",
-          cpuTotal: 12,
-          cpuUsed: 6,
-          ramTotal: 64,
-          ramUsed: 32,
-          diskTotal: 1000,
-          diskUsed: 500,
-        },
-      ];
-
-      setServerResources(serverData);
-      setIsLoading(false); // Finish loading
+    if (showLogin) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
     };
+  }, [showLogin]);
 
-    fetchData();
-  }, []);
+  useEffect(() => {
+    if (store.isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [store.isAuthenticated]);
 
   return (
-    <div className="container-fluid bg-light min-vh-100">
-      <div className="container py-4">
-        <h1 className="h3 mb-4 p-3">Panel de Control de Solicitudes</h1>
-
-        {/* Display multiple ServerCapacity components */}
-        <div className="row row-cols-1 row-cols-md-2 g-4 mb-4">
-          {isLoading ? (
-            <div className="col">
-              <div className="card shadow-sm p-4">
-                <div className="text-center">
-                  <p className="text-muted">Cargando datos del servidor...</p>
-                </div>
-              </div>
+    <div className="home-container">
+      <ToastContainer />
+      <header className="header">
+        <div className="logo">
+          <img src={logo} alt="Logo" width="70" height="40" className="me-2" />
+          Novahost
+        </div>
+        <nav>
+          {store.isAuthenticated ? (
+            <div className="d-flex align-items-center gap-3">
+              <span className="text-white">Bienvenido, {store.user.userName}</span>
+              <button className="btn btn-danger" onClick={handleLogout}>
+                Logout
+              </button>
             </div>
           ) : (
-            serverResources.map((server, index) => (
-              <div className="col" key={index}>
-                <ServerCapacity serverData={server} />
-              </div>
-            ))
+            <button className="btn btn-primary" onClick={handleLoginClick}>
+              {showLogin ? 'Close Login' : 'Login'}
+            </button>
           )}
-        </div>
+        </nav>
+      </header>
 
-        {/* Stats Grid */}
-        <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-4">
-          <div className="col">
-            <StatCard
-              icon={CheckCircle}
-              title="Completadas"
-              value={stats.completed}
-              color="border-green-500"
-            />
+      <main className="main-content">
+        <section className="hero">
+          <div className="hero-content">
+            <h1 className="text-5xl font-bold mb-6 text-white">
+              Soluciones de Centro de Datos de Nivel Empresarial
+            </h1>
+            <p className="mx-auto text-white">
+              Despliega y gestiona tu infraestructura con nuestros servicios de centro de datos seguros y escalables.
+              Elige entre nuestras soluciones preconfiguradas o crea tu entorno personalizado.
+            </p>
           </div>
-          <div className="col">
-            <StatCard
-              icon={Clock}
-              title="Pendientes"
-              value={stats.pending}
-              color="border-yellow-500"
-            />
-          </div>
-          <div className="col">
-            <StatCard
-              icon={AlertCircle}
-              title="En Proceso"
-              value={stats.inProgress}
-              color="border-blue-500"
-            />
-          </div>
-          <div className="col">
-            <StatCard
-              icon={BarChart3}
-              title="Total"
-              value={stats.total}
-              color="border-purple-500"
-            />
-          </div>
-        </div>
+        </section>
 
-        {/* Table Section */}
-        <div className="card shadow-sm">
-          <div className="card-header border-bottom">
-            <div className="d-flex justify-content-between align-items-center">
-              <h2 className="h5 mb-0">Solicitudes en Proceso</h2>
-              <div className="d-flex gap-3">
-                <div className="input-group">
-                  <span className="input-group-text">
-                    <Search size={16} />
-                  </span>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Buscar solicitud..."
-                  />
-                </div>
-                <button className="btn btn-outline-secondary d-flex align-items-center gap-2">
-                  <Filter size={16} />
-                  <span>Filtrar</span>
-                </button>
-              </div>
+        {/* About Section */}
+        <section className="about">
+          <h2>¿Quiénes Somos?</h2>
+          <p>
+            En Novahost nos especializamos en proporcionar soluciones de infraestructura para empresas de todos los tamaños.
+            Nos dedicamos a ofrecer un servicio eficiente, seguro y confiable para garantizar que tus datos y aplicaciones estén siempre disponibles.
+          </p>
+        </section>
+
+        {/* Features Section */}
+        <section className="features">
+          <h2>Our Features</h2>
+          <div className="features-list">
+            <div className="feature-item">
+              <h3>Planes Hosting</h3>
+              <p>Soluciones preconfiguradas para implementación inmediata.</p>
+            </div>
+            <div className="feature-item">
+              <h3>Soluciones Personalizadas</h3>
+              <p>Infraestructura tailor-made para necesidades específicas</p>
             </div>
           </div>
+        </section>
 
-          <div className="table-responsive">
-            <table className="table table-hover mb-0">
-              <thead className="table-light">
-                <tr>
-                  <th scope="col">ID</th>
-                  <th scope="col">Cliente</th>
-                  <th scope="col">Servicio</th>
-                  <th scope="col">Estado</th>
-                  <th scope="col">Fecha</th>
-                </tr>
-              </thead>
-              <tbody>
-                {requestsData.map((request) => (
-                  <tr key={request.id}>
-                    <td>#{request.id}</td>
-                    <td>{request.client}</td>
-                    <td>{request.service}</td>
-                    <td>
-                      <span className={`badge ${
-                        request.status === 'Completado' ? 'bg-success' :
-                        request.status === 'En Proceso' ? 'bg-primary' :
-                        'bg-warning'
-                      }`}>
-                        {request.status}
-                      </span>
-                    </td>
-                    <td>{request.date}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* Contact Section */}
+        <section className="contact">
+          <h2>Contact Us</h2>
+          <p>¿Tienes preguntas? Contáctanos y uno de nuestros expertos se pondrá en contacto contigo.</p>
+          <button className="btn btn-primary">Contactar</button>
+        </section>
+      </main>
+
+      {showLogin && (
+        <div className="login-modal">
+          <div className="login-form-container" ref={modalRef}>
+            <form className="login-form" onSubmit={handleLoginSubmit}>
+              <h2 className="mb-4">Login</h2>
+              <div className="mb-3">
+                <label htmlFor="email" className="form-label">
+                  Email:
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={handleEmailChange}
+                  className="form-control"
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="password" className="form-label">
+                  Clave:
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={handlePasswordChange}
+                  className="form-control"
+                  required
+                />
+              </div>
+              <button type="submit" className="btn btn-success">
+                Inicio de Sesión
+              </button>
+            </form>
           </div>
         </div>
-      </div>
+      )}
+
+      <footer className="footer">
+        <img className="logo-icon" src={logoMad} alt="icon" width="80" />
+        <p>&copy; {new Date().getFullYear()} Novahost</p>
+      </footer>
     </div>
   );
 }
 
-export default Dahsboard;
+export default Home;
