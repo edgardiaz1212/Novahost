@@ -55,6 +55,9 @@ function ServiceSelector() {
 
   // New state for ticket number
   const [ticketNumber, setTicketNumber] = useState('');
+  // New state for loading and error
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const operatingSystems = ['Linux', 'Windows', 'Otro'];
   const diskTypes = ['Thin Provisioned', 'Thick Provisioned (Eager Zeroed)', 'Thick Provisioned (Lazy Zeroed)'];
@@ -95,44 +98,52 @@ function ServiceSelector() {
     fetchHypervisors();
   }, []);
 
-  const handleConfirm = () => {
-    // Here you would handle the confirmation logic
-    console.log('Confirmed:', {
-      selectedType,
-      selectedTier,
-      selectedOS,
-      customOS,
-      ram,
-      disk,
-      processors,
-      selectedClient,
-      selectedVM,
-      vmName,
-      network,
-      ipAddress,
-      networkAdapter,
-      osCredentialsUser,
-      osCredentialsPassword,
-      sshKeys,
-      resourceGroup,
-      storage,
-      templateOrIso,
-      diskType,
-      storagePolicy,
-      guestOsCustomization,
-      highAvailability,
-      drs,
-      snapshotPolicy,
-      vmType,
-      diskFormat,
-      biosOrUefi,
-      cloudInit,
-      numa,
-      backupSchedule,
-      hotplug,
-      ticketNumber, // Include ticket number in the confirmation data
-    });
-    alert('Service Confirmed!');
+  const handleConfirm = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // Here you would handle the confirmation logic
+      const vmSpec = {
+        vmName,
+        network,
+        ipAddress,
+        networkAdapter,
+        osCredentialsUser,
+        osCredentialsPassword,
+        sshKeys,
+        resourceGroup,
+        storage,
+        templateOrIso,
+        diskType,
+        storagePolicy,
+        guestOsCustomization,
+        highAvailability,
+        drs,
+        snapshotPolicy,
+        vmType,
+        diskFormat,
+        biosOrUefi,
+        cloudInit,
+        numa,
+        backupSchedule,
+        hotplug,
+        ticketNumber,
+        selectedType,
+        selectedTier,
+        selectedOS,
+        customOS,
+        ram,
+        disk,
+        processors,
+      };
+      const hypervisorId = selectedVM.id; // Assuming selectedVM has an id property
+      await actions.createVirtualMachine(hypervisorId, vmSpec);
+      alert('Virtual Machine Creation Request Sent!');
+    } catch (err) {
+      setError(err.message || 'An error occurred while creating the service.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (event, setter) => {
@@ -476,9 +487,11 @@ function ServiceSelector() {
 
               {/* Confirm Button */}
               <div className="text-center">
+              {isLoading && <p>Loading...</p>}
+              {error && <p style={{ color: 'red' }}>{error}</p>}
                 <button
                   onClick={handleConfirm}
-                  disabled={isConfirmDisabled()}
+                  disabled={isConfirmDisabled() || isLoading}
                   className="btn btn-primary py-2 px-4 rounded-3 hover:bg-indigo-700 transition-colors mx-auto"
                 >
                   Crear Servicio
