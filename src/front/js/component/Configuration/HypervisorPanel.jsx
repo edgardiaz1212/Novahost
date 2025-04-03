@@ -205,6 +205,7 @@ function HypervisorPanel() {
                             <th scope="col">Hostname/IP</th>
                             <th scope="col">Puerto</th>
                             <th scope="col">Usuario</th>
+                            <th scope="col">Contraseña</th>
                             <th scope="col" className="text-end">Acciones</th>
                         </tr>
                     </thead>
@@ -253,6 +254,7 @@ function HypervisorPanel() {
                                                 onChange={(e) => handleInputChange(e, setEditingHypervisor, editingHypervisor)}
                                                 className="form-control"
                                                 required
+                                                style={{ width: '80px' }}
                                             />
                                         </td>
                                         <td>
@@ -263,6 +265,7 @@ function HypervisorPanel() {
                                                 onChange={(e) => handleInputChange(e, setEditingHypervisor, editingHypervisor)}
                                                 className="form-control"
                                                 required
+                                                style={{ width: '140px' }}
                                             />
                                         </td>
                                         <td>
@@ -273,12 +276,13 @@ function HypervisorPanel() {
                                                 onChange={(e) => handleInputChange(e, setEditingHypervisor, editingHypervisor)}
                                                 className="form-control"
                                                 required
+                                                style={{ width: '140px' }}
                                             />
                                         </td>
-                                        <td className="text-end">
+                                        <td className="d-flex flex-wrap gap-2">
                                             <button
                                                 onClick={async () => { await saveHypervisor(editingHypervisor.id) }}
-                                                className="btn btn-primary btn-sm me-2"
+                                                className="btn btn-primary btn-sm"
                                             >
                                                 <Save size={16} />
                                             </button>
@@ -297,16 +301,17 @@ function HypervisorPanel() {
                                         <td>{hypervisor.hostname}</td>
                                         <td>{hypervisor.port}</td>
                                         <td>{hypervisor.username}</td>
-                                        <td className="text-end">
+                                        <td>********</td>
+                                        <td className="d-flex flex-wrap gap-2">
                                             <button
                                                 onClick={() => handleEditHypervisor(hypervisor)}
-                                                className="btn btn-primary btn-sm me-2"
+                                                className="btn btn-primary btn-sm"
                                             >
                                                 <Edit size={16} />
                                             </button>
                                             <button
                                                 onClick={() => deleteHypervisor(hypervisor.id)}
-                                                className="btn btn-danger btn-sm me-2"
+                                                className="btn btn-danger btn-sm"
                                             >
                                                 <Trash size={16} />
                                             </button>
