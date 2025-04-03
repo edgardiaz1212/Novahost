@@ -783,61 +783,6 @@ const getState = ({ getStore, getActions, setStore }) => {
         }
       },
 
-      // Fetch server resources
-      fetchServerResources: async () => {
-        const store = getStore();
-        try {
-          const response = await fetch(
-            `${process.env.REACT_APP_BACKEND_URL}/server-resources`, // Replace with your actual endpoint
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          if (response.ok) {
-            const data = await response.json();
-            setStore({ serverResources: data }); // Update the store with fetched data
-            console.log("Server resources fetched:", data);
-            return data;
-          } else {
-            console.error("Failed to fetch server resources");
-            return false;
-          }
-        } catch (error) {
-          console.error("Error fetching server resources:", error);
-          return false;
-        }
-      },
-      // Fetch requests
-      fetchRequests: async () => {
-        const store = getStore();
-        try {
-          const response = await fetch(
-            `${process.env.REACT_APP_BACKEND_URL}/requests`, // Replace with your actual endpoint
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          if (response.ok) {
-            const data = await response.json();
-            setStore({ requests: data }); // Update the store with fetched data
-            console.log("Requests fetched:", data);
-            return data;
-          } else {
-            console.error("Failed to fetch requests");
-            return false;
-          }
-        } catch (error) {
-          console.error("Error fetching requests:", error);
-          return false;
-        }
-      },
-
       // ***Gestion de Hypervisores***
       fetchHypervisors: async () => {
         const store = getStore();

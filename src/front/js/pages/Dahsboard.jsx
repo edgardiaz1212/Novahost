@@ -8,9 +8,9 @@ import {
 import '../../styles/Dashboard.css';
 import StatCard from '../component/Dashboard/StatCard';
 import { Context } from '../store/appContext'; // Import Context
-import HypervisorStatus from '../component/Dashboard/HypervisorStatus'; // Import HypervisorStatus
-import VirtualMachinesStatus from '../component/Dashboard/VirtualMachinesStatus'; // Import VirtualMachinesStatus
-import RequestsTable from '../component/Dashboard/RequestsTable'; // Import RequestsTable
+import HypervisorStatus from '../component/Dashboard/HypervisorStatus.jsx'; // Import HypervisorStatus
+import VirtualMachinesStatus from '../component/Dashboard/VirtualMachinesStatus.jsx'; // Import VirtualMachinesStatus
+import RequestsTable from '../component/Dashboard/RequestsTable.jsx'; // Import RequestsTable
 
 function Dahsboard() {
   const { store, actions } = useContext(Context);
@@ -20,11 +20,14 @@ function Dahsboard() {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      await actions.fetchServerResources();
-      await actions.fetchRequests();
-      await actions.fetchHypervisors(); // Cargar hipervisores
-      await actions.fetchVirtualMachines(); // Cargar máquinas virtuales
-      setIsLoading(false);
+      try {
+        await actions.fetchHypervisors(); // Cargar hipervisores
+        await actions.fetchVirtualMachines(); // Cargar máquinas virtuales
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchData();
@@ -35,7 +38,7 @@ function Dahsboard() {
     completed: requests.filter(req => req.status === "Completado").length,
     failed: requests.filter(req => req.status === "Falla").length, // New: Count failed requests
     inProgress: requests.filter(req => req.status === "En Proceso").length,
-    total: virtualMachines.length, // Changed: Total is now the number of virtual machines
+    total: virtualMachines ? virtualMachines.length : 0, // Changed: Total is now the number of virtual machines
   };
 
   return (
@@ -47,7 +50,9 @@ function Dahsboard() {
         <HypervisorStatus hypervisors={hypervisors} isLoading={isLoading} />
 
         {/* Virtual Machines Status Section */}
-        <VirtualMachinesStatus virtualMachines={virtualMachines} isLoading={isLoading} />
+        {virtualMachines && virtualMachines.length > 0 && (
+          <VirtualMachinesStatus virtualMachines={virtualMachines} isLoading={isLoading} />
+        )}
 
         {/* Stats Grid */}
         <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-4">
@@ -57,7 +62,7 @@ function Dahsboard() {
               title="Completadas"
               value={stats.completed}
               color="border-green-500"
-              category="completed" 
+              category="completed"
             />
           </div>
           <div className="col">
@@ -65,7 +70,7 @@ function Dahsboard() {
               icon={AlertCircle}
               title="Fallidas"
               value={stats.failed}
-              color="border-red-500" 
+              color="border-red-500"
               category="failed"
             />
           </div>

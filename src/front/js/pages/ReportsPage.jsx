@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { CSVLink } from 'react-csv';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Filter } from 'lucide-react';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
+import { Pie, Bar } from 'react-chartjs-2';
 
-function ReportsPage({ requests, virtualMachines, hypervisors }) {
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
+
+function RequestsTable({ requests = [], virtualMachines = [], hypervisors = [] }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [filteredData, setFilteredData] = useState([]);
   const [headers, setHeaders] = useState([]);
-  const [csvData, setCsvData] = useState([]);
+  const [requestStatusData, setRequestStatusData] = useState({});
+  const [vmByHypervisorData, setVmByHypervisorData] = useState({});
+  const [requestByServiceData, setRequestByServiceData] = useState({});
 
   useEffect(() => {
     let dataToFilter = [];
@@ -72,16 +77,74 @@ function ReportsPage({ requests, virtualMachines, hypervisors }) {
     setHeaders(newHeaders);
   }, [selectedCategory, requests, virtualMachines]);
 
+  const chartData = useMemo(() => {
+    // Request Status Distribution
+    const statusCounts = requests.reduce((acc, req) => {
+      if (req && req.status) {
+        acc[req.status] = (acc[req.status] || 0) + 1;
+      }
+      return acc;
+    }, {});
+
+    const newRequestStatusData = {
+      labels: Object.keys(statusCounts),
+      datasets: [
+        {
+          label: 'Estado de Solicitudes',
+          data: Object.values(statusCounts),
+          backgroundColor: ['#28a745', '#dc3545', '#007bff'],
+        },
+      ],
+    };
+
+    // Virtual Machine Distribution by Hypervisor
+    const vmCountsByHypervisor = virtualMachines.reduce((acc, vm) => {
+      if (vm && vm.hypervisor_id) {
+        const hypervisor = hypervisors.find(h => h.id === vm.hypervisor_id);
+        const hypervisorName = hypervisor ? hypervisor.name : 'N/A';
+        acc[hypervisorName] = (acc[hypervisorName] || 0) + 1;
+      }
+      return acc;
+    }, {});
+
+    const newVmByHypervisorData = {
+      labels: Object.keys(vmCountsByHypervisor),
+      datasets: [
+        {
+          label: 'Máquinas Virtuales por Hypervisor',
+          data: Object.values(vmCountsByHypervisor),
+          backgroundColor: ['#007bff', '#6c757d', '#28a745', '#ffc107', '#dc3545'],
+        },
+      ],
+    };
+
+    // Request Distribution by Service
+    const requestCountsByService = requests.reduce((acc, req) => {
+      if (req && req.service) {
+        acc[req.service] = (acc[req.service] || 0) + 1;
+      }
+      return acc;
+    }, {});
+
+    const newRequestByServiceData = {
+      labels: Object.keys(requestCountsByService),
+      datasets: [
+        {
+          label: 'Solicitudes por Servicio',
+          data: Object.values(requestCountsByService),
+          backgroundColor: ['#007bff', '#6c757d', '#28a745', '#ffc107', '#dc3545'],
+        },
+      ],
+    };
+
+    return { newRequestStatusData, newVmByHypervisorData, newRequestByServiceData };
+  }, [requests, virtualMachines, hypervisors]);
+
   useEffect(() => {
-    const formattedData = filteredData.map(item => {
-      const hypervisorName = hypervisors.find(h => h.id === item.hypervisor_id)?.name || 'N/A';
-      return {
-        ...item,
-        hypervisor: hypervisorName
-      };
-    });
-    setCsvData(formattedData);
-  }, [filteredData, hypervisors]);
+    setRequestStatusData(chartData.newRequestStatusData);
+    setVmByHypervisorData(chartData.newVmByHypervisorData);
+    setRequestByServiceData(chartData.newRequestByServiceData);
+  }, [chartData]);
 
   const handleCategoryChange = (event) => {
     setSelectedCategory(event.target.value);
@@ -106,10 +169,32 @@ function ReportsPage({ requests, virtualMachines, hypervisors }) {
           </div>
         </div>
 
-        <div className="mb-4">
-          <CSVLink data={csvData} headers={headers} filename={"report.csv"} className="btn btn-primary">
-            Descargar CSV
-          </CSVLink>
+        {/* Charts */}
+        <div className="row mb-4">
+          <div className="col-md-4">
+            <div className="card shadow-sm">
+              <div className="card-body">
+                <h5 className="card-title">Estado de Solicitudes</h5>
+                {requestStatusData.datasets && requestStatusData.datasets.length > 0 && <Pie data={requestStatusData} />}
+              </div>
+            </div>
+          </div>
+          <div className="col-md-4">
+            <div className="card shadow-sm">
+              <div className="card-body">
+                <h5 className="card-title">Máquinas Virtuales por Hypervisor</h5>
+                {vmByHypervisorData.datasets && vmByHypervisorData.datasets.length > 0 && <Bar data={vmByHypervisorData} />}
+              </div>
+            </div>
+          </div>
+          <div className="col-md-4">
+            <div className="card shadow-sm">
+              <div className="card-body">
+                <h5 className="card-title">Solicitudes por Servicio</h5>
+                {requestByServiceData.datasets && requestByServiceData.datasets.length > 0 && <Bar data={requestByServiceData} />}
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="table-responsive">
@@ -144,4 +229,4 @@ function ReportsPage({ requests, virtualMachines, hypervisors }) {
   );
 }
 
-export default ReportsPage;
+export default RequestsTable;
