@@ -48,9 +48,8 @@ class FinalUser(db.Model):
     rif = db.Column(db.String(120), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    # Relationship with RequestPreDefinedPlans
-    requests = db.relationship('RequestPreDefinedPlans', backref='client', lazy=True)
-    requests_no_catalog = db.relationship('RequestNoCatalog', backref='client', lazy=True)
+    # Relationship with Request
+    requests = db.relationship('Request', backref='client', lazy=True)
 
     def serialize(self):
         return {
@@ -70,8 +69,8 @@ class PreDefinedPlans(db.Model):
     order = db.Column(db.Integer, nullable=False, default=0)  # New order field
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    # Relationship with RequestPreDefinedPlans
-    requests = db.relationship('RequestPreDefinedPlans', backref='plan', lazy=True)
+    # Relationship with Request
+    requests = db.relationship('Request', backref='plan', lazy=True)
 
     def serialize(self):
         return {
@@ -92,9 +91,8 @@ class VirtualMachines(db.Model):
     platform = db.Column(db.String(120), nullable=False)
     status = db.Column(db.String(120), nullable=False)
     creation_status = db.Column(db.String(20), default="queued")
-    # Relationship with RequestPreDefinedPlans
-    request_id = db.Column(db.Integer, db.ForeignKey('request_pre_defined_plans.id'), nullable=True)
-    request_no_catalog_id = db.Column(db.Integer, db.ForeignKey('request_no_catalog.id'), nullable=True)
+    # Relationship with Request
+    request_id = db.Column(db.Integer, db.ForeignKey('request.id'), nullable=True) # Changed to Request
     hypervisor_id = db.Column(db.Integer, db.ForeignKey('hypervisor.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
@@ -116,7 +114,6 @@ class VirtualMachines(db.Model):
             "platform": self.platform,
             "status": self.status,
             "request_id": self.request_id,
-            "request_no_catalog_id": self.request_no_catalog_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             "hypervisor_id": self.hypervisor_id,
@@ -169,17 +166,18 @@ class Hypervisor(db.Model):
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
 
-class RequestPreDefinedPlans(db.Model):
+class Request(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    ticket_number = db.Column(db.String(50), nullable=False, unique=True)  # Número de ticket único
+    ticket_number = db.Column(db.String(50), nullable=False, unique=True)
+    request_type = db.Column(db.String(20), nullable=False)  # "predefined" or "no_catalog"
     status = db.Column(db.String(120), nullable=False)
     vm_creation_status = db.Column(db.String(20), default="queued")
     # Foreign keys
-    plan_id = db.Column(db.Integer, db.ForeignKey('pre_defined_plans.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # Add this line
+    plan_id = db.Column(db.Integer, db.ForeignKey('pre_defined_plans.id'), nullable=True)  # Only for predefined
     client_id = db.Column(db.Integer, db.ForeignKey('final_user.id'), nullable=True)
     hypervisor_id = db.Column(db.Integer, db.ForeignKey('hypervisor.id'), nullable=False)
-    vm = db.relationship('VirtualMachines', backref='request', uselist=False, lazy=True)
-    # New fields from ServiceSelector
+    # Common fields
     selected_os = db.Column(db.String(80), nullable=True)
     custom_os = db.Column(db.String(80), nullable=True)
     network = db.Column(db.String(80), nullable=True)
@@ -205,103 +203,28 @@ class RequestPreDefinedPlans(db.Model):
     numa = db.Column(db.String(80), nullable=True)
     backup_schedule = db.Column(db.String(80), nullable=True)
     hotplug = db.Column(db.Boolean, nullable=True)
-    # Relationship with VirtualMachines
-    vm = db.relationship('VirtualMachines', backref='request', uselist=False, lazy=True)
-
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "ticket_number": self.ticket_number,
-            "status": self.status,
-            "plan_id": self.plan_id,
-            "client_id": self.client_id,
-            "selected_os": self.selected_os,
-            "custom_os": self.custom_os,
-            "network": self.network,
-            "network_adapter": self.network_adapter,
-            "os_credentials_user": self.os_credentials_user,
-            "os_credentials_password": self.os_credentials_password,
-            "ssh_keys": self.ssh_keys,
-            "resource_group": self.resource_group,
-            "storage": self.storage,
-            "template_or_iso": self.template_or_iso,
-            "disk_type": self.disk_type,
-            "storage_policy": self.storage_policy,
-            "guest_os_customization": self.guest_os_customization,
-            "high_availability": self.high_availability,
-            "drs": self.drs,
-            "snapshot_policy": self.snapshot_policy,
-            "vm_type": self.vm_type,
-            "disk_format": self.disk_format,
-            "bios_or_uefi": self.bios_or_uefi,
-            "cloud_init": self.cloud_init,
-            "numa": self.numa,
-            "backup_schedule": self.backup_schedule,
-            "hotplug": self.hotplug,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "vm_creation_status": self.vm_creation_status
-        }
-
-class RequestNoCatalog(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    status = db.Column(db.String(120), nullable=False)
-    ticket_number = db.Column(db.String(50), nullable=False, unique=True)  # Número de ticket único
-    status = db.Column(db.String(120), nullable=False)
-    vm_creation_status = db.Column(db.String(20), default="queued")
-    # Foreign keys
-    client_id = db.Column(db.Integer, db.ForeignKey('final_user.id'), nullable=True)
-    hypervisor_id = db.Column(db.Integer, db.ForeignKey('hypervisor.id'), nullable=False)
-    vm = db.relationship('VirtualMachines', backref='request_no_catalog', uselist=False, lazy=True)
-    # New fields from ServiceSelector
-    selected_os = db.Column(db.String(80), nullable=True)
-    custom_os = db.Column(db.String(80), nullable=True)
+    # No catalog specific
     ram = db.Column(db.String(80), nullable=True)
     disk = db.Column(db.String(80), nullable=True)
     processors = db.Column(db.String(80), nullable=True)
-    network = db.Column(db.String(80), nullable=True)
-    network_adapter = db.Column(db.String(80), nullable=True)
-    os_credentials_user = db.Column(db.String(80), nullable=True)
-    os_credentials_password = db.Column(db.String(80), nullable=True)
-    ssh_keys = db.Column(db.Text, nullable=True)
-    resource_group = db.Column(db.String(80), nullable=True)
-    storage = db.Column(db.String(80), nullable=True)
-    template_or_iso = db.Column(db.String(80), nullable=True)
-    # vCenter specific
-    disk_type = db.Column(db.String(80), nullable=True)
-    storage_policy = db.Column(db.String(80), nullable=True)
-    guest_os_customization = db.Column(db.String(80), nullable=True)
-    high_availability = db.Column(db.Boolean, nullable=True)
-    drs = db.Column(db.String(80), nullable=True)
-    snapshot_policy = db.Column(db.String(80), nullable=True)
-    # Proxmox specific
-    vm_type = db.Column(db.String(80), nullable=True)
-    disk_format = db.Column(db.String(80), nullable=True)
-    bios_or_uefi = db.Column(db.String(80), nullable=True)
-    cloud_init = db.Column(db.String(80), nullable=True)
-    numa = db.Column(db.String(80), nullable=True)
-    backup_schedule = db.Column(db.String(80), nullable=True)
-    hotplug = db.Column(db.Boolean, nullable=True)
     # Relationship with VirtualMachines
-    vm = db.relationship('VirtualMachines', backref='request_no_catalog', uselist=False, lazy=True)
-
+    vm = db.relationship('VirtualMachines', backref='request', uselist=False, lazy=True)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     def serialize(self):
         return {
             "id": self.id,
+            "user_id": self.user_id,
             "ticket_number": self.ticket_number,
+            "request_type": self.request_type,
             "status": self.status,
+            "vm_creation_status": self.vm_creation_status,
+            "plan_id": self.plan_id,
             "client_id": self.client_id,
+            "hypervisor_id": self.hypervisor_id,
             "selected_os": self.selected_os,
             "custom_os": self.custom_os,
-            "ram": self.ram,
-            "disk": self.disk,
-            "processors": self.processors,
             "network": self.network,
             "network_adapter": self.network_adapter,
             "os_credentials_user": self.os_credentials_user,
@@ -323,16 +246,18 @@ class RequestNoCatalog(db.Model):
             "numa": self.numa,
             "backup_schedule": self.backup_schedule,
             "hotplug": self.hotplug,
+            "ram": self.ram,
+            "disk": self.disk,
+            "processors": self.processors,
             "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "vm_creation_status": self.vm_creation_status
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
 class OperationLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     operation_type = db.Column(db.String(50), nullable=False)  # create, delete, sync, etc.
     hypervisor_id = db.Column(db.Integer, db.ForeignKey('hypervisor.id'), nullable=True)
     vm_id = db.Column(db.Integer, db.ForeignKey('virtual_machines.id'), nullable=True)
-    request_id = db.Column(db.Integer, nullable=True)
+    request_id = db.Column(db.Integer, db.ForeignKey('request.id'), nullable=True) # Changed to Request
     request_type = db.Column(db.String(20), nullable=True)  # catalog, no_catalog
     status = db.Column(db.String(20), nullable=False)  # success, error
     message = db.Column(db.Text, nullable=True)

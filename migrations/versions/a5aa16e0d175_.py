@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 9c3e8de457af
+Revision ID: a5aa16e0d175
 Revises: 
-Create Date: 2025-04-01 12:39:32.911063
+Create Date: 2025-04-03 12:37:54.540500
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '9c3e8de457af'
+revision = 'a5aa16e0d175'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -62,51 +62,13 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
     )
-    op.create_table('request_no_catalog',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('status', sa.String(length=120), nullable=False),
-    sa.Column('ticket_number', sa.String(length=50), nullable=False),
-    sa.Column('vm_creation_status', sa.String(length=20), nullable=True),
-    sa.Column('client_id', sa.Integer(), nullable=True),
-    sa.Column('hypervisor_id', sa.Integer(), nullable=False),
-    sa.Column('selected_os', sa.String(length=80), nullable=True),
-    sa.Column('custom_os', sa.String(length=80), nullable=True),
-    sa.Column('ram', sa.String(length=80), nullable=True),
-    sa.Column('disk', sa.String(length=80), nullable=True),
-    sa.Column('processors', sa.String(length=80), nullable=True),
-    sa.Column('network', sa.String(length=80), nullable=True),
-    sa.Column('network_adapter', sa.String(length=80), nullable=True),
-    sa.Column('os_credentials_user', sa.String(length=80), nullable=True),
-    sa.Column('os_credentials_password', sa.String(length=80), nullable=True),
-    sa.Column('ssh_keys', sa.Text(), nullable=True),
-    sa.Column('resource_group', sa.String(length=80), nullable=True),
-    sa.Column('storage', sa.String(length=80), nullable=True),
-    sa.Column('template_or_iso', sa.String(length=80), nullable=True),
-    sa.Column('disk_type', sa.String(length=80), nullable=True),
-    sa.Column('storage_policy', sa.String(length=80), nullable=True),
-    sa.Column('guest_os_customization', sa.String(length=80), nullable=True),
-    sa.Column('high_availability', sa.Boolean(), nullable=True),
-    sa.Column('drs', sa.String(length=80), nullable=True),
-    sa.Column('snapshot_policy', sa.String(length=80), nullable=True),
-    sa.Column('vm_type', sa.String(length=80), nullable=True),
-    sa.Column('disk_format', sa.String(length=80), nullable=True),
-    sa.Column('bios_or_uefi', sa.String(length=80), nullable=True),
-    sa.Column('cloud_init', sa.String(length=80), nullable=True),
-    sa.Column('numa', sa.String(length=80), nullable=True),
-    sa.Column('backup_schedule', sa.String(length=80), nullable=True),
-    sa.Column('hotplug', sa.Boolean(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
-    sa.Column('updated_at', sa.DateTime(), nullable=True),
-    sa.ForeignKeyConstraint(['client_id'], ['final_user.id'], ),
-    sa.ForeignKeyConstraint(['hypervisor_id'], ['hypervisor.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('ticket_number')
-    )
-    op.create_table('request_pre_defined_plans',
+    op.create_table('request',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('ticket_number', sa.String(length=50), nullable=False),
+    sa.Column('request_type', sa.String(length=20), nullable=False),
     sa.Column('status', sa.String(length=120), nullable=False),
     sa.Column('vm_creation_status', sa.String(length=20), nullable=True),
+    sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('plan_id', sa.Integer(), nullable=True),
     sa.Column('client_id', sa.Integer(), nullable=True),
     sa.Column('hypervisor_id', sa.Integer(), nullable=False),
@@ -133,11 +95,15 @@ def upgrade():
     sa.Column('numa', sa.String(length=80), nullable=True),
     sa.Column('backup_schedule', sa.String(length=80), nullable=True),
     sa.Column('hotplug', sa.Boolean(), nullable=True),
+    sa.Column('ram', sa.String(length=80), nullable=True),
+    sa.Column('disk', sa.String(length=80), nullable=True),
+    sa.Column('processors', sa.String(length=80), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['client_id'], ['final_user.id'], ),
     sa.ForeignKeyConstraint(['hypervisor_id'], ['hypervisor.id'], ),
     sa.ForeignKeyConstraint(['plan_id'], ['pre_defined_plans.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('ticket_number')
     )
@@ -149,7 +115,6 @@ def upgrade():
     sa.Column('status', sa.String(length=120), nullable=False),
     sa.Column('creation_status', sa.String(length=20), nullable=True),
     sa.Column('request_id', sa.Integer(), nullable=True),
-    sa.Column('request_no_catalog_id', sa.Integer(), nullable=True),
     sa.Column('hypervisor_id', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
@@ -161,8 +126,7 @@ def upgrade():
     sa.Column('external_vm_cpu_count', sa.Integer(), nullable=True),
     sa.Column('external_vm_memory_mb', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['hypervisor_id'], ['hypervisor.id'], ),
-    sa.ForeignKeyConstraint(['request_id'], ['request_pre_defined_plans.id'], ),
-    sa.ForeignKeyConstraint(['request_no_catalog_id'], ['request_no_catalog.id'], ),
+    sa.ForeignKeyConstraint(['request_id'], ['request.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('operation_log',
@@ -176,6 +140,7 @@ def upgrade():
     sa.Column('message', sa.Text(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['hypervisor_id'], ['hypervisor.id'], ),
+    sa.ForeignKeyConstraint(['request_id'], ['request.id'], ),
     sa.ForeignKeyConstraint(['vm_id'], ['virtual_machines.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -186,8 +151,7 @@ def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
     op.drop_table('operation_log')
     op.drop_table('virtual_machines')
-    op.drop_table('request_pre_defined_plans')
-    op.drop_table('request_no_catalog')
+    op.drop_table('request')
     op.drop_table('user')
     op.drop_table('pre_defined_plans')
     op.drop_table('hypervisor')

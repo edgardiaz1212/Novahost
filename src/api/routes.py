@@ -2,11 +2,10 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, FinalUser, PreDefinedPlans, RequestNoCatalog, RequestPreDefinedPlans, VirtualMachines, Hypervisor
+from api.models import db, User, FinalUser, PreDefinedPlans, Request, VirtualMachines, Hypervisor
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
-import atexit
 from api.hypervisor import HypervisorManager
 
 
@@ -305,6 +304,19 @@ def delete_hypervisor(hypervisor_id):
     db.session.commit()
     return jsonify({"msg": "Hypervisor deleted successfully"}), 200
 
+# Hypervisor Capacity
+@api.route('/hypervisor/<int:hypervisor_id>/capacity', methods=['GET'])
+@jwt_required()
+def get_hypervisor_capacity(hypervisor_id):
+    try:
+        manager = HypervisorManager(hypervisor_id)
+        manager.connect()
+        capacity = manager.get_capacity()
+        manager.disconnect()
+        return jsonify(capacity), 200
+    except Exception as e:
+        return jsonify({"msg": str(e)}), 500
+
 # Get VMs from a hypervisor
 @api.route('/hypervisor/<int:hypervisor_id>/vms', methods=['GET'])
 @jwt_required()
@@ -338,18 +350,6 @@ def create_vm():
     except Exception as e:
         return jsonify({"msg": str(e)}), 500
     
-@api.route('/hypervisor/<int:hypervisor_id>/capacity', methods=['GET'])
-@jwt_required()
-def get_hypervisor_capacity(hypervisor_id):
-    try:
-        manager = HypervisorManager(hypervisor_id)
-        manager.connect()
-        capacity = manager.get_capacity()
-        manager.disconnect()
-        return jsonify(capacity), 200
-    except Exception as e:
-        return jsonify({"msg": str(e)}), 500
-
 
 
 
