@@ -20,7 +20,7 @@ const App = () => {
             navigate(redirectPath);
             actions.setRedirectPath(null);
         }
-    }, [redirectPath]);
+    }, [redirectPath, navigate]);
 
     return (
         <Routes>

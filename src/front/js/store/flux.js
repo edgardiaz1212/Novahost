@@ -97,16 +97,19 @@ const getState = ({ getStore, getActions, setStore }) => {
         const store = getStore();
         const tokenExpiresIn = store.tokenExpiresIn;
 
-        if (tokenExpiresIn) {
-          const expirationTime = new Date(parseInt(tokenExpiresIn)); // Convertir a fecha
+        if (tokenExpiresIn && !store.isTokenExpired) { // Check the flag
+          const expirationTime = new Date(parseInt(tokenExpiresIn));
           const currentTime = new Date();
 
           if (currentTime >= expirationTime) {
+            setStore({ isTokenExpired: true }); // Set the flag
             const confirmLogout = window.confirm(
               "Tu sesión ha expirado. ¿Deseas ser redirigido al inicio?"
             );
             if (confirmLogout) {
-              getActions().logout(); // Cerrar sesión automáticamente
+              getActions().logout();
+            } else {
+              setStore({ isTokenExpired: false }); // Reset the flag if user cancels
             }
           }
         }
@@ -119,37 +122,39 @@ const getState = ({ getStore, getActions, setStore }) => {
         const store = getStore();
         try {
           const token = sessionStorage.getItem("token");
-          const response = await fetch(
-            `${process.env.REACT_APP_BACKEND_URL}/logout`,
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
+          // Only send the logout request if the token is present (not expired)
+          if (token) {
+            const response = await fetch(
+              `${process.env.REACT_APP_BACKEND_URL}/logout`,
+              {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            if (!response.ok) {
+              console.log("Error during logout");
             }
-          );
-          if (response.ok) {
-            // Simple logout method that only clears client-side data
-            setStore({
-              user: null,
-              isAuthenticated: false,
-              token: null,
-              tokenExpiresIn: null,
-              redirectPath: null, // Clear redirect path on logout
-            });
-
-            // Clear session storage completely
-            sessionStorage.removeItem("isAuthenticated");
-            sessionStorage.removeItem("user");
-            sessionStorage.removeItem("token");
-            sessionStorage.removeItem("tokenExpiresIn");
-
-            console.log("Logout successful");
-            return true;
-          } else {
-            console.log("Error during logout");
-            return false;
           }
+          // Clear client-side data regardless of server response
+          setStore({
+            user: null,
+            isAuthenticated: false,
+            token: null,
+            tokenExpiresIn: null,
+            redirectPath: "/", // Set the redirect path to home
+            isTokenExpired: false, // Reset the flag
+          });
+    
+          // Clear session storage completely
+          sessionStorage.removeItem("isAuthenticated");
+          sessionStorage.removeItem("user");
+          sessionStorage.removeItem("token");
+          sessionStorage.removeItem("tokenExpiresIn");
+    
+          console.log("Logout successful");
+          return true;
         } catch (error) {
           console.log("Error during logout", error);
           return false;

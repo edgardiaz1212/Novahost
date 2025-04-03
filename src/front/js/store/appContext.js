@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import getState from "./flux.js";
 
 export const Context = React.createContext(null);
@@ -16,22 +16,31 @@ const injectContext = PassedComponent => {
                     })
             })
         );
+        const intervalIdRef = useRef(null); // Use useRef to store the interval ID
 
         useEffect(() => {
-            /**
-             * This function is the equivalent to "window.onLoad", it only runs once on the entire application lifetime
-             * you should do your ajax requests or fetch api requests here. Do not use setState() to save data in the
-             * store, instead use actions, like this:
-             **/
-            // Example: state.actions.loadSomeData(); <---- calling this function from the flux.js actions
-            // Check token expiration every 5 seconds (adjust as needed)
-            const intervalId = setInterval(() => {
+            // ... (existing code)
+            intervalIdRef.current = setInterval(() => {
                 state.actions.checkTokenExpiration();
-            }, 5000); // 5000 milliseconds = 5 seconds
+            }, 5000);
 
-            // Cleanup function to clear the interval when the component unmounts
-            return () => clearInterval(intervalId);
+            // Cleanup function to clear the interval when the component unmounts or when the user logs out
+            return () => {
+                if (intervalIdRef.current) {
+                    clearInterval(intervalIdRef.current);
+                }
+            };
         }, []);
+
+        useEffect(() => {
+            // Clear the interval when the user logs out
+            if (!state.store.isAuthenticated) {
+                if (intervalIdRef.current) {
+                    clearInterval(intervalIdRef.current);
+                    intervalIdRef.current = null; // Reset the ref
+                }
+            }
+        }, [state.store.isAuthenticated]);
 
         return (
             <Context.Provider value={state}>
