@@ -37,7 +37,8 @@ function HypervisorPanel() {
     };
 
     const handleEditHypervisor = (hypervisor) => {
-        setEditingHypervisor({ ...hypervisor });
+        // Initialize editingHypervisor with a password field, even if it's empty
+        setEditingHypervisor({ ...hypervisor, password: "" });
     };
 
     const handleCancelEdit = () => {
@@ -50,16 +51,22 @@ function HypervisorPanel() {
             setError("All fields are required");
             return;
         }
-        const success = await actions.updateHypervisor(hypervisorId, editingHypervisor);
-        if (success) {
-            setEditingHypervisor(null);
-        } else {
-            setError("Failed to update Hypervisor. Please check the form and try again.");
+        try {
+            const success = await actions.updateHypervisor(hypervisorId, editingHypervisor);
+            if (success) {
+                setEditingHypervisor(null);
+                await actions.fetchHypervisors(); // Refresh the hypervisors list
+            } else {
+                setError("Failed to update Hypervisor. Please check the form and try again.");
+            }
+        } catch (error) {
+            console.error("Error updating hypervisor:", error);
+            setError("An unexpected error occurred while updating the hypervisor.");
         }
     };
 
     const deleteHypervisor = async (hypervisorId) => {
-        if (window.confirm("Are you sure you want to delete this Hypervisor?")) {
+        if (window.confirm("Seguro que quiere eliminar el Hypervisor?")) {
             setError(null);
             const success = await actions.deleteHypervisor(hypervisorId);
             if (!success) {
@@ -79,7 +86,6 @@ function HypervisorPanel() {
                 Hypervisores
             </h2>
 
-            {/* New Hypervisor Form */}
             {showNewHypervisorForm && (
                 <div className="mb-4 p-4 border rounded-md bg-light">
                     <h3 className="font-semibold mb-2">Nuevo Hypervisor</h3>
@@ -180,7 +186,6 @@ function HypervisorPanel() {
                 </div>
             )}
 
-            {/* Add New Hypervisor Button */}
             {!showNewHypervisorForm && (
                 <button
                     onClick={() => setShowNewHypervisorForm(true)}
@@ -191,7 +196,6 @@ function HypervisorPanel() {
                 </button>
             )}
 
-            {/* Hypervisor List */}
             <div className="overflow-x-auto">
                 <table className="table table-hover">
                     <thead className="table-light">
@@ -209,7 +213,7 @@ function HypervisorPanel() {
                             <tr key={hypervisor.id}>
                                 {editingHypervisor && editingHypervisor.id === hypervisor.id ? (
                                     <>
-                                        <td>
+                                        <td >
                                             <input
                                                 type="text"
                                                 name="name"
@@ -261,9 +265,19 @@ function HypervisorPanel() {
                                                 required
                                             />
                                         </td>
+                                        <td>
+                                            <input
+                                                type="password"
+                                                name="password"
+                                                value={editingHypervisor.password}
+                                                onChange={(e) => handleInputChange(e, setEditingHypervisor, editingHypervisor)}
+                                                className="form-control"
+                                                required
+                                            />
+                                        </td>
                                         <td className="text-end">
                                             <button
-                                                onClick={() => saveHypervisor(hypervisor.id)}
+                                                onClick={async () => { await saveHypervisor(editingHypervisor.id) }}
                                                 className="btn btn-primary btn-sm me-2"
                                             >
                                                 <Save size={16} />
