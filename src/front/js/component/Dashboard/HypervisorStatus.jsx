@@ -7,6 +7,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 function HypervisorStatus({ hypervisors, isLoading, predefinedPlans }) {
   const [vmCapacityData, setVmCapacityData] = useState([]);
+  const [hypervisorCapacities, setHypervisorCapacities] = useState({});
 
   // Helper function to calculate percentage with error handling
   const calculatePercentage = (used, total) => {
@@ -51,10 +52,34 @@ function HypervisorStatus({ hypervisors, isLoading, predefinedPlans }) {
   };
 
   useEffect(() => {
-    if (!isLoading && hypervisors && predefinedPlans) {
+    if (!isLoading && hypervisors) {
+      fetchHypervisorCapacities();
+    }
+  }, [hypervisors, isLoading]);
+
+  useEffect(() => {
+    console.log("plan",predefinedPlans)
+    if (!isLoading && hypervisors && predefinedPlans && Object.keys(hypervisorCapacities).length > 0) {
       calculateVmCapacity();
     }
-  }, [hypervisors, predefinedPlans, isLoading]);
+  }, [hypervisors, predefinedPlans, isLoading, hypervisorCapacities]);
+
+  const fetchHypervisorCapacities = async () => {
+    const capacities = {};
+    for (const hypervisor of hypervisors) {
+      try {
+        const response = await fetch(`/api/hypervisor/${hypervisor.id}/capacity`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch capacity for ${hypervisor.name}`);
+        }
+        const data = await response.json();
+        capacities[hypervisor.name] = data;
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    setHypervisorCapacities(capacities);
+  };
 
   const calculateVmCapacity = () => {
     const capacityData = [];
@@ -63,9 +88,9 @@ function HypervisorStatus({ hypervisors, isLoading, predefinedPlans }) {
       const hypervisorCapacity = {
         name: hypervisor.name,
         capacities: [],
-        ram_available: hypervisor.ram_total - hypervisor.ram_used,
-        disk_available: hypervisor.disk_total - hypervisor.disk_used,
-        cpu_available: hypervisor.cpu_total - hypervisor.cpu_used,
+        ram_available: hypervisorCapacities[hypervisor.name]?.ram_total - hypervisorCapacities[hypervisor.name]?.ram_used,
+        disk_available: hypervisorCapacities[hypervisor.name]?.disk_total - hypervisorCapacities[hypervisor.name]?.disk_used,
+        cpu_available: hypervisorCapacities[hypervisor.name]?.cpu_total - hypervisorCapacities[hypervisor.name]?.cpu_used,
       };
 
       predefinedPlans.forEach((plan) => {
@@ -83,9 +108,9 @@ function HypervisorStatus({ hypervisors, isLoading, predefinedPlans }) {
   };
 
   const calculateMaxVms = (hypervisor, plan) => {
-    const ramRatio = hypervisor.ram_available / plan.ram;
-    const diskRatio = hypervisor.disk_available / plan.disco;
-    const processorRatio = hypervisor.cpu_available / plan.procesador;
+    const ramRatio = hypervisor.ram_available / parseInt(plan.ram);
+    const diskRatio = hypervisor.disk_available / parseInt(plan.disco);
+    const processorRatio = hypervisor.cpu_available / parseInt(plan.procesador);
 
     return Math.floor(Math.min(ramRatio, diskRatio, processorRatio));
   };
@@ -149,25 +174,30 @@ function HypervisorStatus({ hypervisors, isLoading, predefinedPlans }) {
                     <p>
                       <strong>Hostname:</strong> {hypervisor.hostname}
                     </p>
-                    
+                    <p>
+                      <strong>Puerto:</strong> {hypervisor.port}
+                    </p>
+                    <p>
+                      <strong>Usuario:</strong> {hypervisor.username}
+                    </p>
                     {/* Render resource usage */}
                     {renderResourceUsage(
                       <Cpu className="text-secondary me-2" size={16} />,
                       'CPU',
-                      hypervisor.cpu_used,
-                      hypervisor.cpu_total
+                      hypervisorCapacities[hypervisor.name]?.cpu_used,
+                      hypervisorCapacities[hypervisor.name]?.cpu_total
                     )}
                     {renderResourceUsage(
                       <MemoryStick className="text-secondary me-2" size={16} />,
                       'RAM',
-                      hypervisor.ram_used,
-                      hypervisor.ram_total
+                      hypervisorCapacities[hypervisor.name]?.ram_used,
+                      hypervisorCapacities[hypervisor.name]?.ram_total
                     )}
                     {renderResourceUsage(
                       <HardDrive className="text-secondary me-2" size={16} />,
                       'Disco',
-                      hypervisor.disk_used,
-                      hypervisor.disk_total
+                      hypervisorCapacities[hypervisor.name]?.disk_used,
+                      hypervisorCapacities[hypervisor.name]?.disk_total
                     )}
                   </div>
                 </div>

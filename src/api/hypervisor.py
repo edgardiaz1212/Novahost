@@ -162,13 +162,29 @@ class HypervisorManager:
         # Implementación para obtener capacidad en vCenter
         try:
             # Ejemplo: Obtener datos de recursos del clúster
+            content = self.connection.RetrieveContent()
+            compute_resource = content.rootFolder.childEntity[0].hostFolder.childEntity[0].host
+            summary = compute_resource[0].summary.hardware
+            cpu_total = summary.numCpuCores
+            cpu_used = 0
+            ram_total = summary.memorySize / 1024 / 1024 / 1024
+            ram_used = 0
+            disk_total = 0
+            disk_used = 0
+            for host in compute_resource:
+                summary = host.summary
+                cpu_used += summary.quickStats.overallCpuUsage
+                ram_used += summary.quickStats.overallMemoryUsage / 1024
+                for datastore in host.datastore:
+                    disk_total += datastore.summary.capacity / 1024 / 1024 / 1024
+                    disk_used += datastore.summary.capacity / 1024 / 1024 / 1024 - datastore.summary.freeSpace / 1024 / 1024 / 1024
             return {
-                "cpu_total": 100,
-                "cpu_used": 50,
-                "ram_total": 256,
-                "ram_used": 128,
-                "disk_total": 1024,
-                "disk_used": 512,
+                "cpu_total": cpu_total,
+                "cpu_used": cpu_used,
+                "ram_total": ram_total,
+                "ram_used": ram_used,
+                "disk_total": disk_total,
+                "disk_used": disk_used,
             }
         except Exception as e:
             raise Exception(f"Failed to get capacity from vCenter: {e}")
@@ -177,13 +193,30 @@ class HypervisorManager:
         # Implementación para obtener capacidad en Proxmox
         try:
             # Ejemplo: Obtener datos de recursos del nodo
+            nodes = self.connection.nodes.get()
+            cpu_total = 0
+            cpu_used = 0
+            ram_total = 0
+            ram_used = 0
+            disk_total = 0
+            disk_used = 0
+            for node in nodes:
+                node_name = node['node']
+                node_status = self.connection.nodes(node_name).status.get()
+                cpu_total += node_status['cpu']
+                cpu_used += node_status['cpu'] * node_status['cpuinfo']['used'] / 100
+                ram_total += node_status['memory']['total'] / 1024 / 1024 / 1024
+                ram_used += node_status['memory']['used'] / 1024 / 1024 / 1024
+                for storage in self.connection.nodes(node_name).storage.get():
+                    disk_total += storage['total'] / 1024 / 1024 / 1024
+                    disk_used += storage['used'] / 1024 / 1024 / 1024
             return {
-                "cpu_total": 80,
-                "cpu_used": 40,
-                "ram_total": 128,
-                "ram_used": 64,
-                "disk_total": 512,
-                "disk_used": 256,
+                "cpu_total": cpu_total,
+                "cpu_used": cpu_used,
+                "ram_total": ram_total,
+                "ram_used": ram_used,
+                "disk_total": disk_total,
+                "disk_used": disk_used,
             }
         except Exception as e:
             raise Exception(f"Failed to get capacity from Proxmox: {e}")
