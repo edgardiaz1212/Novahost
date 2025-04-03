@@ -73,6 +73,10 @@ function CatalogedServiceSelector({ onTierSelect }) {
               <span className="visually-hidden">Loading...</span>
             </div>
           </div>
+        ) : predefinedPlans.length === 0 ? (
+          <div className="alert alert-warning" role="alert">
+            No hay planes cargados. El supervisor debe realizar la carga en configuración.
+          </div>
         ) : (
           <div className="row row-cols-2 g-4">
             {predefinedPlans.map((plan) => {
