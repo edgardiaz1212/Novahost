@@ -1,6 +1,8 @@
 
 import click
-from api.models import db, User
+from api.models import db, User, Hypervisor
+from api.hypervisor import HypervisorManager
+
 
 """
 In this file, you can add as many commands as you want using the @app.cli.command decorator
@@ -32,3 +34,13 @@ def setup_commands(app):
     @app.cli.command("insert-test-data")
     def insert_test_data():
         pass
+    
+    @app.cli.command("update-hypervisors-status")
+    def update_hypervisors_status():
+        hypervisors = Hypervisor.query.all()
+        for hypervisor in hypervisors:
+            manager = HypervisorManager(hypervisor.id)
+            status = manager.check_connection()
+            hypervisor.status = status
+            db.session.commit()
+        print("Hypervisors status updated successfully")

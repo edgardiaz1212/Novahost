@@ -255,9 +255,25 @@ def delete_client(client_id):
 @jwt_required()
 def get_hypervisors():
     hypervisors = Hypervisor.query.all()
-    hypervisors_list = [hypervisor.serialize() for hypervisor in hypervisors]
+    hypervisors_list = []
+    for hypervisor in hypervisors:
+        manager = HypervisorManager(hypervisor.id)
+        status = manager.check_connection()
+        hypervisor.status = status
+        db.session.commit()
+        hypervisors_list.append(hypervisor.serialize())
     return jsonify(hypervisors_list), 200
-
+# Update hypervisor status
+@api.route('/update-hypervisors-status', methods=['POST'])
+@jwt_required()
+def update_hypervisors_status():
+    hypervisors = Hypervisor.query.all()
+    for hypervisor in hypervisors:
+        manager = HypervisorManager(hypervisor.id)
+        status = manager.check_connection()
+        hypervisor.status = status
+        db.session.commit()
+    return jsonify({"msg": "Hypervisors status updated successfully"}), 200
 # Add a new hypervisor
 @api.route('/add-hypervisor', methods=['POST'])
 @jwt_required()

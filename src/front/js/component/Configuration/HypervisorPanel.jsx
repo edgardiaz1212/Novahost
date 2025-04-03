@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Context } from '../../store/appContext';
-import { PlusCircle, Save, X, Edit, Trash, Server } from 'lucide-react';
+import { PlusCircle, Save, X, Edit, Trash, Server, CheckCircle, AlertCircle, Loader, XCircle } from 'lucide-react';
 
 function HypervisorPanel() {
     const { store, actions } = useContext(Context);
@@ -77,6 +77,19 @@ function HypervisorPanel() {
 
     const fetchVMs = async (hypervisorId) => {
         await actions.fetchHypervisorVMs(hypervisorId);
+    };
+
+    // Status Icon Mapping
+    const statusIconMap = {
+        connected: { icon: CheckCircle, color: "green" },
+        disconnected: { icon: XCircle, color: "red" },
+        connecting: { icon: Loader, color: "blue" },
+        error: { icon: AlertCircle, color: "orange" },
+    };
+
+    const getStatusIcon = (status) => {
+        const statusInfo = statusIconMap[status] || { icon: XCircle, color: "gray" }; // Default to disconnected if status is unknown
+        return <statusInfo.icon size={16} className={`text-${statusInfo.color}`} />;
     };
 
     return (
@@ -296,7 +309,10 @@ function HypervisorPanel() {
                                     </>
                                 ) : (
                                     <>
-                                        <td>{hypervisor.name}</td>
+                                        <td className='d-flex align-items-center gap-2'>
+                                            {getStatusIcon(hypervisor.status)}
+                                            {hypervisor.name}
+                                        </td>
                                         <td>{hypervisor.type}</td>
                                         <td>{hypervisor.hostname}</td>
                                         <td>{hypervisor.port}</td>

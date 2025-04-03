@@ -3,7 +3,7 @@
 from pyVim import connect
 from pyVmomi import vim
 from proxmoxer import ProxmoxAPI
-from api.models import Hypervisor
+from api.models import Hypervisor, db
 import atexit
 
 class HypervisorManager:
@@ -187,3 +187,12 @@ class HypervisorManager:
             }
         except Exception as e:
             raise Exception(f"Failed to get capacity from Proxmox: {e}")
+    
+    def check_connection(self):
+        try:
+            self.connect()
+            self.disconnect()
+            return "connected"
+        except Exception as e:
+            print(f"Error checking connection to {self.hypervisor.name}: {e}")
+            return "error"

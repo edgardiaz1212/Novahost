@@ -134,6 +134,7 @@ class Hypervisor(db.Model):
     port = db.Column(db.Integer, nullable=False)
     username = db.Column(db.String(120), nullable=False)
     _password = db.Column(db.String, nullable=False, default="")  # Changed to _password
+    status = db.Column(db.String(20), default="disconnected")  # New status field
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     # Relationship with VirtualMachines
@@ -162,6 +163,7 @@ class Hypervisor(db.Model):
             "hostname": self.hostname,
             "port": self.port,
             "username": self.username,
+            "status": self.status, 
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
