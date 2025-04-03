@@ -11,6 +11,7 @@ import { Context } from '../store/appContext'; // Import Context
 import HypervisorStatus from '../component/Dashboard/HypervisorStatus.jsx'; // Import HypervisorStatus
 import VirtualMachinesStatus from '../component/Dashboard/VirtualMachinesStatus.jsx'; // Import VirtualMachinesStatus
 import RequestsTable from '../component/Dashboard/RequestsTable.jsx'; // Import RequestsTable
+import VMsOverTimeChart from '../component/Dashboard/VMsOverTimeChart'; // Import VMsOverTimeChart
 
 function Dahsboard() {
   const { store, actions } = useContext(Context);
@@ -93,6 +94,9 @@ function Dahsboard() {
             />
           </div>
         </div>
+
+        {/* VMs Over Time Chart */}
+        <VMsOverTimeChart virtualMachines={virtualMachines} />
 
         {/* Table Section */}
         <RequestsTable requests={requests} />
