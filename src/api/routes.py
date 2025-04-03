@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, FinalUser, PreDefinedPlans, Request, VirtualMachines, Hypervisor
+from api.models import db, User, FinalUser, PreDefinedPlans, Request, VirtualMachines, Hypervisor, OperationLog
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
@@ -340,6 +340,46 @@ def create_vm():
     data = request.get_json()
     hypervisor_id = data.get('hypervisor_id')
     vm_spec = data.get('vm_spec')
+    current_user_id = get_jwt_identity() # Get the user id from the token
+    
+    # Create a new VirtualMachines instance and save it to the database
+    vm = VirtualMachines(
+        nombre_maquina=vm_spec.get('nombre_maquina'),
+        ip=vm_spec.get('ip'),
+        platform=vm_spec.get('platform'),
+        status="pending",  # Initial status
+        hypervisor_id=hypervisor_id
+    )
+    db.session.add(vm)
+    db.session.commit()
+    
+    # Add the vm_id to the vm_spec
+    vm_spec['vm_id'] = vm.id
+    
+    # Create a new Request instance and save it to the database
+    request_data = Request(
+        ticket_number= "ticket_number", # You should generate a unique ticket number
+        request_type= "no_catalog", # You should determine the request type
+        status= "pending", # Initial status
+        hypervisor_id=hypervisor_id,
+        user_id=current_user_id # Add the user id
+    )
+    db.session.add(request_data)
+    db.session.commit()
+    
+    # Add the request_id to the vm
+    vm.request_id = request_data.id
+    db.session.commit()
+# Create a new OperationLog instance and save it to the database
+    operation_log = OperationLog(
+        operation_type="create",
+        request_id=request_data.id,
+        user_id=current_user_id,
+        status="pending",
+        message="VM creation requested"
+    )
+    db.session.add(operation_log)
+    db.session.commit()
 
     try:
         manager = HypervisorManager(hypervisor_id)

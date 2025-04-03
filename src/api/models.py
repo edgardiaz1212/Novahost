@@ -259,6 +259,7 @@ class OperationLog(db.Model):
     vm_id = db.Column(db.Integer, db.ForeignKey('virtual_machines.id'), nullable=True)
     request_id = db.Column(db.Integer, db.ForeignKey('request.id'), nullable=True) # Changed to Request
     request_type = db.Column(db.String(20), nullable=True)  # catalog, no_catalog
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True) # Add this line
     status = db.Column(db.String(20), nullable=False)  # success, error
     message = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
@@ -271,6 +272,7 @@ class OperationLog(db.Model):
             "vm_id": self.vm_id,
             "request_id": self.request_id,
             "request_type": self.request_type,
+            "user_id": self.user_id,
             "status": self.status,
             "message": self.message,
             "created_at": self.created_at.isoformat() if self.created_at else None
