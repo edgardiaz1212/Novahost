@@ -206,7 +206,7 @@ function HypervisorPanel() {
                             <th scope="col">Puerto</th>
                             <th scope="col">Usuario</th>
                             <th scope="col">Contraseña</th>
-                            <th scope="col" className="text-end">Acciones</th>
+                            <th scope="col" >Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
