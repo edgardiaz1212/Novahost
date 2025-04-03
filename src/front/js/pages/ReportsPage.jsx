@@ -1,24 +1,26 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Filter } from 'lucide-react';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
-import { Pie, Bar } from 'react-chartjs-2';
+import SummarySection from '../component/ReportsPage/SummarySection';
+import ReportsSection from '../component/ReportsPage/ReportsSection';
+import * as XLSX from 'xlsx';
 
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
-
-function RequestsTable({ requests = [], virtualMachines = [], hypervisors = [] }) {
+function ReportsPage({ requests = [], virtualMachines = [], hypervisors = [] }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [filteredData, setFilteredData] = useState([]);
   const [headers, setHeaders] = useState([]);
-  const [requestStatusData, setRequestStatusData] = useState({});
-  const [vmByHypervisorData, setVmByHypervisorData] = useState({});
-  const [requestByServiceData, setRequestByServiceData] = useState({});
+  const [currentPage, setCurrentPage] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [dateRange, setDateRange] = useState({ start: null, end: null });
+
+  // Memoize requests and virtualMachines
+  const memoizedRequests = useMemo(() => requests, [JSON.stringify(requests)]);
+  const memoizedVirtualMachines = useMemo(() => virtualMachines, [JSON.stringify(virtualMachines)]);
 
   useEffect(() => {
     let dataToFilter = [];
     let newHeaders = [];
     switch (selectedCategory) {
       case 'completed':
-        dataToFilter = requests.filter(req => req.status === "Completado");
+        dataToFilter = memoizedRequests.filter(req => req.status === "Completado");
         newHeaders = [
           { label: "Ticket#", key: "id" },
           { label: "Cliente", key: "client" },
@@ -29,7 +31,7 @@ function RequestsTable({ requests = [], virtualMachines = [], hypervisors = [] }
         ];
         break;
       case 'failed':
-        dataToFilter = requests.filter(req => req.status === "Falla");
+        dataToFilter = memoizedRequests.filter(req => req.status === "Falla");
         newHeaders = [
           { label: "Ticket#", key: "id" },
           { label: "Cliente", key: "client" },
@@ -40,7 +42,7 @@ function RequestsTable({ requests = [], virtualMachines = [], hypervisors = [] }
         ];
         break;
       case 'inProgress':
-        dataToFilter = requests.filter(req => req.status === "En Proceso");
+        dataToFilter = memoizedRequests.filter(req => req.status === "En Proceso");
         newHeaders = [
           { label: "Ticket#", key: "id" },
           { label: "Cliente", key: "client" },
@@ -51,7 +53,7 @@ function RequestsTable({ requests = [], virtualMachines = [], hypervisors = [] }
         ];
         break;
       case 'total':
-        dataToFilter = virtualMachines;
+        dataToFilter = memoizedVirtualMachines;
         newHeaders = [
           { label: "ID", key: "id" },
           { label: "Nombre", key: "name" },
@@ -62,7 +64,7 @@ function RequestsTable({ requests = [], virtualMachines = [], hypervisors = [] }
         ];
         break;
       default:
-        dataToFilter = [...requests, ...virtualMachines];
+        dataToFilter = [...memoizedRequests, ...memoizedVirtualMachines];
         newHeaders = [
           { label: "Ticket#", key: "id" },
           { label: "Cliente", key: "client" },
@@ -75,158 +77,138 @@ function RequestsTable({ requests = [], virtualMachines = [], hypervisors = [] }
     }
     setFilteredData(dataToFilter);
     setHeaders(newHeaders);
-  }, [selectedCategory, requests, virtualMachines]);
+    setCurrentPage(0);
+  }, [selectedCategory, memoizedRequests, memoizedVirtualMachines]);
 
-  const chartData = useMemo(() => {
-    // Request Status Distribution
-    const statusCounts = requests.reduce((acc, req) => {
-      if (req && req.status) {
-        acc[req.status] = (acc[req.status] || 0) + 1;
-      }
-      return acc;
-    }, {});
-
-    const newRequestStatusData = {
-      labels: Object.keys(statusCounts),
-      datasets: [
-        {
-          label: 'Estado de Solicitudes',
-          data: Object.values(statusCounts),
-          backgroundColor: ['#28a745', '#dc3545', '#007bff'],
-        },
-      ],
-    };
-
-    // Virtual Machine Distribution by Hypervisor
-    const vmCountsByHypervisor = virtualMachines.reduce((acc, vm) => {
-      if (vm && vm.hypervisor_id) {
-        const hypervisor = hypervisors.find(h => h.id === vm.hypervisor_id);
-        const hypervisorName = hypervisor ? hypervisor.name : 'N/A';
-        acc[hypervisorName] = (acc[hypervisorName] || 0) + 1;
-      }
-      return acc;
-    }, {});
-
-    const newVmByHypervisorData = {
-      labels: Object.keys(vmCountsByHypervisor),
-      datasets: [
-        {
-          label: 'Máquinas Virtuales por Hypervisor',
-          data: Object.values(vmCountsByHypervisor),
-          backgroundColor: ['#007bff', '#6c757d', '#28a745', '#ffc107', '#dc3545'],
-        },
-      ],
-    };
-
-    // Request Distribution by Service
-    const requestCountsByService = requests.reduce((acc, req) => {
-      if (req && req.service) {
-        acc[req.service] = (acc[req.service] || 0) + 1;
-      }
-      return acc;
-    }, {});
-
-    const newRequestByServiceData = {
-      labels: Object.keys(requestCountsByService),
-      datasets: [
-        {
-          label: 'Solicitudes por Servicio',
-          data: Object.values(requestCountsByService),
-          backgroundColor: ['#007bff', '#6c757d', '#28a745', '#ffc107', '#dc3545'],
-        },
-      ],
-    };
-
-    return { newRequestStatusData, newVmByHypervisorData, newRequestByServiceData };
-  }, [requests, virtualMachines, hypervisors]);
-
-  useEffect(() => {
-    setRequestStatusData(chartData.newRequestStatusData);
-    setVmByHypervisorData(chartData.newVmByHypervisorData);
-    setRequestByServiceData(chartData.newRequestByServiceData);
-  }, [chartData]);
+  // Date Range Filtering
+  const filteredByDate = useMemo(() => {
+    if (!dateRange.start || !dateRange.end) {
+      return filteredData;
+    }
+    return filteredData.filter(item => {
+      if (!item.date) return false; // Skip items without a date
+      const itemDate = new Date(item.date);
+      const startDate = new Date(dateRange.start);
+      const endDate = new Date(dateRange.end);
+      return itemDate >= startDate && itemDate <= endDate;
+    });
+  }, [filteredData, dateRange]);
 
   const handleCategoryChange = (event) => {
     setSelectedCategory(event.target.value);
+  };
+
+  const handlePageClick = (event) => {
+    setCurrentPage(event.selected);
+  };
+
+  const handleStartDateChange = (event) => {
+    setDateRange({ ...dateRange, start: event.target.value });
+  };
+
+  const handleEndDateChange = (event) => {
+    setDateRange({ ...dateRange, end: event.target.value });
+  };
+
+  const offset = currentPage * itemsPerPage;
+  const pageCount = Math.ceil(filteredByDate.length / itemsPerPage);
+  const currentItems = filteredByDate.slice(offset, offset + itemsPerPage);
+
+  // Helper functions for Excel generation
+  const generateExcel = (data, headers, filename) => {
+    const ws = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.sheet_add_aoa(ws, [headers], { origin: 'A1' });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+    XLSX.writeFile(wb, filename);
+  };
+
+  const downloadVMsByHypervisor = () => {
+    const vmCountsByHypervisor = virtualMachines.reduce((acc, vm) => {
+      const hypervisor = hypervisors.find(h => h.id === vm.hypervisor_id);
+      const hypervisorName = hypervisor ? hypervisor.name : 'N/A';
+      acc[hypervisorName] = (acc[hypervisorName] || 0) + 1;
+      return acc;
+    }, {});
+
+    const data = Object.entries(vmCountsByHypervisor).map(([hypervisor, count]) => ({
+      Hypervisor: hypervisor,
+      "Cantidad de VMs": count,
+    }));
+    generateExcel(data, ["Hypervisor", "Cantidad de VMs"], "VMs_por_Hypervisor.xlsx");
+  };
+
+  const downloadClientVMs = () => {
+    const data = virtualMachines.map(vm => ({
+      ID: vm.id,
+      Nombre: vm.name,
+      Cliente: vm.client || 'N/A', // Assuming there's a client field
+      Hypervisor: hypervisors.find(h => h.id === vm.hypervisor_id)?.name || 'N/A',
+    }));
+    generateExcel(data, ["ID", "Nombre", "Cliente", "Hypervisor"], "VMs_de_Clientes.xlsx");
+  };
+
+  const downloadVMsThisMonth = () => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const data = virtualMachines.filter(vm => new Date(vm.created_at).getMonth() === currentMonth).map(vm => ({
+      ID: vm.id,
+      Nombre: vm.name,
+      Creada: new Date(vm.created_at).toLocaleString(),
+    }));
+    generateExcel(data, ["ID", "Nombre", "Creada"], "VMs_Mes_Actual.xlsx");
+  };
+
+  const downloadVMsThisYear = () => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const data = virtualMachines.filter(vm => new Date(vm.created_at).getFullYear() === currentYear).map(vm => ({
+      ID: vm.id,
+      Nombre: vm.name,
+      Creada: new Date(vm.created_at).toLocaleString(),
+    }));
+    generateExcel(data, ["ID", "Nombre", "Creada"], "VMs_Año_Actual.xlsx");
+  };
+
+  const downloadAllVMs = () => {
+    const data = virtualMachines.map(vm => ({
+      ID: vm.id,
+      Nombre: vm.name,
+      CPU: vm.cpu,
+      RAM: vm.ram,
+      Disco: vm.disk,
+      Hypervisor: hypervisors.find(h => h.id === vm.hypervisor_id)?.name || 'N/A',
+      Creada: new Date(vm.created_at).toLocaleString(),
+    }));
+    generateExcel(data, ["ID", "Nombre", "CPU", "RAM", "Disco", "Hypervisor", "Creada"], "Todas_las_VMs.xlsx");
   };
 
   return (
     <div className="container-fluid bg-light min-vh-100">
       <div className="container py-4">
         <h1 className="h3 mb-4 p-3 border-start border-5 border-primary">Reportes y Resúmenes</h1>
-
-        <div className="mb-3">
-          <div className="d-flex gap-3 align-items-center">
-            <Filter size={16} />
-            <label htmlFor="categoryFilter" className="form-label">Filtrar por:</label>
-            <select id="categoryFilter" className="form-select" onChange={handleCategoryChange} value={selectedCategory}>
-              <option value="all">Todos</option>
-              <option value="completed">Completadas</option>
-              <option value="failed">Fallidas</option>
-              <option value="inProgress">En Proceso</option>
-              <option value="total">Máquinas Virtuales</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Charts */}
-        <div className="row mb-4">
-          <div className="col-md-4">
-            <div className="card shadow-sm">
-              <div className="card-body">
-                <h5 className="card-title">Estado de Solicitudes</h5>
-                {requestStatusData.datasets && requestStatusData.datasets.length > 0 && <Pie data={requestStatusData} />}
-              </div>
-            </div>
-          </div>
-          <div className="col-md-4">
-            <div className="card shadow-sm">
-              <div className="card-body">
-                <h5 className="card-title">Máquinas Virtuales por Hypervisor</h5>
-                {vmByHypervisorData.datasets && vmByHypervisorData.datasets.length > 0 && <Bar data={vmByHypervisorData} />}
-              </div>
-            </div>
-          </div>
-          <div className="col-md-4">
-            <div className="card shadow-sm">
-              <div className="card-body">
-                <h5 className="card-title">Solicitudes por Servicio</h5>
-                {requestByServiceData.datasets && requestByServiceData.datasets.length > 0 && <Bar data={requestByServiceData} />}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="table-responsive">
-          <table className="table table-hover mb-0">
-            <thead className="table-light">
-              <tr>
-                {headers.map((header) => (
-                  <th key={header.key} scope="col">{header.label}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((item) => {
-                const hypervisorName = hypervisors.find(h => h.id === item.hypervisor_id)?.name || 'N/A';
-                return (
-                  <tr key={item.id}>
-                    {headers.map((header) => {
-                      let value = item[header.key];
-                      if (header.key === 'hypervisor') {
-                        value = hypervisorName;
-                      }
-                      return <td key={`${item.id}-${header.key}`}>{value}</td>;
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <SummarySection
+          selectedCategory={selectedCategory}
+          handleCategoryChange={handleCategoryChange}
+          dateRange={dateRange}
+          handleStartDateChange={handleStartDateChange}
+          handleEndDateChange={handleEndDateChange}
+          headers={headers}
+          currentItems={currentItems}
+          hypervisors={hypervisors}
+          pageCount={pageCount}
+          handlePageClick={handlePageClick}
+        />
+        <ReportsSection
+          downloadVMsByHypervisor={downloadVMsByHypervisor}
+          downloadClientVMs={downloadClientVMs}
+          downloadVMsThisMonth={downloadVMsThisMonth}
+          downloadVMsThisYear={downloadVMsThisYear}
+          downloadAllVMs={downloadAllVMs}
+        />
       </div>
     </div>
   );
 }
 
-export default RequestsTable;
+export default ReportsPage;
