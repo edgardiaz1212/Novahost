@@ -19,13 +19,26 @@ class HypervisorManager:
             self.connection = self._connect_vcenter()
         elif self.hypervisor.type == 'proxmox':
             self.connection = self._connect_proxmox()
+        elif self.hypervisor.type == 'vcenter6':
+            raise ValueError("Use connect_with_session for vCenter 6")
         else:
             raise ValueError("Invalid hypervisor type")
         return self.connection
 
+    def connect_with_session(self, session_token):
+        if self.hypervisor.type != 'vcenter6':
+            raise ValueError("connect_with_session is only for vCenter 6")
+        try:
+            self.connection = connect.SmartConnect(host=self.hypervisor.hostname, sessionCookie=session_token)
+            if not self.connection:
+                raise Exception("Failed to connect to vCenter with session")
+            return self.connection
+        except Exception as e:
+            raise Exception(f"Failed to connect to vCenter with session: {e}")
+
     def disconnect(self):
         if self.connection:
-            if self.hypervisor.type == 'vcenter':
+            if self.hypervisor.type == 'vcenter' or self.hypervisor.type == 'vcenter6':
                 connect.Disconnect(self.connection)
             elif self.hypervisor.type == 'proxmox':
                 self.connection.logout()
@@ -223,9 +236,19 @@ class HypervisorManager:
     
     def check_connection(self):
         try:
-            self.connect()
-            self.disconnect()
-            return "connected"
+            if self.hypervisor.type == 'vcenter6':
+                # For vCenter 6, we need to try to connect with credentials first
+                try:
+                    self.connect()
+                    self.disconnect()
+                    return "connected"
+                except Exception as e:
+                    print(f"Error checking connection to {self.hypervisor.name}: {e}")
+                    return "error"
+            else:
+                self.connect()
+                self.disconnect()
+                return "connected"
         except Exception as e:
             print(f"Error checking connection to {self.hypervisor.name}: {e}")
             return "error"

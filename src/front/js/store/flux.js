@@ -20,6 +20,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       virtualMachines: [],
       hypervisors: [],
       hypervisorVMs: [],
+      vcenterSessions: {},
     },
 
     actions: {
@@ -97,7 +98,8 @@ const getState = ({ getStore, getActions, setStore }) => {
         const store = getStore();
         const tokenExpiresIn = store.tokenExpiresIn;
 
-        if (tokenExpiresIn && !store.isTokenExpired) { // Check the flag
+        if (tokenExpiresIn && !store.isTokenExpired) {
+          // Check the flag
           const expirationTime = new Date(parseInt(tokenExpiresIn));
           const currentTime = new Date();
 
@@ -146,13 +148,13 @@ const getState = ({ getStore, getActions, setStore }) => {
             redirectPath: "/", // Set the redirect path to home
             isTokenExpired: false, // Reset the flag
           });
-    
+
           // Clear session storage completely
           sessionStorage.removeItem("isAuthenticated");
           sessionStorage.removeItem("user");
           sessionStorage.removeItem("token");
           sessionStorage.removeItem("tokenExpiresIn");
-    
+
           console.log("Logout successful");
           return true;
         } catch (error) {
@@ -788,62 +790,144 @@ const getState = ({ getStore, getActions, setStore }) => {
         }
       },
       // ***Gestion de Hypervisores***
-        //Listar Hypervisores
-        fetchHypervisors: async () => {
-          const store = getStore();
-          const token = sessionStorage.getItem("token");
-          try {
-            const response = await fetch(
-              `${process.env.REACT_APP_BACKEND_URL}/hypervisors`,
-              {
-                method: "GET",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-            if (response.ok) {
-              const data = await response.json();
-              setStore({ hypervisors: data });
-              console.log("Hypervisors fetched:", data);
-              return data;
-            } else {
-              console.error("Failed to fetch hypervisors");
-              return false;
-            }
-          } catch (error) {
-            console.error("Error fetching hypervisors:", error);
-            return false;
-          }
-        },
-         //capacidad de un hipervisor
-      fetchHypervisorCapacity: async (hypervisorId) => {
+      //Listar Hypervisores
+      fetchHypervisors: async () => {
+        const store = getStore();
         const token = sessionStorage.getItem("token");
         try {
           const response = await fetch(
-            `${process.env.REACT_APP_BACKEND_URL}/hypervisor/${hypervisorId}/capacity`,
+            `${process.env.REACT_APP_BACKEND_URL}/hypervisors`,
             {
               method: "GET",
               headers: {
+                "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
               },
             }
           );
           if (response.ok) {
             const data = await response.json();
-            console.log("Hypervisor capacity fetched:", data);
+            setStore({ hypervisors: data });
+            console.log("Hypervisors fetched:", data);
             return data;
           } else {
-            console.error("Failed to fetch hypervisor capacity");
+            console.error("Failed to fetch hypervisors");
             return false;
+          }
+        } catch (error) {
+          console.error("Error fetching hypervisors:", error);
+          return false;
+        }
+      },
+      //capacidad de un hipervisor
+      fetchHypervisorCapacity: async (hypervisorId) => {
+        const store = getStore();
+        const token = sessionStorage.getItem("token");
+        try {
+          // Check if the hypervisor is vCenter 6
+          const hypervisor = store.hypervisors.find(
+            (h) => h.id === hypervisorId
+          );
+          if (hypervisor && hypervisor.type === "vcenter6") {
+            // Check if we have a session token for this hypervisor
+            if (!store.vcenterSessions[hypervisorId]) {
+              // Authenticate and get a session token
+              const sessionToken = await getActions().authenticateVcenter(
+                hypervisor
+              );
+              if (!sessionToken) {
+                console.error("Failed to authenticate with vCenter");
+                return false;
+              }
+            }
+            // Use the session token for vCenter 6
+            const response = await fetch(
+              `${process.env.REACT_APP_BACKEND_URL}/hypervisor/${hypervisorId}/capacity`,
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Session ${store.vcenterSessions[hypervisorId]}`, // Use session token
+                },
+              }
+            );
+            if (response.ok) {
+              const data = await response.json();
+              console.log("Hypervisor capacity fetched:", data);
+              return data;
+            } else {
+              console.error("Failed to fetch hypervisor capacity");
+              return false;
+            }
+          } else {
+            // For other hypervisors, use the regular token
+            const response = await fetch(
+              `${process.env.REACT_APP_BACKEND_URL}/hypervisor/${hypervisorId}/capacity`,
+              {
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            if (response.ok) {
+              const data = await response.json();
+              console.log("Hypervisor capacity fetched:", data);
+              return data;
+            } else {
+              console.error("Failed to fetch hypervisor capacity");
+              return false;
+            }
           }
         } catch (error) {
           console.error("Error fetching hypervisor capacity:", error);
           return false;
         }
       },
+      // Action to authenticate with vCenter
+      authenticateVcenter: async (hypervisor) => {
+        const store = getStore();
+        try {
+          const response = await fetch(
+            `${process.env.REACT_APP_BACKEND_URL}/vcenter-login`, // New backend endpoint
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+              },
+              body: JSON.stringify({
+                ip: hypervisor.ip,
+                username: hypervisor.username,
+                password: hypervisor.password,
+              }),
+            }
+          );
 
+          if (response.ok) {
+            const data = await response.json();
+            const sessionToken = data.session_token; // Assuming the backend returns a session_token
+            // Store the session token in the store
+            setStore({
+              vcenterSessions: {
+                ...store.vcenterSessions,
+                [hypervisor.id]: sessionToken,
+              },
+            });
+            console.log(
+              `vCenter session token for ${hypervisor.id} obtained:`,
+              sessionToken
+            );
+            return sessionToken;
+          } else {
+            console.error("Failed to authenticate with vCenter");
+            return false;
+          }
+        } catch (error) {
+          console.error("Error authenticating with vCenter:", error);
+          return false;
+        }
+      },
       addHypervisor: async (hypervisorData) => {
         const store = getStore();
         const token = sessionStorage.getItem("token");
@@ -998,8 +1082,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           return false;
         }
       },
-     
-    
+
       //Fetch maquinas virtuales
       fetchVirtualMachines: async () => {
         const store = getStore();

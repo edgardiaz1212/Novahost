@@ -7,7 +7,8 @@ from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 from api.hypervisor import HypervisorManager
-
+from pyVim import connect
+from pyVmomi import vim
 
 api = Blueprint('api', __name__)
 
@@ -323,16 +324,28 @@ def delete_hypervisor(hypervisor_id):
 # Hypervisor Capacity
 @api.route('/hypervisor/<int:hypervisor_id>/capacity', methods=['GET'])
 @jwt_required()
+@api.route('/hypervisor/<int:hypervisor_id>/capacity', methods=['GET'])
+@jwt_required()
 def get_hypervisor_capacity(hypervisor_id):
+    hypervisor = Hypervisor.query.get(hypervisor_id)
+    if not hypervisor:
+        return jsonify({"msg": "Hypervisor not found"}), 404
     try:
         manager = HypervisorManager(hypervisor_id)
-        manager.connect()
+        if hypervisor.type == 'vcenter6':
+            # Check for session token in headers
+            auth_header = request.headers.get('Authorization')
+            if not auth_header or not auth_header.startswith('Session '):
+                return jsonify({"msg": "Session token required for vCenter 6"}), 401
+            session_token = auth_header.split(' ', 1)[1]
+            manager.connect_with_session(session_token)
+        else:
+            manager.connect()
         capacity = manager.get_capacity()
         manager.disconnect()
         return jsonify(capacity), 200
     except Exception as e:
         return jsonify({"msg": str(e)}), 500
-
 # Get VMs from a hypervisor
 @api.route('/hypervisor/<int:hypervisor_id>/vms', methods=['GET'])
 @jwt_required()
@@ -405,7 +418,29 @@ def create_vm():
         return jsonify(result), 201
     except Exception as e:
         return jsonify({"msg": str(e)}), 500
-    
+
+@api.route('/vcenter-login', methods=['POST'])
+@jwt_required()
+def vcenter_login():
+    data = request.get_json()
+    ip = data.get('ip')
+    username = data.get('username')
+    password = data.get('password')
+
+    if not ip or not username or not password:
+        return jsonify({"msg": "IP, username, and password are required"}), 400
+
+    try:
+        si = connect.SmartConnect(host=ip, user=username, pwd=password)
+        if not si:
+            raise Exception("Failed to connect to vCenter")
+        # Get the session cookie
+        session_cookie = si._stub.cookie
+        # Disconnect immediately after getting the session
+        connect.Disconnect(si)
+        return jsonify({"session_token": session_cookie}), 200
+    except Exception as e:
+        return jsonify({"msg": f"Failed to connect to vCenter: {e}"}), 500    
 
 
 
