@@ -5,6 +5,8 @@ from pyVmomi import vim
 from proxmoxer import ProxmoxAPI
 from api.models import Hypervisor, db
 import atexit
+import requests
+from datetime import datetime, timedelt
 
 class HypervisorManager:
     def __init__(self, hypervisor_id):
@@ -21,9 +23,63 @@ class HypervisorManager:
             self.connection = self._connect_proxmox()
         elif self.hypervisor.type == 'vcenter6':
             raise ValueError("Use connect_with_session for vCenter 6")
+        elif self.hypervisor.type == 'vcenter7':
+            raise ValueError("Use connect_with_token for vCenter 7")
         else:
             raise ValueError("Invalid hypervisor type")
         return self.connection
+
+    def connect_with_session(self, session_token):
+        if self.hypervisor.type != 'vcenter6':
+            raise ValueError("connect_with_session is only for vCenter 6")
+        try:
+            self.connection = connect.SmartConnect(host=self.hypervisor.hostname, sessionCookie=session_token)
+            if not self.connection:
+                raise Exception("Failed to connect to vCenter with session")
+            return self.connection
+        except Exception as e:
+            raise Exception(f"Failed to connect to vCenter with session: {e}")
+    def connect_with_token(self, access_token):
+        if self.hypervisor.type != 'vcenter7':
+            raise ValueError("connect_with_token is only for vCenter 7")
+        try:
+            # In a real scenario, you would use the access token to make API calls to vCenter
+            # Here, we're just checking if the token is valid by making a simple request
+            # You might need to adapt this to a specific vCenter API endpoint
+            headers = {"Authorization": f"Bearer {access_token}"}
+            # Example: Check the connection by getting the vCenter version
+            response = requests.get(f"https://{self.hypervisor.hostname}/rest/appliance/system/version", headers=headers, verify=False)
+            if response.status_code != 200:
+                raise Exception(f"Failed to connect to vCenter with token: {response.text}")
+            self.connection = True  # Indicate a successful connection
+            return self.connection
+        except Exception as e:
+            raise Exception(f"Failed to connect to vCenter with token: {e}")
+        def refresh_token(self):
+        if self.hypervisor.type != 'vcenter7':
+            raise ValueError("refresh_token is only for vCenter 7")
+        if not self.hypervisor.refresh_token:
+            raise ValueError("No refresh token available")
+        try:
+            token_data = {
+                "grant_type": "refresh_token",
+                "refresh_token": self.hypervisor.refresh_token,
+                "client_id": self.hypervisor.client_id,
+                "client_secret": self.hypervisor.client_secret,
+            }
+            headers = {"Content-Type": "application/x-www-form-urlencoded"}
+            response = requests.post(self.hypervisor.token_endpoint, data=token_data, headers=headers)
+            if response.status_code != 200:
+                raise Exception(f"Failed to refresh token: {response.text}")
+            token_info = response.json()
+            self.hypervisor.access_token = token_info.get('access_token')
+            self.hypervisor.refresh_token = token_info.get('refresh_token')
+            self.hypervisor.token_expires_at = datetime.now() + timedelta(seconds=token_info.get('expires_in', 3600))
+            db.session.commit()
+            return True
+        except Exception as e:
+            raise Exception(f"Failed to refresh token: {e}")
+
 
     def connect_with_session(self, session_token):
         if self.hypervisor.type != 'vcenter6':
@@ -245,6 +301,18 @@ class HypervisorManager:
                 except Exception as e:
                     print(f"Error checking connection to {self.hypervisor.name}: {e}")
                     return "error"
+            elif self.hypervisor.type == 'vcenter7':
+                # For vCenter 7, we need to try to connect with OAuth 2.0
+                if self.hypervisor.token_expires_at and self.hypervisor.token_expires_at > datetime.now():
+                    try:
+                        self.connect_with_token(self.hypervisor.access_token)
+                        self.disconnect()
+                        return "connected"
+                    except Exception as e:
+                        print(f"Error checking connection to {self.hypervisor.name}: {e}")
+                        return "error"
+                else:
+                    return "disconnected"
             else:
                 self.connect()
                 self.disconnect()

@@ -129,7 +129,7 @@ class VirtualMachines(db.Model):
 class Hypervisor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
-    type = db.Column(Enum('vcenter', 'proxmox', name='hypervisor_type'), nullable=False)  # vcenter or proxmox
+    type = db.Column(Enum('vcenter', 'proxmox', 'vcenter6', 'vcenter7', name='hypervisor_type'), nullable=False)  # vcenter or proxmox
     hostname = db.Column(db.String(120), nullable=False)
     port = db.Column(db.Integer, nullable=False)
     username = db.Column(db.String(120), nullable=False)
@@ -139,35 +139,16 @@ class Hypervisor(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     # Relationship with VirtualMachines
     vms = db.relationship('VirtualMachines', backref='hypervisor', lazy=True)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.password = kwargs.get('password')
-
-    @property
-    def password(self):
-        return self._password
-
-    @password.setter
-    def password(self, value):
-        self._password = generate_password_hash(value)
-
-    def check_password(self, value):
-        return check_password_hash(self._password, value)
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "type": self.type,
-            "hostname": self.hostname,
-            "port": self.port,
-            "username": self.username,
-            "status": self.status, 
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None
-        }
-
+    # OAuth 2.0 fields
+    client_id = db.Column(db.String(255), nullable=True)
+    client_secret = db.Column(db.String(255), nullable=True)
+    authorization_endpoint = db.Column(db.String(255), nullable=True)
+    token_endpoint = db.Column(db.String(255), nullable=True)
+    redirect_uri = db.Column(db.String(255), nullable=True)
+    scope = db.Column(db.String(255), nullable=True)
+    access_token = db.Column(db.String(255), nullable=True)
+    refresh_token = db.Column(db.String(255), nullable=True)
+    token_expires_at = db.Column(db.DateTime, nullable=True)
 class Request(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ticket_number = db.Column(db.String(50), nullable=False, unique=True)

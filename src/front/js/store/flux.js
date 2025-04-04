@@ -824,66 +824,103 @@ const getState = ({ getStore, getActions, setStore }) => {
         const store = getStore();
         const token = sessionStorage.getItem("token");
         try {
-          // Check if the hypervisor is vCenter 6
-          const hypervisor = store.hypervisors.find(
-            (h) => h.id === hypervisorId
-          );
-          if (hypervisor && hypervisor.type === "vcenter6") {
-            // Check if we have a session token for this hypervisor
-            if (!store.vcenterSessions[hypervisorId]) {
-              // Authenticate and get a session token
-              const sessionToken = await getActions().authenticateVcenter(
-                hypervisor
-              );
-              if (!sessionToken) {
-                console.error("Failed to authenticate with vCenter");
-                return false;
-              }
-            }
-            // Use the session token for vCenter 6
-            const response = await fetch(
-              `${process.env.REACT_APP_BACKEND_URL}/hypervisor/${hypervisorId}/capacity`,
-              {
-                method: "GET",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Session ${store.vcenterSessions[hypervisorId]}`, // Use session token
-                },
-              }
+            // Check if the hypervisor is vCenter 6 or 7
+            const hypervisor = store.hypervisors.find(
+                (h) => h.id === hypervisorId
             );
-            if (response.ok) {
-              const data = await response.json();
-              console.log("Hypervisor capacity fetched:", data);
-              return data;
+            if (hypervisor && hypervisor.type === "vcenter7") {
+                // Use the access token for vCenter 7
+                const response = await fetch(
+                    `${process.env.REACT_APP_BACKEND_URL}/hypervisor/${hypervisorId}/capacity`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`, // Use JWT token
+                        },
+                    }
+                );
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Hypervisor capacity fetched:", data);
+                    return data;
+                } else {
+                    console.error("Failed to fetch hypervisor capacity");
+                    return false;
+                }
+            } else if (hypervisor && hypervisor.type === "vcenter6") {
+                // Use the session token for vCenter 6
+                const response = await fetch(
+                    `${process.env.REACT_APP_BACKEND_URL}/hypervisor/${hypervisorId}/capacity`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Session ${store.vcenterSessions[hypervisorId]}`, // Use session token
+                        },
+                    }
+                );
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Hypervisor capacity fetched:", data);
+                    return data;
+                } else {
+                    console.error("Failed to fetch hypervisor capacity");
+                    return false;
+                }
             } else {
-              console.error("Failed to fetch hypervisor capacity");
-              return false;
+                // For other hypervisors, use the regular token
+                const response = await fetch(
+                    `${process.env.REACT_APP_BACKEND_URL}/hypervisor/${hypervisorId}/capacity`,
+                    {
+                        method: "GET",
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Hypervisor capacity fetched:", data);
+                    return data;
+                } else {
+                    console.error("Failed to fetch hypervisor capacity");
+                    return false;
+                }
             }
-          } else {
-            // For other hypervisors, use the regular token
-            const response = await fetch(
-              `${process.env.REACT_APP_BACKEND_URL}/hypervisor/${hypervisorId}/capacity`,
-              {
-                method: "GET",
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-            if (response.ok) {
-              const data = await response.json();
-              console.log("Hypervisor capacity fetched:", data);
-              return data;
-            } else {
-              console.error("Failed to fetch hypervisor capacity");
-              return false;
-            }
-          }
         } catch (error) {
-          console.error("Error fetching hypervisor capacity:", error);
-          return false;
+            console.error("Error fetching hypervisor capacity:", error);
+            return false;
         }
-      },
+    },
+      initiateVcenterAuth: async (hypervisorId) => {
+        const store = getStore();
+        const hypervisor = store.hypervisors.find(
+            (h) => h.id === hypervisorId
+        );
+        if (hypervisor && hypervisor.type === "vcenter7") {
+            try {
+                const response = await fetch(
+                    `${process.env.REACT_APP_BACKEND_URL}/vcenter-auth/${hypervisorId}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+                        },
+                    }
+                );
+                if (response.ok) {
+                    const data = await response.json();
+                    window.location.href = data.auth_url; // Redirect to vCenter
+                } else {
+                    console.error("Failed to initiate vCenter auth");
+                }
+            } catch (error) {
+                console.error("Error initiating vCenter auth:", error);
+            }
+        }
+    },
       // Action to authenticate with vCenter
       authenticateVcenter: async (hypervisor) => {
         const store = getStore();
