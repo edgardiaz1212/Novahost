@@ -6,7 +6,7 @@ from proxmoxer import ProxmoxAPI
 from api.models import Hypervisor, db
 import atexit
 import requests
-from datetime import datetime, timedelt
+from datetime import datetime, timedelta
 
 class HypervisorManager:
     def __init__(self, hypervisor_id):
@@ -55,7 +55,7 @@ class HypervisorManager:
             return self.connection
         except Exception as e:
             raise Exception(f"Failed to connect to vCenter with token: {e}")
-        def refresh_token(self):
+    def refresh_token(self):
         if self.hypervisor.type != 'vcenter7':
             raise ValueError("refresh_token is only for vCenter 7")
         if not self.hypervisor.refresh_token:

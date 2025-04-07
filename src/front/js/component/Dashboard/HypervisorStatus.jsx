@@ -174,12 +174,7 @@ function HypervisorStatus({ hypervisors, isLoading, predefinedPlans }) {
                     <p>
                       <strong>Hostname:</strong> {hypervisor.hostname}
                     </p>
-                    <p>
-                      <strong>Puerto:</strong> {hypervisor.port}
-                    </p>
-                    <p>
-                      <strong>Usuario:</strong> {hypervisor.username}
-                    </p>
+                    
                     {/* Render resource usage */}
                     {renderResourceUsage(
                       <Cpu className="text-secondary me-2" size={16} />,
