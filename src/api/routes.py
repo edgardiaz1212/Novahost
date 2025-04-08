@@ -12,6 +12,7 @@ from pyVmomi import vim
 import requests
 from urllib.parse import urlencode
 from datetime import datetime, timedelta
+import ssl
 
 api = Blueprint('api', __name__)
 
@@ -267,6 +268,14 @@ def get_hypervisors():
         db.session.commit()
         hypervisors_list.append(hypervisor.serialize())
     return jsonify(hypervisors_list), 200
+#Get Hypervisors by type
+@api.route('/hypervisors/<hypervisor_type>', methods=['GET'])
+def get_hypervisors_by_type(hypervisor_type):
+    try:
+        hypervisors = Hypervisor.query.filter_by(type=hypervisor_type).all()
+        return jsonify([hypervisor.serialize() for hypervisor in hypervisors]), 200
+    except Exception as e:
+        return jsonify({'message': f'Error fetching hypervisors: {e}'}), 500
 # Update hypervisor status
 @api.route('/update-hypervisors-status', methods=['POST'])
 @jwt_required()
@@ -280,20 +289,53 @@ def update_hypervisors_status():
     return jsonify({"msg": "Hypervisors status updated successfully"}), 200
 # Add a new hypervisor
 @api.route('/add-hypervisor', methods=['POST'])
-@jwt_required()
 def add_hypervisor():
     data = request.get_json()
-    hypervisor = Hypervisor(
-        name=data['name'],
-        type=data['type'],
-        hostname=data['hostname'],
-        port=data['port'],
-        username=data['username'],
-        password=data['password']
-    )
-    db.session.add(hypervisor)
-    db.session.commit()
-    return jsonify({"msg": "Hypervisor created successfully", "hypervisor": hypervisor.serialize()}), 201
+    if data is None:
+        return jsonify({'message': 'Request body is empty'}), 400
+    
+    try:
+        # Check if the hypervisor already exists
+        existing_hypervisor = Hypervisor.query.filter_by(hostname=data['hostname']).first()
+        if existing_hypervisor:
+            return jsonify({'message': 'Hypervisor with this hostname already exists'}), 409
+
+        # Create the hypervisor
+        hypervisor = Hypervisor(
+            name=data['name'],
+            type=data['type'],
+            hostname=data['hostname'],
+            port=data['port'],
+            username=data['username'],
+            password=data['_password'],  # Changed password to _password
+            client_id=data.get('client_id'),
+            client_secret=data.get('client_secret'),
+            authorization_endpoint=data.get('authorization_endpoint'),
+            token_endpoint=data.get('token_endpoint'),
+            redirect_uri=data.get('redirect_uri'),
+            scope=data.get('scope')
+        )
+
+        # Check connection to vcenter
+        if hypervisor.type == 'vcenter':
+            try:
+                context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+                context.verify_mode = ssl.CERT_NONE
+                service_instance = connect.SmartConnect(host=hypervisor.hostname, user=hypervisor.username, pwd=data['_password'], port=hypervisor.port, sslContext=context)
+                if not service_instance:
+                    raise Exception("Failed to connect to vCenter")
+                atexit.register(connect.Disconnect, service_instance)
+            except Exception as e:
+                return jsonify({'message': f'Error checking connection to vcenter: {e}'}), 500
+
+        db.session.add(hypervisor)
+        db.session.commit()
+        return jsonify(hypervisor.serialize()), 201
+    except KeyError as e:
+        return jsonify({'message': f'Missing key: {e}'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Error adding hypervisor: {e}'}), 500
 
 # Update an existing hypervisor
 @api.route('/edit-hypervisor/<int:hypervisor_id>', methods=['PUT'])

@@ -1,4 +1,4 @@
-import { InfoIcon, CheckCircle, XCircle } from "lucide-react";
+import { InfoIcon, CheckCircle, XCircle, ArrowLeft } from "lucide-react";
 import { HypervisorType } from "./hypervisor-selector";
 
 export function VmReview({
@@ -15,6 +15,8 @@ export function VmReview({
   errorMessage,
   onReset,
   onRetry,
+  ticket, // Add ticket prop
+  client, // Add client prop
 }) {
   const ram = planType === "cataloged" ? selectedPlan?.ram : customConfig.ram;
   const cpuCores =
@@ -29,9 +31,7 @@ export function VmReview({
         <div className="spinner-border text-primary mb-3" role="status">
           <span className="visually-hidden">Cargando...</span>
         </div>
-        <p className="text-lg text-secondary">
-          Creando máquina virtual...
-        </p>
+        <p className="text-lg text-secondary">Creando máquina virtual...</p>
         <p className="text-sm text-secondary mt-2">
           Esto puede tardar unos momentos
         </p>
@@ -121,11 +121,23 @@ export function VmReview({
   }
 
   return (
-    <div>
+    <div className="container">
       <h3 className="mb-3">Revisar y Enviar</h3>
 
       <div className="bg-light p-3 rounded mb-3">
         <h5 className="mb-3">Resumen de la Máquina Virtual</h5>
+
+        {/* Ticket and Client Information */}
+        <div className="row row-cols-1 row-cols-md-2 g-3 mb-3">
+          <div className="col">
+            <p className="text-secondary mb-0">Ticket</p>
+            <p className="fw-bold">{ticket || "No especificado"}</p>
+          </div>
+          <div className="col">
+            <p className="text-secondary mb-0">Cliente</p>
+            <p className="fw-bold">{client?.name || "No especificado"}</p>
+          </div>
+        </div>
 
         <div className="row row-cols-1 row-cols-md-2 g-3">
           <div className="col">
@@ -267,20 +279,7 @@ export function VmReview({
           className="btn btn-outline-secondary"
           onClick={onPrevious}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4 me-1"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
+          <ArrowLeft className="h-4 w-4 me-1" />
           Atrás
         </button>
         <button onClick={onSubmit} className="btn btn-primary">

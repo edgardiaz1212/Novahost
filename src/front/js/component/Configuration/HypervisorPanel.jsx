@@ -4,7 +4,20 @@ import { PlusCircle, Save, X, Edit, Trash, Server, CheckCircle, AlertCircle, Loa
 
 function HypervisorPanel() {
     const { store, actions } = useContext(Context);
-    const [newHypervisor, setNewHypervisor] = useState({ name: "", type: "vcenter", hostname: "", port: 443, username: "", password: "" });
+    const [newHypervisor, setNewHypervisor] = useState({
+        name: "",
+        type: "vcenter",
+        hostname: "",
+        port: 443,
+        username: "",
+        _password: "", 
+        client_id: "",
+        client_secret: "",
+        authorization_endpoint: "",
+        token_endpoint: "",
+        redirect_uri: "",
+        scope: ""
+    });
     const [showNewHypervisorForm, setShowNewHypervisorForm] = useState(false);
     const [editingHypervisor, setEditingHypervisor] = useState(null);
     const [error, setError] = useState(null);
@@ -23,13 +36,26 @@ function HypervisorPanel() {
 
     const addHypervisor = async () => {
         setError(null);
-        if (!newHypervisor.name || !newHypervisor.type || !newHypervisor.hostname || !newHypervisor.port || !newHypervisor.username || !newHypervisor.password) {
+        if (!newHypervisor.name || !newHypervisor.type || !newHypervisor.hostname || !newHypervisor.port || !newHypervisor.username || !newHypervisor._password) { // Changed password to _password
             setError("All fields are required");
             return;
         }
         const success = await actions.addHypervisor(newHypervisor);
         if (success) {
-            setNewHypervisor({ name: "", type: "vcenter", hostname: "", port: 443, username: "", password: "" });
+            setNewHypervisor({
+                name: "",
+                type: "vcenter",
+                hostname: "",
+                port: 443,
+                username: "",
+                _password: "", // Changed password to _password
+                client_id: "",
+                client_secret: "",
+                authorization_endpoint: "",
+                token_endpoint: "",
+                redirect_uri: "",
+                scope: ""
+            });
             setShowNewHypervisorForm(false);
         } else {
             setError("Failed to add Hypervisor. Please check the form and try again.");
@@ -37,8 +63,7 @@ function HypervisorPanel() {
     };
 
     const handleEditHypervisor = (hypervisor) => {
-        // Initialize editingHypervisor with a password field, even if it's empty
-        setEditingHypervisor({ ...hypervisor, password: "" });
+        setEditingHypervisor({ ...hypervisor, _password: "" }); // Changed password to _password
     };
 
     const handleCancelEdit = () => {
@@ -47,7 +72,7 @@ function HypervisorPanel() {
 
     const saveHypervisor = async (hypervisorId) => {
         setError(null);
-        if (!editingHypervisor.name || !editingHypervisor.type || !editingHypervisor.hostname || !editingHypervisor.port || !editingHypervisor.username || !editingHypervisor.password) {
+        if (!editingHypervisor.name || !editingHypervisor.type || !editingHypervisor.hostname || !editingHypervisor.port || !editingHypervisor.username || !editingHypervisor._password) { // Changed password to _password
             setError("All fields are required");
             return;
         }
@@ -55,7 +80,7 @@ function HypervisorPanel() {
             const success = await actions.updateHypervisor(hypervisorId, editingHypervisor);
             if (success) {
                 setEditingHypervisor(null);
-                await actions.fetchHypervisors(); // Refresh the hypervisors list
+                await actions.fetchHypervisors();
             } else {
                 setError("Failed to update Hypervisor. Please check the form and try again.");
             }
@@ -79,7 +104,6 @@ function HypervisorPanel() {
         await actions.fetchHypervisorVMs(hypervisorId);
     };
 
-    // Status Icon Mapping
     const statusIconMap = {
         connected: { icon: CheckCircle, color: "green" },
         disconnected: { icon: XCircle, color: "red" },
@@ -88,7 +112,7 @@ function HypervisorPanel() {
     };
 
     const getStatusIcon = (status) => {
-        const statusInfo = statusIconMap[status] || { icon: XCircle, color: "gray" }; // Default to disconnected if status is unknown
+        const statusInfo = statusIconMap[status] || { icon: XCircle, color: "gray" };
         return <statusInfo.icon size={16} className={`text-${statusInfo.color}`} />;
     };
 
@@ -104,6 +128,7 @@ function HypervisorPanel() {
                     <h3 className="font-semibold mb-2">Nuevo Hypervisor</h3>
                     {error && <div className="alert alert-danger">{error}</div>}
                     <form onSubmit={(e) => { e.preventDefault(); addHypervisor() }} className="row g-3">
+                        {/* Basic Fields */}
                         <div className="col-md-6">
                             <label htmlFor="name" className="form-label">Nombre</label>
                             <input
@@ -167,17 +192,86 @@ function HypervisorPanel() {
                             />
                         </div>
                         <div className="col-md-6">
-                            <label htmlFor="password" className="form-label">Contraseña</label>
+                            <label htmlFor="_password" className="form-label">Contraseña</label> {/* Changed password to _password */}
                             <input
                                 type="password"
-                                id="password"
-                                name="password"
-                                value={newHypervisor.password}
+                                id="_password" // Changed password to _password
+                                name="_password" // Changed password to _password
+                                value={newHypervisor._password} // Changed password to _password
                                 onChange={(e) => handleInputChange(e, setNewHypervisor, newHypervisor)}
                                 className="form-control"
                                 required
                             />
                         </div>
+
+                        {/* OAuth 2.0 Fields */}
+                        <div className="col-md-6">
+                            <label htmlFor="client_id" className="form-label">Client ID</label>
+                            <input
+                                type="text"
+                                id="client_id"
+                                name="client_id"
+                                value={newHypervisor.client_id}
+                                onChange={(e) => handleInputChange(e, setNewHypervisor, newHypervisor)}
+                                className="form-control"
+                            />
+                        </div>
+                        <div className="col-md-6">
+                            <label htmlFor="client_secret" className="form-label">Client Secret</label>
+                            <input
+                                type="text"
+                                id="client_secret"
+                                name="client_secret"
+                                value={newHypervisor.client_secret}
+                                onChange={(e) => handleInputChange(e, setNewHypervisor, newHypervisor)}
+                                className="form-control"
+                            />
+                        </div>
+                        <div className="col-md-6">
+                            <label htmlFor="authorization_endpoint" className="form-label">Authorization Endpoint</label>
+                            <input
+                                type="text"
+                                id="authorization_endpoint"
+                                name="authorization_endpoint"
+                                value={newHypervisor.authorization_endpoint}
+                                onChange={(e) => handleInputChange(e, setNewHypervisor, newHypervisor)}
+                                className="form-control"
+                            />
+                        </div>
+                        <div className="col-md-6">
+                            <label htmlFor="token_endpoint" className="form-label">Token Endpoint</label>
+                            <input
+                                type="text"
+                                id="token_endpoint"
+                                name="token_endpoint"
+                                value={newHypervisor.token_endpoint}
+                                onChange={(e) => handleInputChange(e, setNewHypervisor, newHypervisor)}
+                                className="form-control"
+                            />
+                        </div>
+                        <div className="col-md-6">
+                            <label htmlFor="redirect_uri" className="form-label">Redirect URI</label>
+                            <input
+                                type="text"
+                                id="redirect_uri"
+                                name="redirect_uri"
+                                value={newHypervisor.redirect_uri}
+                                onChange={(e) => handleInputChange(e, setNewHypervisor, newHypervisor)}
+                                className="form-control"
+                            />
+                        </div>
+                        <div className="col-md-6">
+                            <label htmlFor="scope" className="form-label">Scope</label>
+                            <input
+                                type="text"
+                                id="scope"
+                                name="scope"
+                                value={newHypervisor.scope}
+                                onChange={(e) => handleInputChange(e, setNewHypervisor, newHypervisor)}
+                                className="form-control"
+                            />
+                        </div>
+
                         <div className="col-12 d-flex gap-2">
                             <button
                                 type="submit"
@@ -219,6 +313,12 @@ function HypervisorPanel() {
                             <th scope="col">Puerto</th>
                             <th scope="col">Usuario</th>
                             <th scope="col">Contraseña</th>
+                            <th scope="col">Client ID</th>
+                            <th scope="col">Client Secret</th>
+                            <th scope="col">Authorization Endpoint</th>
+                            <th scope="col">Token Endpoint</th>
+                            <th scope="col">Redirect URI</th>
+                            <th scope="col">Scope</th>
                             <th scope="col" >Acciones</th>
                         </tr>
                     </thead>
@@ -284,11 +384,71 @@ function HypervisorPanel() {
                                         <td>
                                             <input
                                                 type="password"
-                                                name="password"
-                                                value={editingHypervisor.password}
+                                                name="_password" // Changed password to _password
+                                                value={editingHypervisor._password} // Changed password to _password
                                                 onChange={(e) => handleInputChange(e, setEditingHypervisor, editingHypervisor)}
                                                 className="form-control"
                                                 required
+                                                style={{ width: '140px' }}
+                                            />
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                name="client_id"
+                                                value={editingHypervisor.client_id}
+                                                onChange={(e) => handleInputChange(e, setEditingHypervisor, editingHypervisor)}
+                                                className="form-control"
+                                                style={{ width: '140px' }}
+                                            />
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                name="client_secret"
+                                                value={editingHypervisor.client_secret}
+                                                onChange={(e) => handleInputChange(e, setEditingHypervisor, editingHypervisor)}
+                                                className="form-control"
+                                                style={{ width: '140px' }}
+                                            />
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                name="authorization_endpoint"
+                                                value={editingHypervisor.authorization_endpoint}
+                                                onChange={(e) => handleInputChange(e, setEditingHypervisor, editingHypervisor)}
+                                                className="form-control"
+                                                style={{ width: '140px' }}
+                                            />
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                name="token_endpoint"
+                                                value={editingHypervisor.token_endpoint}
+                                                onChange={(e) => handleInputChange(e, setEditingHypervisor, editingHypervisor)}
+                                                className="form-control"
+                                                style={{ width: '140px' }}
+                                            />
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                name="redirect_uri"
+                                                value={editingHypervisor.redirect_uri}
+                                                onChange={(e) => handleInputChange(e, setEditingHypervisor, editingHypervisor)}
+                                                className="form-control"
+                                                style={{ width: '140px' }}
+                                            />
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                name="scope"
+                                                value={editingHypervisor.scope}
+                                                onChange={(e) => handleInputChange(e, setEditingHypervisor, editingHypervisor)}
+                                                className="form-control"
                                                 style={{ width: '140px' }}
                                             />
                                         </td>
@@ -318,6 +478,12 @@ function HypervisorPanel() {
                                         <td>{hypervisor.port}</td>
                                         <td>{hypervisor.username}</td>
                                         <td>********</td>
+                                        <td>{hypervisor.client_id}</td>
+                                        <td>{hypervisor.client_secret}</td>
+                                        <td>{hypervisor.authorization_endpoint}</td>
+                                        <td>{hypervisor.token_endpoint}</td>
+                                        <td>{hypervisor.redirect_uri}</td>
+                                        <td>{hypervisor.scope}</td>
                                         <td className="d-flex flex-wrap gap-2">
                                             <button
                                                 onClick={() => handleEditHypervisor(hypervisor)}

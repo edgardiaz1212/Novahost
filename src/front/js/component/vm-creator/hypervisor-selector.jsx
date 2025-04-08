@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect, useContext } from "react";
+import { Context } from "../../store/appContext";
 import { Server, Cpu, ArrowRight, Check } from "lucide-react";
 
 // Hypervisor types
@@ -80,12 +81,31 @@ export const VCENTER_FOLDER_OPTIONS = [
   { value: "utility-servers", label: "Utility Servers" }
 ];
 
+// Service options
+export const SERVICE_OPTIONS = [
+  { value: "web-hosting", label: "Web Hosting" },
+  { value: "vps", label: "VPS" },
+  { value: "dedicated-server", label: "Dedicated Server" },
+  { value: "cloud-storage", label: "Cloud Storage" },
+  { value: "database-hosting", label: "Database Hosting" },
+];
+
 export function HypervisorSelector({
   selectedHypervisor,
   onSelect,
   onNext,
 }) {
-  const isValid = selectedHypervisor !== null;
+  const { store, actions } = useContext(Context);
+  const [hypervisors, setHypervisors] = useState([]);
+  const [selectedHypervisorInstance, setSelectedHypervisorInstance] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+ 
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [clients, setClients] = useState([]);
+  const [selectedClient, setSelectedClient] = useState(null);
+
+  const isValid = selectedHypervisorInstance !== null  && selectedClient !== null;
 
   const hypervisorOptions = [
     {
@@ -103,6 +123,56 @@ export function HypervisorSelector({
       iconBgColor: "bg-primary-subtle text-primary",
     },
   ];
+
+  useEffect(() => {
+    const fetchHypervisors = async () => {
+      if (selectedHypervisor) {
+        setIsLoading(true);
+        setError(null);
+        try {
+          const fetchedHypervisors = await actions.getHypervisorsByType(selectedHypervisor);
+          setHypervisors(fetchedHypervisors);
+        } catch (err) {
+          setError(err.message || "Failed to fetch hypervisors");
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setHypervisors([]);
+      }
+    };
+
+    fetchHypervisors();
+  }, [selectedHypervisor]);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const fetchedClients = await actions.fetchClients();
+        if (fetchedClients) {
+          setClients(fetchedClients);
+        }
+      } catch (error) {
+        console.error("Error fetching clients:", error);
+      }
+    };
+
+    fetchClients();
+  }, []);
+
+  const handleHypervisorInstanceSelect = (hypervisor) => {
+    setSelectedHypervisorInstance(hypervisor);
+  };
+
+
+
+  const handleTicketChange = (event) => {
+    setSelectedTicket(event.target.value);
+  };
+
+  const handleClientSelect = (client) => {
+    setSelectedClient(client);
+  };
 
   return (
     <div className="container">
@@ -150,6 +220,29 @@ export function HypervisorSelector({
         ))}
       </div>
 
+      {isLoading && <p>Loading hypervisors...</p>}
+      {error && <p className="text-danger">{error}</p>}
+
+      {hypervisors.length > 0 && (
+        <div className="mt-4">
+          <h4 className="mb-3">Selecciona un Hypervisor</h4>
+          <div className="list-group">
+            {hypervisors.map((hypervisor) => (
+              <button
+                key={hypervisor.id}
+                type="button"
+                className={`list-group-item list-group-item-action ${
+                  selectedHypervisorInstance?.id === hypervisor.id ? "active" : ""
+                }`}
+                onClick={() => handleHypervisorInstanceSelect(hypervisor)}
+              >
+                {hypervisor.name} ({hypervisor.hostname})
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {selectedHypervisor === HypervisorType.VCENTER && (
         <div className="mt-3">
           <div className="alert alert-primary" role="alert">
@@ -169,9 +262,48 @@ export function HypervisorSelector({
         </div>
       )}
 
+
+      {/* Ticket Input */}
+      <div className="mt-4">
+        <h4 className="mb-3">Añadir Ticket</h4>
+        <input
+          type="text"
+          className="form-control"
+          placeholder="Introduce el número de ticket"
+          value={selectedTicket || ""}
+          onChange={handleTicketChange}
+        />
+      </div>
+
+      {/* Client Selection */}
+      <div className="mt-4">
+        <h4 className="mb-3">Selecciona el Cliente</h4>
+        <select
+          className="form-select"
+          value={selectedClient ? selectedClient.id : ""}
+          onChange={(e) => {
+            const clientId = parseInt(e.target.value);
+            const client = clients.find((c) => c.id === clientId);
+            handleClientSelect(client);
+          }}
+        >
+          <option value="">Selecciona un cliente</option>
+          {clients.map((client) => (
+            <option key={client.id} value={client.id}>
+              {client.razon_social}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="mt-3 d-flex justify-content-end">
         <button
-          onClick={onNext}
+          onClick={() => onNext({
+            hypervisor: selectedHypervisorInstance,
+            
+            ticket: selectedTicket,
+            client: selectedClient,
+          })}
           disabled={!isValid}
           className="btn btn-primary"
         >

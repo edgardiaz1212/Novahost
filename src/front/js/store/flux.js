@@ -819,6 +819,30 @@ const getState = ({ getStore, getActions, setStore }) => {
           return false;
         }
       },
+      //Hypervisores por tipo
+      getHypervisorsByType : async (hypervisorType) => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/hypervisors/${hypervisorType}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+    
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("getHypervisorsByType - Server Error:", errorData);
+                throw new Error(`Server responded with status: ${response.status} - ${response.statusText}`);
+            }
+    
+            const data = await response.json();
+            console.log("getHypervisorsByType - Response Data:", data);
+            return data;
+        } catch (error) {
+            console.error("getHypervisorsByType - Fetch Error:", error);
+            throw error;
+        }
+    },
       //capacidad de un hipervisor
       fetchHypervisorCapacity: async (hypervisorId) => {
         const store = getStore();
@@ -984,7 +1008,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           if (response.ok) {
             const data = await response.json();
             console.log("Hypervisor added successfully:", data);
-            getActions().fetchHypervisors(); // Refresh hypervisor list
+            //getActions().fetchHypervisors(); // Refresh hypervisor list
             return true;
           } else {
             const errorData = await response.json();
@@ -1120,33 +1144,8 @@ const getState = ({ getStore, getActions, setStore }) => {
         }
       },
 
-      //Fetch maquinas virtuales
-      fetchVirtualMachines: async () => {
-        const store = getStore();
-        try {
-          const response = await fetch(
-            `${process.env.REACT_APP_BACKEND_URL}/virtual-machines`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          if (response.ok) {
-            const data = await response.json();
-            setStore({ virtualMachines: data });
-            console.log("Virtual Machines fetched:", data);
-            return data;
-          } else {
-            console.error("Failed to fetch Virtual Machines");
-            return false;
-          }
-        } catch (error) {
-          console.error("Error fetching Virtual Machines:", error);
-          return false;
-        }
-      },
+ 
+     
     },
   };
 };

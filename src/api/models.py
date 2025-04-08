@@ -149,6 +149,38 @@ class Hypervisor(db.Model):
     access_token = db.Column(db.String(255), nullable=True)
     refresh_token = db.Column(db.String(255), nullable=True)
     token_expires_at = db.Column(db.DateTime, nullable=True)
+
+    @property
+    def password(self):
+        return self._password
+
+    @password.setter
+    def password(self, value):
+        self._password = generate_password_hash(value)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "type": self.type,
+            "hostname": self.hostname,
+            "port": self.port,
+            "username": self.username,
+            "status": self.status,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "authorization_endpoint": self.authorization_endpoint,
+            "token_endpoint": self.token_endpoint,
+            "redirect_uri": self.redirect_uri,
+            "scope": self.scope,
+            "access_token": self.access_token,
+            "refresh_token": self.refresh_token,
+            "token_expires_at": self.token_expires_at.isoformat() if self.token_expires_at else None
+        }
+
+
 class Request(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ticket_number = db.Column(db.String(50), nullable=False, unique=True)

@@ -3,7 +3,6 @@ import { HypervisorSelector } from "../component/vm-creator/hypervisor-selector"
 import { PlanSelector } from "../component/vm-creator/plan-selector";
 import { VmConfiguration } from "../component/vm-creator/vm-configuration";
 import { VmReview } from "../component/vm-creator/vm-review";
-import { ProgressStepper } from "../component/vm-creator/progress-stepper";
 import { useStepper } from "../hooks/use-stepper.ts";
 import { HypervisorType, VM_CREATION_STEPS } from "../component/vm-creator/hypervisor-selector";
 // import { Layout } from "@/components/layout/layout";
@@ -14,6 +13,7 @@ import { Context } from "../store/appContext";
 export default function VmCreator() {
   const { store, actions } = useContext(Context);
   const [hypervisorType, setHypervisorType] = useState(null);
+  const [selectedHypervisor, setSelectedHypervisor] = useState(null); // New state for selected hypervisor instance
   const [planType, setPlanType] = useState("cataloged");
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [customConfig, setCustomConfig] = useState({
@@ -62,6 +62,7 @@ export default function VmCreator() {
   // Handle hypervisor selection
   const handleHypervisorSelect = (type) => {
     setHypervisorType(type);
+    setSelectedHypervisor(null); // Reset selected hypervisor when type changes
   };
 
   // Handle plan selection
@@ -82,6 +83,7 @@ export default function VmCreator() {
   // Handle form reset
   const handleReset = () => {
     setHypervisorType(null);
+    setSelectedHypervisor(null); // Reset selected hypervisor
     setPlanType("cataloged");
     setSelectedPlan(null);
     setCustomConfig({
@@ -121,6 +123,7 @@ export default function VmCreator() {
     setErrorMessage("");
     const payload = {
       hypervisorType,
+      selectedHypervisor, // Send the selected hypervisor instance
       planType,
       planId: planType === "cataloged" ? selectedPlan?.id : null,
       ram: planType === "cataloged" ? selectedPlan?.ram : customConfig.ram,
@@ -172,6 +175,9 @@ export default function VmCreator() {
     { label: "Revisión" }
   ];
 
+  const currentStepIndex = steps.findIndex(step => step.label === currentStep);
+  const progressPercentage = ((currentStepIndex + 1) / steps.length) * 100;
+
   return (
     <>
       <div className="container mb-3">
@@ -182,7 +188,32 @@ export default function VmCreator() {
       {/* Form container */}
       <div className="card shadow-sm">
         {/* Progress bar */}
-        <ProgressStepper currentStep={steps.indexOf({ label: currentStep }) + 1} steps={steps} />
+        <div className="px-4 py-4 sm:px-6 border-bottom border-secondary bg-light">
+          <div className="progress">
+            <div
+              className="progress-bar"
+              role="progressbar"
+              style={{ width: `${progressPercentage}%` }}
+              aria-valuenow={progressPercentage}
+              aria-valuemin="0"
+              aria-valuemax="100"
+            ></div>
+          </div>
+          <div className="d-flex justify-content-between text-xs mt-2">
+            {steps.map((step, index) => (
+              <div
+                key={index}
+                className={
+                  currentStepIndex >= index
+                    ? "text-primary fw-medium"
+                    : "text-secondary"
+                }
+              >
+                {step.label}
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Form content */}
         <div className="card-body p-3">
@@ -190,7 +221,10 @@ export default function VmCreator() {
             <HypervisorSelector
               selectedHypervisor={hypervisorType}
               onSelect={handleHypervisorSelect}
-              onNext={goToNextStep}
+              onNext={(hypervisor) => {
+                setSelectedHypervisor(hypervisor); // Update selected hypervisor
+                goToNextStep();
+              }}
             />
           )}
 
@@ -207,9 +241,9 @@ export default function VmCreator() {
             />
           )}
 
-          {currentStep === VM_CREATION_STEPS.CONFIGURATION && hypervisorType && (
+          {currentStep === VM_CREATION_STEPS.CONFIGURATION && selectedHypervisor && ( // Use selected hypervisor
             <VmConfiguration
-              hypervisorType={hypervisorType}
+              hypervisorType={selectedHypervisor.type} // Pass the type from the selected hypervisor
               onNext={goToNextStep}
               onPrevious={goToPreviousStep}
               onFormSubmit={handleVmConfigSubmit}
@@ -217,9 +251,9 @@ export default function VmCreator() {
             />
           )}
 
-          {currentStep === VM_CREATION_STEPS.REVIEW && hypervisorType && (
+          {currentStep === VM_CREATION_STEPS.REVIEW && selectedHypervisor && ( // Use selected hypervisor
             <VmReview
-              hypervisorType={hypervisorType}
+              hypervisorType={selectedHypervisor.type} // Pass the type from the selected hypervisor
               planType={planType}
               selectedPlan={selectedPlan}
               customConfig={customConfig}
