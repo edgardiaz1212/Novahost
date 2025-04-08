@@ -9,6 +9,7 @@ import Configuration from './front/js/pages/Configuration.jsx';
 import AprobacionServicios from './front/js/pages/AprobacionServicios.jsx';
 import Details from './front/js/pages/Details.jsx';
 import ReportsPage from './front/js/pages/ReportsPage.jsx';
+import VmCreator from './front/js/pages/vm-creator.jsx';
 
 const App = () => {
     const { store, actions } = useContext(Context);
@@ -29,6 +30,7 @@ const App = () => {
                 <Route path="/*" element={<Layout />}>
                     <Route path="dashboard" element={<Dahsboard />} />
                     <Route path="service-selector" element={<ServiceSelector />} />
+                    <Route path="vmcreator" element={<VmCreator/>}/>
                     <Route path="configuracion" element={<Configuration />} />
                     <Route path="aprobacion" element={<AprobacionServicios />} />
                     <Route path="details/:category" element={<Details />} /> 

@@ -390,7 +390,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           return false;
         }
       },
-      //***Gestion servicios***
+      //***Gestion servicios predefinidos***
       // Fetch services
       fetchServices: async () => {
         const store = getStore();

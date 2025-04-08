@@ -4,7 +4,6 @@ import { User, Server, Monitor, Settings, Info, Cloud } from 'lucide-react';
 import CurrentUserPanel from '../component/Configuration/CurrentUserPanel';
 import UsersPanel from '../component/Configuration/UserPanel';
 import ServicesPanel from '../component/Configuration/ServicesPanel';
-import VMPanel from '../component/Configuration/VMPanel';
 import ClientsPanel from '../component/Configuration/ClientsPanel';
 import HypervisorPanel from '../component/Configuration/HypervisorPanel.jsx'; // Import HypervisorPanel
 
@@ -47,17 +46,8 @@ function Configuration() {
                             Servicios
                         </div>
                     </button>
-                    {/* Remove "Sistemas Operativos" tab */}
-                    {/* New tab for VMs */}
-                    <button
-                        className={`px-4 py-2 rounded-md ${activeTab === 'vms' ? 'bg-success bg-opacity-75 text-white ' : 'bg-white'}`}
-                        onClick={() => setActiveTab('vms')}
-                    >
-                        <div className="flex items-center gap-2">
-                            <Cloud size={18} />
-                            Máquinas Virtuales
-                        </div>
-                    </button>
+                  
+                    
                     {/* New tab for clients */}
                     <button
                         className={`px-4 py-2 rounded-md ${activeTab === 'clientes' ? 'bg-success bg-opacity-75 text-white ' : 'bg-white'}`}
@@ -99,11 +89,7 @@ function Configuration() {
                     <ServicesPanel />
                 );
             // Remove 'sistemas' case
-            // New case for VMs
-            case 'vms':
-                return (
-                    <VMPanel />
-                );
+            
             // New case for clients
             case 'clientes':
                 return (
