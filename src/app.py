@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
 from api.utils import APIException, generate_sitemap
-from api.models import db, User
+from api.models import db, Users
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -102,9 +102,9 @@ def serve_any_other_file(path):
 # Function to create the admin user
 def create_admin_user(app):
     with app.app_context():
-        admin_user = User.query.filter_by(email="admin@example.com").first()
+        admin_user = Users.query.filter_by(email="admin@example.com").first()
         if not admin_user:
-            admin_user = User(
+            admin_user = Users(
                 userName="Admin",
                 email="admin@example.com",
                 password="administrator",
