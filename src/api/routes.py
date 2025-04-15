@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, FinalUser, PreDefinedPlans, Request, VirtualMachines, Hypervisor, OperationLog
+from api.models import db, Users, FinalUser, PreDefinedPlans, Request, VirtualMachines, Hypervisor, OperationLog
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
@@ -25,15 +25,15 @@ def login():
     email = data.get('email')
     password = data.get('password')
 
-    user = User.query.filter_by(email=email).first()
+    users = Users.query.filter_by(email=email).first()
 
-    if not user or not user.check_password(password):
+    if not users or not users.check_password(password):
         return jsonify({"msg": "Bad email or password"}), 401
 
-    access_token = create_access_token(identity=str(user.id))
+    access_token = create_access_token(identity=str(users.id))
     return jsonify({
         "token": access_token, 
-        "user": user.serialize(),
+        "user": users.serialize(),
         "expires_in": 7200  # 2 hours in seconds
     }), 200
 ##Gestion de usuarios**
@@ -41,7 +41,7 @@ def login():
 @api.route('/add-user', methods=['POST'])
 def add_user():
     data = request.get_json()
-    user = User(email=data['email'], 
+    user = Users(email=data['email'], 
                 password=data['password'],
                 userName=data['userName'],
                 telephone=data['telephone'],
@@ -56,7 +56,7 @@ def add_user():
 def edit_user():
     data = request.get_json()
     current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
+    user = Users.query.get(current_user_id)
     if not user:
         return jsonify({"msg": "User not found"}), 404
     user.userName = data['userName']
@@ -71,7 +71,7 @@ def edit_user():
 @jwt_required()
 def edit_user_by_id(user_id):
     data = request.get_json()
-    user = User.query.get(user_id)
+    user = Users.query.get(user_id)
     if not user:
         return jsonify({"msg": "User not found"}), 404
     user.userName = data.get('userName', user.userName)
@@ -86,7 +86,7 @@ def edit_user_by_id(user_id):
 @api.route('/delete-user/<int:user_id>', methods=['DELETE'])
 @jwt_required()
 def delete_user(user_id):
-    user = User.query.get(user_id)
+    user = Users.query.get(user_id)
     if not user:
         return jsonify({"msg": "User not found"}), 404
     try:
@@ -106,7 +106,7 @@ def get_current_user():
         current_user_id = get_jwt_identity()
         
         # Fetch the user from the database
-        user = User.query.get(current_user_id) # Remove .first()
+        user = Users.query.get(current_user_id) # Remove .first()
         
         # Check if user exists
         if not user:
@@ -130,7 +130,7 @@ def get_current_user():
 
 @api.route('/users', methods=['GET'])
 def get_users():
-    users = User.query.all()
+    users = Users.query.all()
     users_list = [user.serialize() for user in users]
     return jsonify(users_list), 200
 # **Gestion de servicios**
