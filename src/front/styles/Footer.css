@@ -1,0 +1,12 @@
+/* src/front/styles/Footer.css */
+.app-footer {
+    background-color: #f8f9fa; /* Un color de fondo claro */
+    padding: 1rem;
+    text-align: center;
+    border-top: 1px solid #dee2e6; /* Un borde superior sutil */
+    margin-top: auto; /* Empuja el footer hacia abajo si el contenido es corto */
+    width: 100%;
+    font-size: 0.9rem;
+    color: #6c757d; /* Color de texto grisáceo */
+  }
+  

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import '../../styles/Layout.css';
 import Navbar from './Navbar.jsx';
+import Footer from './Footer.jsx'; 
 
 const Layout = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,6 +51,7 @@ const Layout = () => {
       <main className="main-content">
         <Outlet />
       </main>
+      <Footer/>
     </div>
   );
 };

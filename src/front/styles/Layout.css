@@ -1,16 +1,28 @@
 /* Layout.css */
 .layout-container {
   display: flex;
+  flex-direction: column;
   position: relative;
   min-height: 100vh;
+  overflow-x: hidden; 
+}
+
+.main-content,
+.app-footer { 
+  width: 100%; 
+  margin-left: 0;
+  transition: margin-left 0.3s ease-in-out;
+  box-sizing: border-box; 
+}
+
+.app-footer {
+  flex-shrink: 0;
 }
 
 .main-content {
-  flex-grow: 1;
-  padding: 20px;
-  width: 100%;
-  margin-left: 0;
-  transition: margin-left 0.3s ease-in-out;
+  flex-grow: 1; 
+  padding: 20px; 
+ 
 }
 
 .hamburger-menu {
@@ -68,4 +80,9 @@
   border-top: 1px solid #ccc; /* Add a border to the top */
   margin-top: 10px; /* Add some space above the line */
   margin-bottom: 10px; /* Add some space below the line */
+}
+
+.offcanvas.show ~ .main-content,
+.offcanvas.show ~ .app-footer { /* <--- Añadido .app-footer aquí */
+  margin-left: 250px; /* Ajusta este valor si el ancho de tu offcanvas es diferente */
 }

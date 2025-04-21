@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { Context } from '../store/appContext';
 import { ToastContainer, toast } from 'react-toastify';
 import { User, Server, Monitor, Settings, Info, Cloud, Building, LogOut, LayoutDashboard, CheckCircle, AlertCircle, Clock, BarChart3, BarChart } from 'lucide-react';
+import Logo from '../../img/CDHLogo.png'
 
 const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
   const { store, actions } = useContext(Context);
@@ -42,18 +43,23 @@ const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
   };
 
   return (
-    <div ref={offcanvasRef} className={`offcanvas offcanvas-start w-25 ${isOpen ? 'show' : ''}`} tabIndex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+    <div ref={offcanvasRef} className={`offcanvas offcanvas-start w-25 user-select-none ${isOpen ? 'show' : ''}`} tabIndex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
       <div className="offcanvas-header">
-        <h5 className="offcanvas-title" id="offcanvasNavbarLabel">NovaHost</h5>
-        <hr className="title-greeting-divider" /> {/* Separator Line */}
-        {/* Greeting and User Name - Now placed correctly */}
+      <img src={Logo} alt="Logo" className="logo m-2 " width={80}/>
+        <h5 className="offcanvas-title " id="offcanvasNavbarLabel">NovaHost</h5>
+        
+        
+        <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close" onClick={toggleMenu}></button>
+      </div>
+      <div className="user-greeting text-center">{/* Greeting and User Name - Now placed correctly */}
         {store.isAuthenticated && store.user && (
-          <div className="user-greeting">
+          <div className="">
             <p>Hola, {store.user.userName}!</p>
           </div>
         )}
-        <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close" onClick={toggleMenu}></button>
-      </div>
+        <hr className="logout-divider m-3" />
+       </div>
+       
       <div className="offcanvas-body d-flex flex-column">
         <ul className="navbar-nav justify-content-end pe-3">
           <li className="nav-item">
@@ -68,7 +74,7 @@ const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
           </li>
           <li className="nav-item">
             <NavLink to="/vmcreator" className="nav-link" onClick={toggleMenu}>
-              <CheckCircle className="nav-icon" /> Creacion de VM
+              <CheckCircle className="nav-icon" /> Crear VM
             </NavLink>
           </li>
           {/* Details Dropdown */}
@@ -123,7 +129,7 @@ const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
           <ul className="navbar-nav justify-content-end pe-3">
             <li className="nav-item">
               <NavLink to="/configuracion" className="nav-link" onClick={toggleMenu}>
-                <Settings className="nav-icon" /> Configuracion
+                <Settings className="nav-icon" /> Configuración
               </NavLink>
             </li>
             {store.isAuthenticated && (
