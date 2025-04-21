@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: a5aa16e0d175
+Revision ID: 1a893255ec66
 Revises: 
-Create Date: 2025-04-03 12:37:54.540500
+Create Date: 2025-04-21 08:47:47.195301
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'a5aa16e0d175'
+revision = '1a893255ec66'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -30,13 +30,23 @@ def upgrade():
     op.create_table('hypervisor',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=80), nullable=False),
-    sa.Column('type', sa.Enum('vcenter', 'proxmox', name='hypervisor_type'), nullable=False),
+    sa.Column('type', sa.Enum('vcenter', 'proxmox', 'vcenter6', 'vcenter7', name='hypervisor_type'), nullable=False),
     sa.Column('hostname', sa.String(length=120), nullable=False),
     sa.Column('port', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=120), nullable=False),
     sa.Column('_password', sa.String(), nullable=False),
+    sa.Column('status', sa.String(length=20), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.Column('client_id', sa.String(length=255), nullable=True),
+    sa.Column('client_secret', sa.String(length=255), nullable=True),
+    sa.Column('authorization_endpoint', sa.String(length=255), nullable=True),
+    sa.Column('token_endpoint', sa.String(length=255), nullable=True),
+    sa.Column('redirect_uri', sa.String(length=255), nullable=True),
+    sa.Column('scope', sa.String(length=255), nullable=True),
+    sa.Column('access_token', sa.String(length=255), nullable=True),
+    sa.Column('refresh_token', sa.String(length=255), nullable=True),
+    sa.Column('token_expires_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('pre_defined_plans',
@@ -50,7 +60,7 @@ def upgrade():
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('user',
+    op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('userName', sa.String(length=80), nullable=False),
     sa.Column('email', sa.String(length=120), nullable=False),
@@ -103,7 +113,7 @@ def upgrade():
     sa.ForeignKeyConstraint(['client_id'], ['final_user.id'], ),
     sa.ForeignKeyConstraint(['hypervisor_id'], ['hypervisor.id'], ),
     sa.ForeignKeyConstraint(['plan_id'], ['pre_defined_plans.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('ticket_number')
     )
@@ -136,11 +146,13 @@ def upgrade():
     sa.Column('vm_id', sa.Integer(), nullable=True),
     sa.Column('request_id', sa.Integer(), nullable=True),
     sa.Column('request_type', sa.String(length=20), nullable=True),
+    sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('status', sa.String(length=20), nullable=False),
     sa.Column('message', sa.Text(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['hypervisor_id'], ['hypervisor.id'], ),
     sa.ForeignKeyConstraint(['request_id'], ['request.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.ForeignKeyConstraint(['vm_id'], ['virtual_machines.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -152,7 +164,7 @@ def downgrade():
     op.drop_table('operation_log')
     op.drop_table('virtual_machines')
     op.drop_table('request')
-    op.drop_table('user')
+    op.drop_table('users')
     op.drop_table('pre_defined_plans')
     op.drop_table('hypervisor')
     op.drop_table('final_user')

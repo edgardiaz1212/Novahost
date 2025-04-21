@@ -188,7 +188,7 @@ class Request(db.Model):
     status = db.Column(db.String(120), nullable=False)
     vm_creation_status = db.Column(db.String(20), default="queued")
     # Foreign keys
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # Add this line
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # Add this line
     plan_id = db.Column(db.Integer, db.ForeignKey('pre_defined_plans.id'), nullable=True)  # Only for predefined
     client_id = db.Column(db.Integer, db.ForeignKey('final_user.id'), nullable=True)
     hypervisor_id = db.Column(db.Integer, db.ForeignKey('hypervisor.id'), nullable=False)
@@ -274,7 +274,7 @@ class OperationLog(db.Model):
     vm_id = db.Column(db.Integer, db.ForeignKey('virtual_machines.id'), nullable=True)
     request_id = db.Column(db.Integer, db.ForeignKey('request.id'), nullable=True) # Changed to Request
     request_type = db.Column(db.String(20), nullable=True)  # catalog, no_catalog
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True) # Add this line
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True) # Add this line
     status = db.Column(db.String(20), nullable=False)  # success, error
     message = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))

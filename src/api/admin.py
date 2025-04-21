@@ -1,7 +1,7 @@
   
 import os
 from flask_admin import Admin
-from .models import db, User, FinalUser, PreDefinedPlans, VirtualMachines, Request, Hypervisor, OperationLog
+from .models import db, Users, FinalUser, PreDefinedPlans, VirtualMachines, Request, Hypervisor, OperationLog
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.form import SecureForm
 
@@ -18,7 +18,7 @@ def setup_admin(app):
     admin = Admin(app, name='4Geeks Admin', template_mode='bootstrap3')
     
     # Add your models here, for example this is how we add a the User model to the admin
-    admin.add_view(ModelView(User, db.session))
+    admin.add_view(ModelView(Users, db.session))
     admin.add_view(ModelView(FinalUser, db.session))
     admin.add_view(ModelView(PreDefinedPlans, db.session))
     admin.add_view(ModelView(VirtualMachines, db.session))

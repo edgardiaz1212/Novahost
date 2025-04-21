@@ -67,8 +67,8 @@ const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
             </NavLink>
           </li>
           <li className="nav-item">
-            <NavLink to="/aprobacion" className="nav-link" onClick={toggleMenu}>
-              <CheckCircle className="nav-icon" /> Aprobacion Servicio
+            <NavLink to="/vmcreator" className="nav-link" onClick={toggleMenu}>
+              <CheckCircle className="nav-icon" /> Creacion de VM
             </NavLink>
           </li>
           {/* Details Dropdown */}
