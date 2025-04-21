@@ -1,9 +1,24 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { Context } from '../store/appContext';
-import { ToastContainer, toast } from 'react-toastify';
-import { User, Server, Monitor, Settings, Info, Cloud, Building, LogOut, LayoutDashboard, CheckCircle, AlertCircle, Clock, BarChart3, BarChart } from 'lucide-react';
-import Logo from '../../img/CDHLogo.png'
+import React, { useContext, useEffect, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { Context } from "../store/appContext";
+import { ToastContainer, toast } from "react-toastify";
+import {
+  User,
+  Server,
+  Monitor,
+  Settings,
+  Info,
+  Cloud,
+  Building,
+  LogOut,
+  LayoutDashboard,
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  BarChart3,
+  BarChart,
+} from "lucide-react";
+import Logo from "../../img/CDHLogo.png";
 
 const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
   const { store, actions } = useContext(Context);
@@ -23,7 +38,7 @@ const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
         progress: undefined,
         theme: "light",
       });
-      navigate('/');
+      navigate("/");
     } else {
       toast.error("Error al cerrar sesión", {
         position: "top-right",
@@ -43,23 +58,37 @@ const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
   };
 
   return (
-    <div ref={offcanvasRef} className={`offcanvas offcanvas-start w-25 user-select-none ${isOpen ? 'show' : ''}`} tabIndex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+    <div
+      ref={offcanvasRef}
+      className={`offcanvas offcanvas-start w-25 user-select-none ${
+        isOpen ? "show" : ""
+      }`}
+      tabIndex="-1"
+      id="offcanvasNavbar"
+      aria-labelledby="offcanvasNavbarLabel"
+    >
       <div className="offcanvas-header">
-      <img src={Logo} alt="Logo" className="logo m-2 " width={80}/>
-        <h5 className="offcanvas-title " id="offcanvasNavbarLabel">NovaHost</h5>
-        
-        
-        <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close" onClick={toggleMenu}></button>
+        <img src={Logo} alt="Logo" className="logo m-2 " width={80} />
+        <h5 className="offcanvas-title " id="offcanvasNavbarLabel">
+          NovaHost
+        </h5>
+        <button
+          type="button"
+          className="btn-close"
+          data-bs-dismiss="offcanvas"
+          aria-label="Close"
+          onClick={toggleMenu}
+        ></button>
       </div>
-      <div className="user-greeting text-center">{/* Greeting and User Name - Now placed correctly */}
+      <div className="user-greeting text-center">
         {store.isAuthenticated && store.user && (
           <div className="">
             <p>Hola, {store.user.userName}!</p>
           </div>
         )}
         <hr className="logout-divider m-3" />
-       </div>
-       
+      </div>
+
       <div className="offcanvas-body d-flex flex-column">
         <ul className="navbar-nav justify-content-end pe-3">
           <li className="nav-item">
@@ -68,7 +97,11 @@ const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
             </NavLink>
           </li>
           <li className="nav-item">
-            <NavLink to="/service-selector" className="nav-link" onClick={toggleMenu}>
+            <NavLink
+              to="/service-selector"
+              className="nav-link"
+              onClick={toggleMenu}
+            >
               <Cloud className="nav-icon" /> Seleccion Servicio
             </NavLink>
           </li>
@@ -94,24 +127,49 @@ const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
             >
               <Info className="nav-icon" /> Detalles
             </a>
-            <ul className={`dropdown-menu  border-0 ${showDetailsDropdown ? 'show' : ''}`} aria-labelledby="detailsDropdown">
+            <ul
+              className={`dropdown-menu  border-0 ${
+                showDetailsDropdown ? "show" : ""
+              }`}
+              aria-labelledby="detailsDropdown"
+            >
               <li>
-                <NavLink to="/details/completed" className="dropdown-item" onClick={toggleMenu} state={{ color: 'border-green-500' }}>
+                <NavLink
+                  to="/details/completed"
+                  className="dropdown-item"
+                  onClick={toggleMenu}
+                  state={{ color: "border-green-500" }}
+                >
                   <CheckCircle className="nav-icon" /> Completadas
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/details/failed" className="dropdown-item" onClick={toggleMenu} state={{ color: 'border-red-500' }}>
+                <NavLink
+                  to="/details/failed"
+                  className="dropdown-item"
+                  onClick={toggleMenu}
+                  state={{ color: "border-red-500" }}
+                >
                   <AlertCircle className="nav-icon" /> Fallidas
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/details/inProgress" className="dropdown-item" onClick={toggleMenu} state={{ color: 'border-blue-500' }}>
+                <NavLink
+                  to="/details/inProgress"
+                  className="dropdown-item"
+                  onClick={toggleMenu}
+                  state={{ color: "border-blue-500" }}
+                >
                   <Clock className="nav-icon" /> En Proceso
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/details/total" className="dropdown-item" onClick={toggleMenu} state={{ color: 'border-purple-500' }}>
+                <NavLink
+                  to="/details/total"
+                  className="dropdown-item"
+                  onClick={toggleMenu}
+                  state={{ color: "border-purple-500" }}
+                >
                   <BarChart3 className="nav-icon" /> Total VMs
                 </NavLink>
               </li>
@@ -128,13 +186,20 @@ const Navbar = ({ isOpen, toggleMenu, offcanvasRef }) => {
           <hr className="logout-divider" />
           <ul className="navbar-nav justify-content-end pe-3">
             <li className="nav-item">
-              <NavLink to="/configuracion" className="nav-link" onClick={toggleMenu}>
+              <NavLink
+                to="/configuracion"
+                className="nav-link"
+                onClick={toggleMenu}
+              >
                 <Settings className="nav-icon" /> Configuración
               </NavLink>
             </li>
             {store.isAuthenticated && (
               <li className="nav-item">
-                <button className="nav-link btn btn-link logout-button" onClick={handleLogout}>
+                <button
+                  className="nav-link btn btn-link logout-button"
+                  onClick={handleLogout}
+                >
                   <LogOut className="nav-icon" /> Logout
                 </button>
               </li>

@@ -1,12 +1,31 @@
 /* src/front/styles/Footer.css */
 .app-footer {
-    background-color: #f8f9fa; /* Un color de fondo claro */
+    background-color: #f8f9fa;
     padding: 1rem;
-    text-align: center;
-    border-top: 1px solid #dee2e6; /* Un borde superior sutil */
-    margin-top: auto; /* Empuja el footer hacia abajo si el contenido es corto */
+    /* text-align: center; <-- Puedes quitar esta línea */
+    border-top: 1px solid #dee2e6;
+    margin-top: auto;
     width: 100%;
     font-size: 0.9rem;
-    color: #6c757d; /* Color de texto grisáceo */
+    color: #6c757d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+  .footer-text {
+    /* Puedes añadir estilos específicos para el texto si es necesario */
+    /* Por ejemplo, si quieres asegurarte de que ocupe el espacio central: */
+    flex-grow: 1; /* Permite que el texto ocupe el espacio disponible */
+    text-align: center; /* Centra el texto horizontalmente */
+    margin: 0 1rem; /* Añade un poco de margen a los lados del texto */
+  }
+  
+  .footer-image {
+    opacity: 0.8;
+    height: 70px;
+    width: auto; 
+    flex-shrink: 0;
   }
   
