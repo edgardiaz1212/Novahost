@@ -1,124 +1,147 @@
-# Getting Started with Create React App
+# Novahost: A Cloud Management Platform
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Novahost is a cloud management platform designed to simplify the management of virtualized environments. It supports multiple hypervisors, including vCenter (VMware) and Proxmox, allowing centralized management of virtual machines (VMs) across different platforms from a single interface.
 
-## Available Scripts
+## Core Features
 
-In the project directory, you can run:
+- **Hypervisor Management**
+  - Multi-hypervisor support (vCenter and Proxmox)
+  - Connection and status monitoring
+  - Capacity monitoring (CPU, RAM, disk usage)
 
-### `npm start`
+- **Virtual Machine Management**
+  - VM creation, listing, and detailed information
+  - CRUD operations on VMs
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **User and Client Management**
+  - User accounts with roles and permissions
+  - Client ("Final Users") management
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Service Management**
+  - Predefined service plans/templates
+  - Service ordering for UI organization
 
-### `npm test`
+- **Request Management**
+  - Request tracking with ticket numbers and statuses
+  - Support for different request types (predefined, custom)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **Operation Logging**
+  - Audit trail for system operations
 
-### `npm run build`
+- **API-Driven**
+  - RESTful API for integration and custom UI development
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **Security**
+  - JWT authentication
+  - Password hashing
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Technology Stack
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- Backend: Python, Flask, Flask-SQLAlchemy, Flask-JWT-Extended
+- Frontend: React (Create React App)
+- Database: Relational database (PostgreSQL or SQLite)
+- Virtualization APIs: pyVmomi (vCenter), Proxmoxer (Proxmox)
 
-### `npm run eject`
+## Installation and Setup
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Prerequisites
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- Python 3.8+
+- Node.js 16+
+- npm or yarn
+- A relational database (PostgreSQL recommended)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Backend Setup
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+1. Clone the repository and navigate to the project directory:
+
+   ```bash
+   git clone <repository-url>
+   cd Novahost
+   ```
+
+2. Create and activate a Python virtual environment:
+
+   ```bash
+   python -m venv venv
+   source venv/bin/activate   # On Windows: venv\Scripts\activate
+   ```
+
+3. Install backend dependencies:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Set up environment variables. Create a `.env` file in the project root with the following variables:
+
+   ```
+   FLASK_DEBUG=1
+   DATABASE_URL=postgresql://user:password@localhost:5432/novahostdb
+   JWT_SECRET_KEY=your_jwt_secret_key
+   PORT=3001
+   ```
+
+   Adjust `DATABASE_URL` according to your database setup. If not set, the app defaults to a SQLite database.
+
+5. Initialize and migrate the database:
+
+   ```bash
+   flask db init
+   flask db migrate
+   flask db upgrade
+   ```
+
+6. Run the backend server:
+
+   ```bash
+   python src/app.py
+   ```
+
+   The backend API will be available at `http://localhost:3001/api`.
+
+### Frontend Setup
+
+1. Navigate to the frontend directory:
+
+   ```bash
+   cd src/front
+   ```
+
+2. Install frontend dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Start the React development server:
+
+   ```bash
+   npm start
+   ```
+
+   The frontend will be available at `http://localhost:3000`.
+
+### Running the Full Application
+
+- Start the backend server as described above.
+- Start the frontend React app.
+- The frontend communicates with the backend API to provide the full Novahost experience.
+
+## Additional Information
+
+- The backend serves the frontend static files from the `public` directory in production.
+- An admin user with email `admin@example.com` and password `administrator` is created automatically on backend startup if it does not exist.
+- For API documentation and available endpoints, visit the root URL (`/`) in development mode to see the generated sitemap.
 
 ## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- [Create React App Documentation](https://facebook.github.io/create-react-app/docs/getting-started)
+- [React Documentation](https://reactjs.org/)
+- [Flask Documentation](https://flask.palletsprojects.com/)
+- [Flask-SQLAlchemy Documentation](https://flask-sqlalchemy.palletsprojects.com/)
+- [pyVmomi Documentation](https://github.com/vmware/pyvmomi)
+- [Proxmoxer Documentation](https://github.com/proxmoxer/proxmoxer)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-Novahost: A Cloud Management Platform
-
-At its core, Novahost is designed to be a cloud management platform. It's built to simplify the process of managing virtualized environments, whether you're dealing with a single hypervisor or a complex multi-hypervisor setup. Here's a breakdown of its key aspects:
-
-Core Functionality
-
-Hypervisor Management:
-
-Multi-Hypervisor Support: Novahost isn't tied to a single virtualization technology. It's built to work with multiple hypervisor types, specifically vCenter (VMware) and Proxmox. This means you can manage VMs across different platforms from a single interface.
-Connection and Status Monitoring: It can connect to your hypervisors, check their connection status, and keep track of their overall health.
-Capacity Monitoring: It can gather information about the capacity of your hypervisors, such as CPU, RAM, and disk usage. This helps you understand resource availability.
-Virtual Machine (VM) Management:
-
-VM Creation: You can create new virtual machines on your hypervisors through Novahost.
-VM Listing: It provides a centralized view of all your VMs, regardless of which hypervisor they reside on.
-VM Details: You can get detailed information about each VM, including its name, power state, guest operating system, IP address, CPU count, and memory.
-VM CRUD Operations: It supports basic operations like creating, reading, updating, and deleting VMs.
-User and Client Management:
-
-User Accounts: Novahost allows you to create and manage user accounts, each with their own roles and permissions.
-Client Management: It has a system for managing "Final Users" or clients, which are likely the end customers who will be using the virtualized resources.
-Service Management:
-
-Predefined Plans: You can create "PreDefinedPlans," which are essentially service templates. These templates define the resources (RAM, disk, processor) that will be allocated to a VM.
-Service Ordering: It allows you to define the order in which services are displayed, which is useful for organizing them in a user interface.
-Request Management:
-
-Request Tracking: Novahost uses a "Request" system to track actions like VM creation. Each request has a ticket number, status, and other relevant details.
-Request Types: It supports different types of requests, such as "predefined" (using a service template) or "no_catalog" (custom VM specifications).
-Operation Logging:
-
-Audit Trail: It keeps a log of operations performed within the system, such as VM creation, deletion, and other actions. This is important for auditing and troubleshooting.
-API-Driven:
-
-RESTful API: Novahost is built as a RESTful API, meaning it's designed to be accessed programmatically. This makes it easy to integrate with other systems or build custom user interfaces on top of it.
-Security:
-
-JWT Authentication: It uses JSON Web Tokens (JWT) for authentication, which is a standard way to secure APIs.
-Password Hashing: It stores user passwords securely using hashing.
-Technical Details
-
-Python/Flask: The backend is built using Python and the Flask web framework.
-SQLAlchemy: It uses SQLAlchemy as an Object-Relational Mapper (ORM) to interact with the database.
-pyVmomi/Proxmoxer: It uses the pyVmomi library to interact with vCenter and the Proxmoxer library to interact with Proxmox.
-Database: It uses a relational database (likely PostgreSQL or MySQL, based on common Flask setups).
-In Essence
-
-Novahost is a platform that aims to:
-
-Centralize: Provide a single point of control for managing multiple hypervisors and VMs.
-Simplify: Make it easier to create, manage, and monitor virtualized resources.
-Automate: Automate tasks like VM creation and resource allocation.
-Secure: Secure access to the platform and protect sensitive data.
-Extend: Be extensible through its API, allowing for integration with other systems
+---
+This README provides an overview of the Novahost project and detailed installation instructions for both backend and frontend components.
