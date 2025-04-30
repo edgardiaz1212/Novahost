@@ -131,6 +131,7 @@ def get_users():
     users = Users.query.all()
     users_list = [user.serialize() for user in users]
     return jsonify(users_list), 200
+
 # **Gestion de servicios**
 # Get all services
 @api.route('/services', methods=['GET'])
@@ -252,6 +253,7 @@ def delete_client(client_id):
     db.session.delete(client)
     db.session.commit()
     return jsonify({"msg": "Client deleted successfully"}), 200
+
 # **Gestion de Hypervisores**
 # Get all hypervisors
 @api.route('/hypervisors', methods=['GET'])
@@ -274,19 +276,8 @@ def get_hypervisors_by_type(hypervisor_type):
         return jsonify([hypervisor.serialize() for hypervisor in hypervisors]), 200
     except Exception as e:
         return jsonify({'message': f'Error fetching hypervisors: {e}'}), 500
-# Update hypervisor status
-@api.route('/update-hypervisors-status', methods=['POST'])
-@jwt_required()
-def update_hypervisors_status():
-    hypervisors = Hypervisor.query.all()
-    for hypervisor in hypervisors:
-        manager = HypervisorManager(hypervisor.id)
-        status = manager.check_connection()
-        hypervisor.status = status
-        db.session.commit()
-    return jsonify({"msg": "Hypervisors status updated successfully"}), 200
-# Add a new hypervisor
-@api.route('/add-hypervisor', methods=['POST'])
+
+
 def add_hypervisor():
     data = request.get_json()
     if data is None:
@@ -363,104 +354,7 @@ def delete_hypervisor(hypervisor_id):
     db.session.commit()
     return jsonify({"msg": "Hypervisor deleted successfully"}), 200
 
-# New route to initiate vCenter OAuth 2.0 flow (vCenter 7 only)
-@api.route('/vcenter-auth/<int:hypervisor_id>', methods=['GET'])
-@jwt_required()
-def vcenter_auth(hypervisor_id):
-    hypervisor = Hypervisor.query.get(hypervisor_id)
-    if not hypervisor or hypervisor.type != 'vcenter7':
-        return jsonify({"msg": "Invalid hypervisor for OAuth 2.0"}), 400
 
-    # Construct the authorization URL
-    params = {
-        "response_type": "code",
-        "client_id": hypervisor.client_id,
-        "redirect_uri": hypervisor.redirect_uri,
-        "scope": hypervisor.scope,
-    }
-    auth_url = f"{hypervisor.authorization_endpoint}?{urlencode(params)}"
-    return jsonify({"auth_url": auth_url}), 200
-
-# New route to handle the vCenter OAuth 2.0 callback (vCenter 7 only)
-@api.route('/vcenter-callback/<int:hypervisor_id>', methods=['GET'])
-@jwt_required()
-def vcenter_callback(hypervisor_id):
-    hypervisor = Hypervisor.query.get(hypervisor_id)
-    if not hypervisor or hypervisor.type != 'vcenter7':
-        return jsonify({"msg": "Invalid hypervisor for OAuth 2.0"}), 400
-
-    code = request.args.get('code')
-    if not code:
-        return jsonify({"msg": "Authorization code not found"}), 400
-
-    # Exchange the authorization code for an access token
-    token_data = {
-        "grant_type": "authorization_code",
-        "code": code,
-        "redirect_uri": hypervisor.redirect_uri,
-        "client_id": hypervisor.client_id,
-        "client_secret": hypervisor.client_secret,
-    }
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
-    response = requests.post(hypervisor.token_endpoint, data=token_data, headers=headers)
-
-    if response.status_code != 200:
-        return jsonify({"msg": "Failed to get access token", "error": response.text}), 500
-
-    token_info = response.json()
-    hypervisor.access_token = token_info.get('access_token')
-    hypervisor.refresh_token = token_info.get('refresh_token')
-    hypervisor.token_expires_at = datetime.now() + timedelta(seconds=token_info.get('expires_in', 3600))
-    db.session.commit()
-
-    return jsonify({"msg": "Successfully authenticated with vCenter", "token_info": token_info}), 200
-
-# Hypervisor Capacity (modified)
-@api.route('/hypervisor/<int:hypervisor_id>/capacity', methods=['GET'])
-@jwt_required()
-def get_hypervisor_capacity(hypervisor_id):
-    hypervisor = Hypervisor.query.get(hypervisor_id)
-    if not hypervisor:
-        return jsonify({"msg": "Hypervisor not found"}), 404
-    try:
-        manager = HypervisorManager(hypervisor_id)
-        if hypervisor.type == 'vcenter7':
-            # Check if the token is expired
-            if hypervisor.token_expires_at and hypervisor.token_expires_at < datetime.now():
-                # Refresh the token
-                if not manager.refresh_token():
-                    return jsonify({"msg": "Failed to refresh token"}), 500
-            manager.connect_with_token(hypervisor.access_token)
-        elif hypervisor.type == 'vcenter6':
-            # Check for session token in headers
-            auth_header = request.headers.get('Authorization')
-            if not auth_header or not auth_header.startswith('Session '):
-                return jsonify({"msg": "Session token required for vCenter 6"}), 401
-            session_token = auth_header.split(' ', 1)[1]
-            manager.connect_with_session(session_token)
-        else:
-            manager.connect()
-        capacity = manager.get_capacity()
-        manager.disconnect()
-        return jsonify(capacity), 200
-    except Exception as e:
-        return jsonify({"msg": str(e)}), 500
-    
-# Get VMs from a hypervisor
-@api.route('/hypervisor/<int:hypervisor_id>/vms', methods=['GET'])
-@jwt_required()
-def get_hypervisor_vms(hypervisor_id):
-    hypervisor = Hypervisor.query.get(hypervisor_id)
-    if not hypervisor:
-        return jsonify({"msg": "Hypervisor not found"}), 404
-    try:
-        manager = HypervisorManager(hypervisor_id)
-        manager.connect()
-        vms = manager.get_vms()
-        manager.disconnect()
-        return jsonify(vms), 200
-    except Exception as e:
-        return jsonify({"msg": str(e)}), 500
 
 #***Gestion maquinas virtuales conectadas a hypervisor***
 @api.route('/create-vm', methods=['POST'])
@@ -519,28 +413,6 @@ def create_vm():
     except Exception as e:
         return jsonify({"msg": str(e)}), 500
 
-@api.route('/vcenter-login', methods=['POST'])
-@jwt_required()
-def vcenter_login():
-    data = request.get_json()
-    ip = data.get('ip')
-    username = data.get('username')
-    password = data.get('password')
-
-    if not ip or not username or not password:
-        return jsonify({"msg": "IP, username, and password are required"}), 400
-
-    try:
-        si = connect.SmartConnect(host=ip, user=username, pwd=password)
-        if not si:
-            raise Exception("Failed to connect to vCenter")
-        # Get the session cookie
-        session_cookie = si._stub.cookie
-        # Disconnect immediately after getting the session
-        connect.Disconnect(si)
-        return jsonify({"session_token": session_cookie}), 200
-    except Exception as e:
-        return jsonify({"msg": f"Failed to connect to vCenter: {e}"}), 500
 
 
 
