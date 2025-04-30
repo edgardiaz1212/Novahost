@@ -1,10 +1,9 @@
-# c:\Users\AdminLocal\Documents\Github\proyectonovahost\Novahost\src\api\hypervisors.py
-
 from pyVim import connect
 from pyVmomi import vim
 from proxmoxer import ProxmoxAPI
 from api.models import Hypervisor, db
 import atexit
+import ssl
 import requests
 from datetime import datetime, timedelta
 
@@ -15,6 +14,49 @@ class HypervisorManager:
             raise ValueError("Hypervisor not found")
         self.hypervisor = hypervisor
         self.connection = None
+
+    @staticmethod
+    def validate_connection_data(hypervisor_data):
+        """
+        Intenta establecer una conexión para validar los datos proporcionados.
+        No requiere que el hypervisor exista en la BD.
+        Args:
+            hypervisor_data (dict): Diccionario con 'type', 'hostname', 'port', 'username', '_password'.
+        Returns:
+            bool: True si la conexión es exitosa.
+        Raises:
+            Exception: Si la conexión falla, con detalles del error.
+        """
+        hypervisor_type = hypervisor_data.get('type', '').lower()
+        hostname = hypervisor_data.get('hostname')
+        port = hypervisor_data.get('port')
+        username = hypervisor_data.get('username')
+        # Asegúrate de usar la clave correcta para la contraseña del diccionario de datos
+        password = hypervisor_data.get('_password')
+
+        # --- IMPORTANTE: Manejo de SSL ---
+        # Evitar deshabilitar la verificación en producción.
+        # Esto debería manejarse de forma segura y consistente.
+        verify_ssl_proxmox = False # ¡Inseguro! Cambiar a True y manejar certificados.
+        ssl_context_vcenter = ssl._create_unverified_context() # ¡Inseguro! Usar contexto seguro.
+        # ----------------------------------
+
+        if hypervisor_type == 'vcenter':
+            si = None
+            try:
+                si = connect.SmartConnect(host=hostname, user=username, pwd=password, port=int(port), sslContext=ssl_context_vcenter)
+                # Si no lanza excepción, la conexión fue exitosa
+                return True
+            finally:
+                if si: connect.Disconnect(si) # Asegurar desconexión
+        elif hypervisor_type == 'proxmox':
+            proxmox = ProxmoxAPI(host=hostname, user=username, password=password, port=int(port), verify_ssl=verify_ssl_proxmox)
+            proxmox.version.get() # Realizar una operación simple para verificar
+            return True
+        else:
+            # Para otros tipos o si no se requiere validación, retornar True
+            # O podrías lanzar un ValueError si el tipo no es soportado para validación
+            return True
 
     def connect(self):
         if self.hypervisor.type == 'vcenter':
@@ -107,6 +149,8 @@ class HypervisorManager:
                 user=self.hypervisor.username,
                 pwd=self.hypervisor.password,
                 port=int(self.hypervisor.port)
+                # sslContext=ssl_context # Pasar contexto seguro
+
             )
             if not si:
                 raise Exception("Failed to connect to vCenter")

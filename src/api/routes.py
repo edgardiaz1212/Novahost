@@ -5,14 +5,12 @@ from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, Users, FinalUser, PreDefinedPlans, Request, VirtualMachines, Hypervisor, OperationLog
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from api.hypervisor import HypervisorManager
-from pyVim import connect
-from pyVmomi import vim
 import requests
 from urllib.parse import urlencode
 from datetime import datetime, timedelta
-import ssl
+
 
 api = Blueprint('api', __name__)
 
@@ -303,7 +301,7 @@ def add_hypervisor():
         # Create the hypervisor
         hypervisor = Hypervisor(
             name=data['name'],
-            type=data['type'],
+            type=data['type'].lower(),
             hostname=data['hostname'],
             port=data['port'],
             username=data['username'],
@@ -316,17 +314,16 @@ def add_hypervisor():
             scope=data.get('scope')
         )
 
-        # Check connection to vcenter
-        if hypervisor.type == 'vcenter':
-            try:
-                context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-                context.verify_mode = ssl.CERT_NONE
-                service_instance = connect.SmartConnect(host=hypervisor.hostname, user=hypervisor.username, pwd=data['_password'], port=hypervisor.port, sslContext=context)
-                if not service_instance:
-                    raise Exception("Failed to connect to vCenter")
-                atexit.register(connect.Disconnect, service_instance)
-            except Exception as e:
-                return jsonify({'message': f'Error checking connection to vcenter: {e}'}), 500
+        # Check connection to hypervisor type
+        if hypervisor.type in ['vcenter', 'proxmox']: # Validar solo tipos conocidos
+                try:
+                    # Pasar el diccionario de datos directamente al método de validación
+                    if not HypervisorManager.validate_connection_data(data):
+                        # Podría no alcanzarse si validate_connection_data lanza una excepción
+                        return jsonify({'message': f'Connection validation failed for {hypervisor.type}'}), 500
+                except Exception as e:
+                    return jsonify({'message': f'Error checking connection to {hypervisor.type}: {e}'}), 500
+
 
         db.session.add(hypervisor)
         db.session.commit()
