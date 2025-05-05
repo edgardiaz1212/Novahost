@@ -277,7 +277,7 @@ def get_hypervisors_by_type(hypervisor_type):
     except Exception as e:
         return jsonify({'message': f'Error fetching hypervisors: {e}'}), 500
 
-
+@api.route('/add-hypervisor', methods=['POST'])
 def add_hypervisor():
     data = request.get_json()
     if data is None:

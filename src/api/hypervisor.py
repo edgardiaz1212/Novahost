@@ -335,32 +335,78 @@ class HypervisorManager:
             raise Exception(f"Failed to get capacity from Proxmox: {e}")
     
     def check_connection(self):
+        """
+        Checks the connection status to the hypervisor based on its type and authentication method.
+        Returns:
+            str: "connected", "disconnected", or "error".
+        """
         try:
+            # --- vCenter 6 (Session Cookie - Requires login first) ---
             if self.hypervisor.type == 'vcenter6':
-                # For vCenter 6, we need to try to connect with credentials first
+                # For vCenter 6, connection check implies trying to connect with credentials.
+                # A more robust check might involve verifying if a valid session cookie exists
+                # or attempting a simple API call using a stored cookie if available.
+                # Currently, it just tries a full connect/disconnect.
                 try:
-                    self.connect()
-                    self.disconnect()
-                    return "connected"
+                    # Attempt connection using stored credentials
+                    si = self._connect_vcenter() # Assuming _connect_vcenter handles user/pass
+                    if si:
+                        connect.Disconnect(si)
+                        return "connected"
+                    else:
+                        # This case might not be reachable if _connect_vcenter raises on failure
+                        print(f"Connection attempt returned None for {self.hypervisor.name} (vCenter6)")
+                        return "error"
                 except Exception as e:
-                    print(f"Error checking connection to {self.hypervisor.name}: {e}")
+                    print(f"Error checking connection  {self.hypervisor.name} (vCenter6): {e}")
                     return "error"
+
+            # --- vCenter 7 (OAuth 2.0 Token) ---
             elif self.hypervisor.type == 'vcenter7':
-                # For vCenter 7, we need to try to connect with OAuth 2.0
-                if self.hypervisor.token_expires_at and self.hypervisor.token_expires_at > datetime.now():
+                # Check if a token exists and is not expired
+                if self.hypervisor.access_token and self.hypervisor.token_expires_at and self.hypervisor.token_expires_at > datetime.now():
                     try:
+                        # Attempt a simple API call using the existing token
+                        # Note: connect_with_token might need adjustment if it doesn't just validate
                         self.connect_with_token(self.hypervisor.access_token)
-                        self.disconnect()
+                        # Assuming connect_with_token doesn't maintain a persistent connection object
+                        # If it did, you might call self.disconnect() here, but it seems unnecessary for a check.
                         return "connected"
                     except Exception as e:
-                        print(f"Error checking connection to {self.hypervisor.name}: {e}")
+                        # Token might be invalid even if not expired (e.g., revoked)
+                        print(f"Error checking connection with token for {self.hypervisor.name} (vCenter7): {e}")
+                        # Consider returning "disconnected" if the error indicates an invalid token
                         return "error"
                 else:
-                    return "disconnected"
+                    # No valid token exists or it's expired
+                    # Optionally, you could attempt a token refresh here if a refresh token exists
+                    # and return "connected" if successful, otherwise "disconnected".
+                    print(f"Token missing or expired for {self.hypervisor.name} (vCenter7)")
+                    return "disconnected" # No token or expired
+
+            # --- Standard vCenter (User/Pass) & Proxmox (User/Pass/Token) ---
+            elif self.hypervisor.type in ['vcenter', 'proxmox']:
+                # Standard check: try to connect and disconnect
+                try:
+                    conn = self.connect() # This calls _connect_vcenter or _connect_proxmox
+                    if conn:
+                        self.disconnect() # Disconnect after successful connection check
+                        return "connected"
+                    else:
+                         # This case might not be reachable if connect raises on failure
+                        print(f"Connection attempt returned None for {self.hypervisor.name} ({self.hypervisor.type})")
+                        return "error"
+                except Exception as e:
+                    print(f"Error  connection to {self.hypervisor.name} ({self.hypervisor.type}): {e}")
+                    return "error"
+
+            # --- Unknown/Unsupported Type ---
             else:
-                self.connect()
-                self.disconnect()
-                return "connected"
+                print(f"Connection check not implemented for type: {self.hypervisor.type}")
+                return "error" # Or consider "unknown", "not_supported"
+
+        # --- General Exception Handling ---
         except Exception as e:
-            print(f"Error checking connection to {self.hypervisor.name}: {e}")
+            # Catch any unexpected errors during the check process itself
+            print(f"Unexpected error during connection check for {self.hypervisor.name}: {e}")
             return "error"
